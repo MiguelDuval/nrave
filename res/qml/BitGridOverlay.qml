@@ -115,14 +115,14 @@ Item {
             width: 52
             height: 26
             activeColor: Theme.white
-            text: "BitGrid 1"
+            text: "BEATGRID1"
             onClicked: root.open(1)
         }
         Skin.Button {
             width: 52
             height: 26
             activeColor: Theme.white
-            text: "BitGrid 2"
+            text: "BEATGRID2"
             onClicked: root.open(2)
         }
     }
