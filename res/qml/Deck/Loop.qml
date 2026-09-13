@@ -32,12 +32,6 @@ Rectangle {
         group: root.group
         key: "loop_enabled"
     }
-    Mixxx.ControlProxy {
-        id: keylockControl
-
-        group: root.group
-        key: "keylock"
-    }
     BeatSizeSpinBoxBehavior {
         id: beatloopSize
 
@@ -92,7 +86,7 @@ Rectangle {
             id: loopInButton
 
             Layout.fillWidth: true
-            Layout.minimumWidth: 24
+            Layout.minimumWidth: 28
             activeColor: root.buttonColor
             group: root.group
             implicitHeight: 26
@@ -104,7 +98,7 @@ Rectangle {
             id: loopOutButton
 
             Layout.fillWidth: true
-            Layout.minimumWidth: 24
+            Layout.minimumWidth: 28
             activeColor: root.buttonColor
             group: root.group
             implicitHeight: 26
@@ -116,7 +110,7 @@ Rectangle {
             id: loopRecallButton
 
             Layout.fillWidth: true
-            Layout.minimumWidth: 32
+            Layout.minimumWidth: 40
             activeColor: root.buttonColor
             group: root.group
             implicitHeight: 26
@@ -124,19 +118,6 @@ Rectangle {
             normalColor: root.buttonColor
             text: loopEnabled.value ? "exit" : "Recall"
             toggleable: loopEnabled.value
-        }
-        Skin.ControlButton {
-            id: keylockButton
-
-            Layout.fillWidth: true
-            Layout.minimumWidth: 46
-            activeColor: root.buttonColor
-            group: root.group
-            implicitHeight: 26
-            key: "keylock"
-            normalColor: root.buttonColor
-            text: "Key Lock"
-            toggleable: true
         }
     }
     RowLayout {
