@@ -118,7 +118,9 @@ ColumnLayout {
                 , "#b2d145" // 8m
                 , "#7499cd"  // 3m
             ]
-            readonly property variant textMap: ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B", "Cm", "Dbm", "Dm", "Ebm", "Em", "Fm", "Gbm", "Abm", "Bbm", "Bm"]
+            // Mixxx key control values are 1..24. Keep this map in the same
+            // canonical order so value N resolves to textMap[N - 1].
+            readonly property variant textMap: ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B", "Cm", "Dbm", "Dm", "Ebm", "Em", "Fm", "Gbm", "Gm", "Abm", "Am", "Bbm", "Bm"]
 
             Layout.fillWidth: true
             Layout.leftMargin: 0
