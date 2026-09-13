@@ -53,15 +53,16 @@ Item {
         }
     }
     Skin.ControlButton {
-        id: beatgridButton
+        id: keylockButton
 
+        activeColor: Theme.deckActiveColor
         anchors.right: ejectButton.left
         anchors.rightMargin: 5
+        group: root.group
         implicitHeight: 22
-        text: "Beatgrid"
-        visible: root.width > 165
-        group: "[Skin]"
-        key: "show_beatgrid_controls"
+        implicitWidth: 46
+        key: "keylock"
+        text: "Key Lock"
         toggleable: true
     }
     Skin.ControlButton {
