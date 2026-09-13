@@ -76,7 +76,7 @@ Item {
         id: keylockButton
 
         activeColor: Theme.deckActiveColor
-        anchors.right: beatgridButton.left
+        anchors.right: beatgridButton.visible ? beatgridButton.left : ejectButton.left
         anchors.rightMargin: 5
         group: root.group
         implicitHeight: 22
