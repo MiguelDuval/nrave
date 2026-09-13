@@ -23,14 +23,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Materialize NRave launcher icon
+      - name: Verify NRave launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          ICON_B64="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp.b64"
           ICON_WEBP="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp"
-          test -s "$ICON_B64"
-          base64 --decode "$ICON_B64" > "$ICON_WEBP"
+          test -s "$ICON_WEBP"
           file "$ICON_WEBP"
 
       - name: Prepare Android build environment
