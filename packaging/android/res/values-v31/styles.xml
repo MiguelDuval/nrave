@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="nrave_splash_background">#07090E</color>
+    <color name="nrave_splash_background">#242833</color>
     <style name="NraveTheme" parent="android:style/Theme.NoTitleBar.Fullscreen">
         <item name="android:windowBackground">@drawable/nrave_splash_landscape</item>
         <item name="android:windowSplashScreenBackground">@color/nrave_splash_background</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/nrave_launcher</item>
     </style>
 </resources>
