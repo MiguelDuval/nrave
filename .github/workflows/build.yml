@@ -27,11 +27,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ICON_B64="packaging/android/res/mipmap-xxxhdpi/ic_launcher.png.b64"
-          ICON_PNG="packaging/android/res/mipmap-xxxhdpi/ic_launcher.png"
+          ICON_B64="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp.b64"
+          ICON_WEBP="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp"
           test -s "$ICON_B64"
-          base64 --decode "$ICON_B64" > "$ICON_PNG"
-          file "$ICON_PNG"
+          base64 --decode "$ICON_B64" > "$ICON_WEBP"
+          file "$ICON_WEBP"
 
       - name: Prepare Android build environment
         shell: bash
