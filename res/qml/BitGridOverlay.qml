@@ -100,33 +100,6 @@ Item {
         panelOpen = false;
     }
 
-    // Visually integrated with MainWindow's normal 36px toolbar:
-    // five existing toolbar buttons occupy 0..260px, so BitGrid starts at 260px.
-    // Match the same 52x26 Skin.Button size instead of the former diagnostic blocks.
-    Row {
-        id: entryBar
-        x: 260
-        y: 5
-        spacing: 0
-        z: 3
-        visible: !root.panelOpen
-
-        Skin.Button {
-            width: 52
-            height: 26
-            activeColor: Theme.white
-            text: "BEATGRID1"
-            onClicked: root.open(1)
-        }
-        Skin.Button {
-            width: 52
-            height: 26
-            activeColor: Theme.white
-            text: "BEATGRID2"
-            onClicked: root.open(2)
-        }
-    }
-
     Rectangle {
         anchors.fill: parent
         color: "#99000000"
