@@ -11,6 +11,7 @@ ApplicationWindow {
     readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
     readonly property int designWidth: 1792
     readonly property int designHeight: 1008
+    property var bitGridOverlay: bitgridOverlay.item
 
     color: Theme.backgroundColor
     height: isMobile ? Screen.height : designHeight
