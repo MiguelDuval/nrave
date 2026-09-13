@@ -128,7 +128,10 @@ ColumnLayout {
             contentItem: Text {
                 id: item
 
-                property int displayKeyIndex: Math.round(keyCO.value)
+                // Mixxx [ChannelN],key is 1..24 (1=C, 13=Cm), while our
+                // display arrays are zero-based (0=C, 12=Cm). Convert once
+                // at the UI boundary instead of shifting the key elsewhere.
+                property int displayKeyIndex: Math.round(keyCO.value) - 1
                 property bool validKey: trackLoadedControl.value && displayKeyIndex >= 0 && displayKeyIndex < pitchKey.textMap.length
 
                 color: {
