@@ -1,6 +1,7 @@
 import Mixxx 1.0 as Mixxx
 import QtQuick.Shapes
 import QtQuick 2.12
+import QtQuick.Window
 import ".." as Skin
 import "../Theme"
 
@@ -9,6 +10,8 @@ Item {
 
     property color buttonColor: trackLoadedControl.value > 0 ? Theme.buttonActiveColor : Theme.buttonDisableColor
     required property string group
+    readonly property var beatGridOverlay: Window.window ? Window.window.bitGridOverlay : null
+    readonly property int beatGridDeckNumber: root.group === "[Channel1]" ? 1 : root.group === "[Channel2]" ? 2 : 0
 
     Mixxx.ControlProxy {
         id: trackLoadedControl
@@ -52,11 +55,28 @@ Item {
             }
         }
     }
+    Skin.Button {
+        id: beatgridButton
+
+        activeColor: Theme.white
+        anchors.right: ejectButton.left
+        anchors.rightMargin: 5
+        height: 22
+        width: 60
+        text: "BEATGRID"
+        visible: root.beatGridDeckNumber > 0
+
+        onClicked: {
+            if (root.beatGridOverlay && root.beatGridDeckNumber > 0) {
+                root.beatGridOverlay.open(root.beatGridDeckNumber);
+            }
+        }
+    }
     Skin.ControlButton {
         id: keylockButton
 
         activeColor: Theme.deckActiveColor
-        anchors.right: ejectButton.left
+        anchors.right: beatgridButton.left
         anchors.rightMargin: 5
         group: root.group
         implicitHeight: 22
