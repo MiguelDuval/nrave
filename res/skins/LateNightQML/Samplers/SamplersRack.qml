@@ -40,7 +40,11 @@ Item {
     Loader {
         id: fourSamplerLoader
 
-        active: numSamplersControl.initialized && numSamplersControl.value >= 4
+        // The Android skin must not wait for the [App] num_samplers proxy to
+        // report initialized before constructing the visible sampler rack.
+        // MainWindow bootstraps this control, but that bootstrap can complete
+        // after the skin layout has already been evaluated.
+        active: true
         height: visible ? (item?.implicitHeight ?? 0) : 0
         sourceComponent: fourSamplers
         visible: root.mode === 0
@@ -49,7 +53,7 @@ Item {
     Loader {
         id: samplerRowsLoader
 
-        active: numSamplersControl.initialized && numSamplersControl.value >= 8
+        active: true
         height: visible ? (item?.implicitHeight ?? 0) : 0
         sourceComponent: samplerRows
         visible: root.mode !== 0
@@ -180,7 +184,10 @@ Item {
             Repeater {
                 id: samplerGroups
 
-                model: numSamplersControl.initialized ? Math.min(8, Math.floor(numSamplersControl.value / 8)) : 0
+                // Keep one sampler row available during startup; the [App]
+                // num_samplers control will update this count as soon as it
+                // initializes.
+                model: numSamplersControl.initialized ? Math.min(8, Math.floor(numSamplersControl.value / 8)) : 1
 
                 onItemAdded: rows.advancePreload()
 
