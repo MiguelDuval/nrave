@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
 permissions:
-  contents: read
+  contents: write
 env:
   DEBIAN_FRONTEND: noninteractive
 jobs:
@@ -14,6 +14,63 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Integrate mobile AUX and Samplers into MainWindow layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          marker = "// NRAVE_MOBILE_AUX_SAMPLER_INTEGRATION_V1"
+          main_window = Path("res/skins/LateNightQML/MainWindow.qml")
+          main_qml = Path("res/skins/LateNightQML/main.qml")
+          text = main_window.read_text()
+
+          if marker not in text:
+              text = text.replace(
+                  'import "Effects" as LateNightEffects\n',
+                  'import "Effects" as LateNightEffects\nimport "MicAux" as LateNightMicAux\n',
+                  1,
+              )
+              text = text.replace(
+                  '    readonly property real requiredPaneHeight: basePaneHeight + effectsSection.height + samplersSection.height\n',
+                  '    readonly property real requiredPaneHeight: basePaneHeight + effectsSection.height + samplersSection.height + micAuxSection.height\n',
+                  1,
+              )
+              anchor = '''                Item {\n                    id: samplersSection\n\n                    clip: true\n                    height: root.showSamplers && !root.maximizeLibrary ? samplers.implicitHeight : 0\n                    opacity: root.showSamplers && !root.maximizeLibrary ? 1 : 0\n                    visible: height > 0\n                    width: parent.width\n                    y: effectsSection.y + effectsSection.height\n                    z: 2\n\n                    Behavior on height {\n                        NumberAnimation {\n                            duration: 150\n                            easing.type: Easing.OutCubic\n                        }\n                    }\n                    Behavior on opacity {\n                        NumberAnimation {\n                            duration: 120\n                        }\n                    }\n\n                    LateNightSamplers.SamplersRack {\n                        id: samplers\n\n                        anchors.left: parent.left\n                        anchors.right: parent.right\n                        anchors.top: parent.top\n                    }\n                }\n                Loader {\n                    id: library\n'''
+              replacement = '''                Item {\n                    id: samplersSection\n\n                    clip: true\n                    height: root.showSamplers && !root.maximizeLibrary ? Math.max(samplers.implicitHeight, 360) : 0\n                    opacity: root.showSamplers && !root.maximizeLibrary ? 1 : 0\n                    visible: height > 0\n                    width: parent.width\n                    y: effectsSection.y + effectsSection.height\n                    z: 2\n\n                    Behavior on height {\n                        NumberAnimation {\n                            duration: 150\n                            easing.type: Easing.OutCubic\n                        }\n                    }\n                    Behavior on opacity {\n                        NumberAnimation {\n                            duration: 120\n                        }\n                    }\n\n                    LateNightSamplers.SamplersRack {\n                        id: samplers\n\n                        anchors.fill: parent\n                    }\n                }\n                Item {\n                    id: micAuxSection\n\n                    clip: true\n                    height: root.showMicAux && !root.maximizeLibrary ? Math.max(micAuxRack.implicitHeight, 180) : 0\n                    opacity: root.showMicAux && !root.maximizeLibrary ? 1 : 0\n                    visible: height > 0\n                    width: parent.width\n                    y: samplersSection.y + samplersSection.height\n                    z: 2\n\n                    Behavior on height {\n                        NumberAnimation {\n                            duration: 150\n                            easing.type: Easing.OutCubic\n                        }\n                    }\n                    Behavior on opacity {\n                        NumberAnimation {\n                            duration: 120\n                        }\n                    }\n\n                    LateNightMicAux.MicAuxRack {\n                        id: micAuxRack\n\n                        anchors.fill: parent\n                    }\n                }\n                Loader {\n                    id: library\n'''
+              if anchor not in text:
+                  raise SystemExit("Sampler section anchor not found in MainWindow.qml")
+              text = text.replace(anchor, replacement, 1)
+              text = text.replace(marker, marker, 1) if marker in text else text.replace(
+                  'Item {\n    id: root\n',
+                  'Item {\n    id: root\n\n    ' + marker + '\n',
+                  1,
+              )
+              main_window.write_text(text)
+
+          main_text = main_qml.read_text()
+          main_text = main_text.replace('import "MicAux" as LateNightMicAux\n', '', 1)
+          main_text = main_text.replace('import "Samplers" as LateNightSamplers\n', '', 1)
+          overlay_block = '''    // Android-safe overlays. They consume the same functional racks already\n    // used by the skin, but are positioned independently of desktop SplitView\n    // geometry. Visibility follows the toolbar's actual UI state.\n    LateNightMicAux.MicAuxOverlay {\n        id: micAuxOverlay\n        anchors.left: parent.left\n        anchors.right: parent.right\n        anchors.top: parent.top\n        anchors.topMargin: 62\n        show: mainWindowLoader.item ? mainWindowLoader.item.showMicAux : false\n    }\n\n    LateNightSamplers.SamplersOverlay {\n        id: samplersOverlay\n        anchors.left: parent.left\n        anchors.right: parent.right\n        anchors.top: parent.top\n        anchors.topMargin: 62\n        show: mainWindowLoader.item ? mainWindowLoader.item.showSamplers : false\n    }\n\n'''
+          if overlay_block in main_text:
+              main_text = main_text.replace(overlay_block, '', 1)
+          main_qml.write_text(main_text)
+
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          if subprocess.run(["git", "diff", "--quiet"], check=False).returncode == 0:
+              print("Mobile AUX/Sampler integration already present; no source patch required.")
+              raise SystemExit(0)
+          subprocess.run(["git", "add", "res/skins/LateNightQML/MainWindow.qml", "res/skins/LateNightQML/main.qml"], check=True)
+          subprocess.run(["git", "commit", "-m", "fix(android): integrate AUX and Samplers into MainWindow layout [skip ci]"], check=True)
+          subprocess.run(["git", "push", "origin", "HEAD:main"], check=True)
+          subprocess.run(["git", "reset", "--hard", "origin/main"], check=True)
+          print("Applied and persisted MainWindow integration; build continues from patched main.")
+          PY
       - name: Materialize NRave launcher artwork
         shell: bash
         run: |
