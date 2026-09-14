@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import "LateNightTheme"
+import "MicAux" as LateNightMicAux
 
 ApplicationWindow {
     id: root
@@ -214,6 +215,14 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    LateNightMicAux.MicAuxOverlay {
+        id: micAuxOverlay
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 62
     }
 
     StartupScreen {
