@@ -1,0 +1,1 @@
+One-time trigger for the Android mobile AUX/Sampler viewport adaptation.
