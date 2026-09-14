@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import "../Controls" as Controls
 import "../Deck" as DeckControls
+import "../LateNightTheme"
 import "../Mixer" as MixerControls
 import Mixxx 1.0 as Mixxx
 import QtQuick
