@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Window
 import "LateNightTheme"
 import "MicAux" as LateNightMicAux
+import "Samplers" as LateNightSamplers
 
 ApplicationWindow {
     id: root
@@ -217,12 +218,25 @@ ApplicationWindow {
         }
     }
 
+    // Android-safe overlays. They consume the same functional racks already
+    // used by the skin, but are positioned independently of desktop SplitView
+    // geometry. Visibility follows the toolbar's actual UI state.
     LateNightMicAux.MicAuxOverlay {
         id: micAuxOverlay
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.topMargin: 62
+        show: mainWindowLoader.item ? mainWindowLoader.item.showMicAux : false
+    }
+
+    LateNightSamplers.SamplersOverlay {
+        id: samplersOverlay
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.topMargin: 62
+        show: mainWindowLoader.item ? mainWindowLoader.item.showSamplers : false
     }
 
     StartupScreen {
