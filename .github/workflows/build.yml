@@ -22,12 +22,18 @@ jobs:
           DST_DIR="packaging/android/res/mipmap-xxxhdpi"
           DST="$DST_DIR/nrave_icon.png"
           mkdir -p "$DST_DIR"
+
+          # The repository keeps icon payloads as base64 helper files so Git can
+          # store them safely. They must never enter Android's res tree.
+          find "$DST_DIR" -type f -delete
+
           : > "$DST"
           for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
             test -s "$part"
             printf 'Decoding %s (%s bytes)\n' "$(basename "$part")" "$(wc -c < "$part")"
             base64 --decode "$part" >> "$DST"
           done
+
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
@@ -45,6 +51,12 @@ jobs:
               raise SystemExit(f"NRave launcher artwork mismatch: expected {expected}, got {actual}")
           print(f"Verified exact NRave launcher artwork: {len(d)} bytes, 144x144 PNG, SHA-256 {actual}")
           PY
+
+          # Hard fail if any helper payload accidentally remains in Android res.
+          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
+            echo 'ERROR: helper/base64 files must not be present under packaging/android/res'
+            exit 1
+          fi
       - name: Prepare Android build environment
         shell: bash
         run: |
