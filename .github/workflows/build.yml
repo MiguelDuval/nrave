@@ -21,18 +21,15 @@ jobs:
           SRC_DIR="packaging/android/icon-source"
           DST_DIR="packaging/android/res/mipmap-xxxhdpi"
           DST="$DST_DIR/nrave_icon.png"
+          B64="$RUNNER_TEMP/nrave_icon.b64"
           mkdir -p "$DST_DIR"
 
-          # The repository keeps icon payloads as base64 helper files so Git can
-          # store them safely. They must never enter Android's res tree.
+          # Keep the source payload untouched in Git. Concatenate the chunks first,
+          # then decode the single base64 stream once; decoding chunks independently
+          # breaks when a chunk boundary falls inside a 4-character base64 group.
+          cat "$SRC_DIR"/nrave_icon_144.b64.part* > "$B64"
           find "$DST_DIR" -type f -delete
-
-          : > "$DST"
-          for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
-            test -s "$part"
-            printf 'Decoding %s (%s bytes)\n' "$(basename "$part")" "$(wc -c < "$part")"
-            base64 --decode "$part" >> "$DST"
-          done
+          base64 --decode "$B64" > "$DST"
 
           python3 - <<'PY'
           from pathlib import Path
