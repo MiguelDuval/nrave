@@ -13,7 +13,104 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Apply verified phone viewport geometry
+      - name: Apply direct Android toolbar rack path
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('res/skins/LateNightQML/Toolbar/Toolbar.qml')
+          text = p.read_text()
+          marker = '// NRAVE_ANDROID_DIRECT_RACK_POPUPS_V2'
+          if marker not in text:
+              old_sampler = '''                    onActivated: {
+                        showSamplersControl.value = checked ? 1.0 : 0.0;
+                    }
+'''
+              new_sampler = '''                    onActivated: {
+                        showSamplersControl.value = checked ? 1.0 : 0.0;
+                        if (Qt.platform.os === "android") {
+                            if (checked) {
+                                const pos = root.mapToItem(Overlay.overlay, 0, root.height);
+                                samplerAndroidPopup.x = pos.x;
+                                samplerAndroidPopup.y = pos.y;
+                                samplerAndroidPopup.width = Math.max(1, root.width);
+                                samplerAndroidPopup.height = Math.max(260, Math.min(460, Overlay.overlay.height - pos.y));
+                                samplerAndroidPopup.open();
+                            } else {
+                                samplerAndroidPopup.close();
+                            }
+                        }
+                    }
+'''
+              if old_sampler not in text:
+                  raise SystemExit('Sampler action anchor not found')
+              text = text.replace(old_sampler, new_sampler, 1)
+
+              old_aux = '''                    onActivated: {
+                        showMicAuxControl.value = checked ? 1.0 : 0.0;
+                    }
+'''
+              new_aux = '''                    onActivated: {
+                        showMicAuxControl.value = checked ? 1.0 : 0.0;
+                        if (Qt.platform.os === "android") {
+                            if (checked) {
+                                const pos = root.mapToItem(Overlay.overlay, 0, root.height);
+                                micAuxAndroidPopup.x = pos.x;
+                                micAuxAndroidPopup.y = pos.y;
+                                micAuxAndroidPopup.width = Math.max(1, root.width);
+                                micAuxAndroidPopup.height = Math.max(220, Math.min(360, Overlay.overlay.height - pos.y));
+                                micAuxAndroidPopup.open();
+                            } else {
+                                micAuxAndroidPopup.close();
+                            }
+                        }
+                    }
+'''
+              if old_aux not in text:
+                  raise SystemExit('MIC/AUX action anchor not found')
+              text = text.replace(old_aux, new_aux, 1)
+
+              anchor = '    // BEGIN PAPUSHA ABLETON LINK UI\n'
+              popup_block = '''    // NRAVE_ANDROID_DIRECT_RACK_POPUPS_V2
+    Popup {
+        id: samplerAndroidPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        padding: 0
+        z: 100000
+        background: Rectangle { color: LateNightTheme.toolbarRootBackgroundColor }
+        Loader {
+            anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "../Samplers/SamplersRack.qml"
+        }
+    }
+
+    Popup {
+        id: micAuxAndroidPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        padding: 0
+        z: 100001
+        background: Rectangle { color: LateNightTheme.toolbarRootBackgroundColor }
+        Loader {
+            anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "../MicAux/FunctionalMicAuxRack.qml"
+        }
+    }
+
+'''
+              if anchor not in text:
+                  raise SystemExit('Popup insertion anchor not found')
+              text = text.replace(anchor, popup_block + anchor, 1)
+              text = text.replace('    color: LateNightTheme.toolbarRootBackgroundColor\n    height: 26\n', '    color: LateNightTheme.toolbarRootBackgroundColor\n    height: 26\n\n    ' + marker + '\n', 1)
+              p.write_text(text)
+          PY
+      - name: Apply verified phone viewport geometry to diagnostic strip
         shell: bash
         run: |
           set -euo pipefail
@@ -24,26 +121,19 @@ jobs:
           start = text.index('    Rectangle {\n        id: bitgridBar')
           end = text.index('    // Android-only direct rack surfaces.', start)
           block = text[start:end]
-          # Normalize any previous test-strip variants first.
           block = block.replace('        anchors.topMargin: 27\n', '        anchors.topMargin: 0\n')
-          block = block.replace('        anchors.topMargin: 0\n', '        anchors.topMargin: 0\n', 1)
           block = block.replace('        height: 34\n', '        height: Qt.platform.os === "android" ? 42 : 34\n', 1)
-          block = block.replace('        height: Qt.platform.os === "android" ? 42 : 34\n', '        height: Qt.platform.os === "android" ? 42 : 34\n', 1)
           block = block.replace('        width: 472\n', '        width: Qt.platform.os === "android" ? parent.width : 472\n', 1)
-          block = block.replace('        width: Qt.platform.os === "android" ? parent.width : 472\n', '        width: Qt.platform.os === "android" ? parent.width : 472\n', 1)
           block = block.replace('        z: 10000\n', '        z: 100000\n', 1)
-          block = block.replace('        z: 100000\n', '        z: 100000\n', 1)
           block = block.replace('            spacing: 4\n', '            spacing: Qt.platform.os === "android" ? 2 : 4\n', 1)
-          block = block.replace('            spacing: Qt.platform.os === "android" ? 2 : 4\n', '            spacing: Qt.platform.os === "android" ? 2 : 4\n', 1)
           block = block.replace('                width: 89\n', '                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.spacing) / 5)) : 89\n')
           block = block.replace('                    font.pixelSize: 12\n', '                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12\n')
-          # Correct a possible v1 typo if present.
           block = block.replace('parent.parent.spacing', 'parent.spacing')
           text = text[:start] + block + text[end:]
           p.write_text(text)
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add res/skins/LateNightQML/main.qml
-          git commit -m 'fix(android): finalize phone-safe AUX and Sampler test layout'
+          git add res/skins/LateNightQML/Toolbar/Toolbar.qml res/skins/LateNightQML/main.qml
+          git commit -m 'fix(android): direct AUX Sampler racks from mobile toolbar'
           git push origin HEAD:main
