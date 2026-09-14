@@ -30,9 +30,26 @@ jobs:
           ICON_B64="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp.b64"
           ICON_WEBP="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp"
           test -s "$ICON_B64"
-          base64 --decode "$ICON_B64" > "$ICON_WEBP"
+          ICON_DATA="$(tr -d '[:space:]' < "$ICON_B64")"
+          # The checked-in base64 payload is intentionally unpadded. Restore the
+          # standard RFC 4648 padding before decoding so GNU coreutils accepts it.
+          case $((${#ICON_DATA} % 4)) in
+            0) ;;
+            2) ICON_DATA="${ICON_DATA}==" ;;
+            3) ICON_DATA="${ICON_DATA}=" ;;
+            1) echo "Invalid base64 payload length" >&2; exit 1 ;;
+          esac
+          printf '%s' "$ICON_DATA" | base64 --decode > "$ICON_WEBP"
           test -s "$ICON_WEBP"
           file "$ICON_WEBP"
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp")
+          data = p.read_bytes()
+          if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
+              raise SystemExit("Materialized launcher icon is not a valid WebP file")
+          print(f"Verified launcher icon: {len(data)} bytes, valid RIFF/WEBP")
+          PY
 
       - name: Prepare Android build environment
         shell: bash
