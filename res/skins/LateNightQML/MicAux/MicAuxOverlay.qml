@@ -1,6 +1,5 @@
 import Mixxx 1.0 as Mixxx
 import QtQuick
-import QtQuick.Controls
 import "../LateNightTheme"
 
 Item {
@@ -19,7 +18,7 @@ Item {
         opacity: 0.98
     }
 
-    MicAuxRack {
+    FunctionalMicAuxRack {
         id: micAuxRack
         anchors.left: parent.left
         anchors.right: parent.right
