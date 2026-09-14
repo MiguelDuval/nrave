@@ -19,6 +19,12 @@ Item {
         group: root.group
         key: "track_loaded"
     }
+    Mixxx.ControlProxy {
+        id: quantizeControl
+
+        group: root.group
+        key: "quantize"
+    }
     Skin.ControlButton {
         id: reverseButton
 
@@ -53,6 +59,22 @@ Item {
                     y: 11
                 }
             }
+        }
+    }
+    Skin.Button {
+        id: quantizeButton
+
+        activeColor: Theme.white
+        anchors.left: reverseButton.right
+        anchors.leftMargin: 5
+        height: 22
+        width: 22
+        enabled: quantizeControl.initialized
+        highlight: quantizeControl.initialized && quantizeControl.value > 0.5
+        text: "Q"
+
+        onClicked: {
+            quantizeControl.value = quantizeControl.value > 0.5 ? 0 : 1;
         }
     }
     Skin.Button {
