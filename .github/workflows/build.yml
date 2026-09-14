@@ -21,15 +21,27 @@ jobs:
           SRC_DIR="packaging/android/icon-source"
           DST_DIR="packaging/android/res/mipmap-xxxhdpi"
           DST="$DST_DIR/nrave_icon.png"
-          B64="$RUNNER_TEMP/nrave_icon.b64"
           mkdir -p "$DST_DIR"
-
-          # Keep the source payload untouched in Git. Concatenate the chunks first,
-          # then decode the single base64 stream once; decoding chunks independently
-          # breaks when a chunk boundary falls inside a 4-character base64 group.
-          cat "$SRC_DIR"/nrave_icon_144.b64.part* > "$B64"
           find "$DST_DIR" -type f -delete
-          base64 --decode "$B64" > "$DST"
+          : > "$DST"
+
+          # These helper files are individually base64-encoded chunks. Some chunks
+          # intentionally omit terminal '=' padding, so decode each chunk after
+          # normalizing whitespace and restoring the required padding. Never alter
+          # the decoded image bytes afterwards.
+          for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
+            test -s "$part"
+            data="$(tr -d '\r\n\t ' < "$part")"
+            rem=$(( ${#data} % 4 ))
+            case "$rem" in
+              0) ;;
+              2) data="${data}==" ;;
+              3) data="${data}=" ;;
+              *) echo "Invalid base64 chunk length in $(basename "$part")"; exit 1 ;;
+            esac
+            printf '%s' "$data" | base64 --decode >> "$DST"
+            printf 'Decoded %s (%s source characters)\n' "$(basename "$part")" "${#data}"
+          done
 
           python3 - <<'PY'
           from pathlib import Path
@@ -49,7 +61,6 @@ jobs:
           print(f"Verified exact NRave launcher artwork: {len(d)} bytes, 144x144 PNG, SHA-256 {actual}")
           PY
 
-          # Hard fail if any helper payload accidentally remains in Android res.
           if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
             echo 'ERROR: helper/base64 files must not be present under packaging/android/res'
             exit 1
