@@ -3,6 +3,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import "LateNightTheme"
+import "MicAux" as LateNightMicAux
+import "Samplers" as LateNightSamplers
 
 ApplicationWindow {
     id: root
@@ -33,6 +35,21 @@ ApplicationWindow {
         id: abletonLinkControl
         group: "[AbletonLink]"
         key: "sync_enabled"
+    }
+
+    // Read the actual [Skin] state directly. This bypasses the desktop
+    // MainWindow/SplitView geometry for Android, where these racks must remain
+    // visible even when the normal pane has no remaining vertical space.
+    Mixxx.ControlProxy {
+        id: mobileShowSamplersControl
+        group: "[Skin]"
+        key: "show_samplers"
+    }
+
+    Mixxx.ControlProxy {
+        id: mobileShowMicAuxControl
+        group: "[Skin]"
+        key: "show_microphones"
     }
 
     function updateVisibility() {
@@ -213,6 +230,57 @@ ApplicationWindow {
                     }
                 }
             }
+        }
+    }
+
+    // Android-only direct rack surfaces. They intentionally bypass the
+    // desktop SplitView sizing path so the toolbar toggles have an immediately
+    // visible destination on mobile.
+    Item {
+        id: mobileSamplersPanel
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: bitgridBar.bottom
+        clip: true
+        height: Qt.platform.os === "android" && mobileShowSamplersControl.value > 0.5 && !(mainWindowLoader.item && mainWindowLoader.item.maximizeLibrary)
+                ? Math.min(Math.max(mobileSamplersRack.implicitHeight, 360), Math.max(0, root.height - bitgridBar.bottom))
+                : 0
+        visible: height > 0
+        z: 20000
+
+        Rectangle {
+            anchors.fill: parent
+            color: LateNightTheme.toolbarRootBackgroundColor
+        }
+
+        LateNightSamplers.SamplersRack {
+            id: mobileSamplersRack
+            anchors.fill: parent
+        }
+    }
+
+    Item {
+        id: mobileMicAuxPanel
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: mobileSamplersPanel.bottom
+        clip: true
+        height: Qt.platform.os === "android" && mobileShowMicAuxControl.value > 0.5 && !(mainWindowLoader.item && mainWindowLoader.item.maximizeLibrary)
+                ? Math.min(Math.max(mobileMicAuxRack.implicitHeight, 180), Math.max(0, root.height - mobileSamplersPanel.bottom))
+                : 0
+        visible: height > 0
+        z: 20001
+
+        Rectangle {
+            anchors.fill: parent
+            color: LateNightTheme.toolbarRootBackgroundColor
+        }
+
+        LateNightMicAux.MicAuxRack {
+            id: mobileMicAuxRack
+            anchors.fill: parent
         }
     }
 
