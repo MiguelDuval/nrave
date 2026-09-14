@@ -19,8 +19,10 @@ jobs:
         run: |
           set -euo pipefail
           SRC="packaging/android/icon-source/ic_launcher.png.b64"
-          DST="packaging/android/res/mipmap-xxxhdpi/nrave_icon.png"
+          DST_DIR="packaging/android/res/mipmap-xxhdpi"
+          DST="$DST_DIR/nrave_icon.png"
           test -s "$SRC"
+          mkdir -p "$DST_DIR"
           ICON_DATA="$(tr -d '[:space:]' < "$SRC")"
           case $((${#ICON_DATA} % 4)) in
             0) ;;
@@ -31,10 +33,14 @@ jobs:
           printf '%s' "$ICON_DATA" | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
-          p=Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
-          d=p.read_bytes()
-          if not d.startswith(b"\x89PNG\r\n\x1a\n"): raise SystemExit("Invalid NRave launcher PNG")
-          if int.from_bytes(d[16:20],"big") != 144 or int.from_bytes(d[20:24],"big") != 144: raise SystemExit("Launcher PNG must be 144x144")
+          p = Path("packaging/android/res/mipmap-xxhdpi/nrave_icon.png")
+          d = p.read_bytes()
+          if not d.startswith(b"\x89PNG\r\n\x1a\n"):
+              raise SystemExit("Invalid NRave launcher PNG")
+          width = int.from_bytes(d[16:20], "big")
+          height = int.from_bytes(d[20:24], "big")
+          if (width, height) != (144, 144):
+              raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
           print(f"Verified NRave launcher icon: {len(d)} bytes, 144x144 PNG")
           PY
       - name: Prepare Android build environment
