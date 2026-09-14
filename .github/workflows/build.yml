@@ -14,23 +14,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Materialize and verify NRave launcher icon
+      - name: Materialize and verify exact NRave launcher artwork
         shell: bash
         run: |
           set -euo pipefail
-          SRC="packaging/android/icon-source/ic_launcher.png.b64"
+          SRC_DIR="packaging/android/icon-source"
           DST_DIR="packaging/android/res/mipmap-xxhdpi"
           DST="$DST_DIR/nrave_icon.png"
-          test -s "$SRC"
           mkdir -p "$DST_DIR"
-          ICON_DATA="$(tr -d '[:space:]' < "$SRC")"
-          case $((${#ICON_DATA} % 4)) in
-            0) ;;
-            2) ICON_DATA="${ICON_DATA}==" ;;
-            3) ICON_DATA="${ICON_DATA}=" ;;
-            1) echo "Invalid base64 payload length" >&2; exit 1 ;;
-          esac
-          printf '%s' "$ICON_DATA" | base64 --decode > "$DST"
+          for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
+            test -s "$part"
+          done
+          cat "$SRC_DIR"/nrave_icon_144.b64.part* | tr -d '[:space:]' | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
