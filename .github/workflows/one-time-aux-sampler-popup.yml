@@ -1,0 +1,139 @@
+name: One-time Android AUX Sampler popup fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/aux_sampler_popup_fix_trigger.md
+permissions:
+  contents: write
+jobs:
+  patch-toolbar:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Patch Android toolbar rack popups
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('res/skins/LateNightQML/Toolbar/Toolbar.qml')
+          text = p.read_text()
+
+          marker = '// NRAVE_ANDROID_DIRECT_RACK_POPUPS_V1'
+          if marker in text:
+              raise SystemExit('Android direct rack popup patch already present')
+
+          old_sampler = '''                    onActivated: {
+                        showSamplersControl.value = checked ? 1.0 : 0.0;
+                    }
+'''
+          new_sampler = '''                    onActivated: {
+                        showSamplersControl.value = checked ? 1.0 : 0.0;
+                        if (Qt.platform.os === "android") {
+                            if (checked) {
+                                const pos = root.mapToItem(Overlay.overlay, 0, root.height);
+                                samplerAndroidPopup.x = pos.x;
+                                samplerAndroidPopup.y = pos.y;
+                                samplerAndroidPopup.width = Math.max(1, root.width);
+                                samplerAndroidPopup.height = Math.max(260, Math.min(460, Overlay.overlay.height - pos.y));
+                                samplerAndroidPopup.open();
+                            } else {
+                                samplerAndroidPopup.close();
+                            }
+                        }
+                    }
+'''
+          if old_sampler not in text:
+              raise SystemExit('Sampler onActivated anchor not found')
+          text = text.replace(old_sampler, new_sampler, 1)
+
+          old_aux = '''                    onActivated: {
+                        showMicAuxControl.value = checked ? 1.0 : 0.0;
+                    }
+'''
+          new_aux = '''                    onActivated: {
+                        showMicAuxControl.value = checked ? 1.0 : 0.0;
+                        if (Qt.platform.os === "android") {
+                            if (checked) {
+                                const pos = root.mapToItem(Overlay.overlay, 0, root.height);
+                                micAuxAndroidPopup.x = pos.x;
+                                micAuxAndroidPopup.y = pos.y;
+                                micAuxAndroidPopup.width = Math.max(1, root.width);
+                                micAuxAndroidPopup.height = Math.max(220, Math.min(360, Overlay.overlay.height - pos.y));
+                                micAuxAndroidPopup.open();
+                            } else {
+                                micAuxAndroidPopup.close();
+                            }
+                        }
+                    }
+'''
+          if old_aux not in text:
+              raise SystemExit('Mic/AUX onActivated anchor not found')
+          text = text.replace(old_aux, new_aux, 1)
+
+          anchor = '''    // BEGIN PAPUSHA ABLETON LINK UI
+'''
+          popup_block = '''    // NRAVE_ANDROID_DIRECT_RACK_POPUPS_V1
+    Popup {
+        id: samplerAndroidPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        padding: 0
+        z: 100000
+
+        background: Rectangle {
+            color: LateNightTheme.toolbarRootBackgroundColor
+        }
+
+        Loader {
+            anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "../Samplers/SamplersRack.qml"
+        }
+    }
+
+    Popup {
+        id: micAuxAndroidPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        padding: 0
+        z: 100001
+
+        background: Rectangle {
+            color: LateNightTheme.toolbarRootBackgroundColor
+        }
+
+        Loader {
+            anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "../MicAux/FunctionalMicAuxRack.qml"
+        }
+    }
+
+'''
+          if anchor not in text:
+              raise SystemExit('Popup insertion anchor not found')
+          text = text.replace(anchor, popup_block + anchor, 1)
+
+          text = text.replace('    color: LateNightTheme.toolbarRootBackgroundColor\n    height: 26\n', '    color: LateNightTheme.toolbarRootBackgroundColor\n    height: 26\n\n    ' + marker + '\n', 1)
+          p.write_text(text)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add res/skins/LateNightQML/Toolbar/Toolbar.qml
+          git commit -m 'fix(android): open functional AUX and Sampler racks directly from toolbar'
+          git push origin HEAD:main
+      - name: Remove one-time workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/one-time-aux-sampler-popup.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: remove one-time AUX/Sampler popup fixer'
+          git push origin HEAD:main
