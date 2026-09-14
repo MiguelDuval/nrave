@@ -1,19 +1,12 @@
 name: Android APK
-
-# This repository intentionally keeps a single CI workflow: build the Android APK.
-# FLX4 + Ableton Link + Android USB support are built from main.
-# Mobile Pad FX panel + reliable effect-slot selection are now the active source.
 on:
   workflow_dispatch:
   push:
     branches: [main]
-
 permissions:
   contents: read
-
 env:
   DEBIAN_FRONTEND: noninteractive
-
 jobs:
   android-apk:
     runs-on: ubuntu-24.04
@@ -21,41 +14,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
       - name: Materialize NRave launcher icon
         shell: bash
         run: |
           set -euo pipefail
-          RES_DIR="packaging/android/res/mipmap-xxxhdpi"
-          ICON_B64="$RES_DIR/ic_launcher.webp.b64"
-          ICON_WEBP="$RES_DIR/ic_launcher.webp"
-          test -s "$ICON_B64"
-          ICON_DATA="$(tr -d '[:space:]' < "$ICON_B64")"
+          SRC="packaging/android/icon-source/ic_launcher.png.b64"
+          DST="packaging/android/res/mipmap-xxxhdpi/ic_launcher.png"
+          test -s "$SRC"
+          ICON_DATA="$(tr -d '[:space:]' < "$SRC")"
           case $((${#ICON_DATA} % 4)) in
             0) ;;
             2) ICON_DATA="${ICON_DATA}==" ;;
             3) ICON_DATA="${ICON_DATA}=" ;;
             1) echo "Invalid base64 payload length" >&2; exit 1 ;;
           esac
-          printf '%s' "$ICON_DATA" | base64 --decode > "$ICON_WEBP"
-          test -s "$ICON_WEBP"
-          file "$ICON_WEBP"
+          printf '%s' "$ICON_DATA" | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
-          p = Path("packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp")
-          data = p.read_bytes()
-          if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
-              raise SystemExit("Materialized launcher icon is not a valid WebP file")
-          print(f"Verified launcher icon: {len(data)} bytes, valid RIFF/WEBP")
+          p=Path("packaging/android/res/mipmap-xxxhdpi/ic_launcher.png")
+          d=p.read_bytes()
+          if not d.startswith(b"\x89PNG\r\n\x1a\n"): raise SystemExit("Invalid NRave launcher PNG")
+          if int.from_bytes(d[16:20],"big") != 144 or int.from_bytes(d[20:24],"big") != 144: raise SystemExit("Launcher PNG must be 144x144")
+          print(f"Verified NRave launcher icon: {len(d)} bytes, 144x144 PNG")
           PY
-
-          # Base64 transport files are only source material for CI. They must
-          # never remain inside Android res/ because aapt treats every file in
-          # a resource directory as a resource and rejects names such as
-          # ic_launcher.webp.b64 / ic_launcher.png.b64.part01.
-          rm -f "$RES_DIR"/*.b64 "$RES_DIR"/*.b64.part* "$RES_DIR"/*.part01
-          test ! -e "$ICON_B64"
-
       - name: Prepare Android build environment
         shell: bash
         run: |
@@ -63,60 +44,33 @@ jobs:
           sudo rm -f /etc/apt/sources.list.d/google-chrome.sources
           sudo apt-get clean
           source ./tools/android_buildenv.sh setup
-
       - name: Create temporary signing key
         shell: bash
         run: |
           PASS="mixxx-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          keytool -genkeypair \
-            -keystore "$RUNNER_TEMP/mixxx.keystore" \
-            -alias mixxx \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 3650 \
-            -storepass "$PASS" \
-            -keypass "$PASS" \
-            -dname "CN=Mixxx Android Build"
-          {
-            echo "QT_ANDROID_KEYSTORE_ALIAS=mixxx"
-            echo "QT_ANDROID_KEYSTORE_KEY_PASS=$PASS"
-            echo "QT_ANDROID_KEYSTORE_STORE_PASS=$PASS"
-            echo "QT_ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/mixxx.keystore"
-          } >> "$GITHUB_ENV"
-
+          keytool -genkeypair -keystore "$RUNNER_TEMP/mixxx.keystore" -alias mixxx -keyalg RSA -keysize 2048 -validity 3650 -storepass "$PASS" -keypass "$PASS" -dname "CN=Mixxx Android Build"
+          echo "QT_ANDROID_KEYSTORE_ALIAS=mixxx" >> "$GITHUB_ENV"
+          echo "QT_ANDROID_KEYSTORE_KEY_PASS=$PASS" >> "$GITHUB_ENV"
+          echo "QT_ANDROID_KEYSTORE_STORE_PASS=$PASS" >> "$GITHUB_ENV"
+          echo "QT_ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/mixxx.keystore" >> "$GITHUB_ENV"
       - name: Configure Android
         shell: bash
         run: |
           set -o pipefail
-          rm -rf build-android
-          rm -rf "${BUILDENV_BASEPATH}/${BUILDENV_NAME}"
+          rm -rf build-android "${BUILDENV_BASEPATH}/${BUILDENV_NAME}"
           mkdir -p build-android
           for attempt in 1 2 3; do
-            echo "=== Configure attempt ${attempt}/3 ==="
-            rm -rf "${BUILDENV_BASEPATH}/${BUILDENV_NAME}"
-            rm -rf build-android
+            rm -rf "${BUILDENV_BASEPATH}/${BUILDENV_NAME}" build-android
             mkdir -p build-android
-            if (cd build-android && cmake \
-              -DCMAKE_TOOLCHAIN_FILE="${MIXXX_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
-              -DCMAKE_SYSTEM_NAME=Android \
-              -DBUILD_TESTING=OFF \
-              -DBUILD_BENCH=OFF \
-              ..); then
-              echo "Android CMake configuration succeeded on attempt ${attempt}."
-              exit 0
-            fi
-            echo "Android CMake configuration failed on attempt ${attempt}; retrying with a clean dependency directory."
+            if (cd build-android && cmake -DCMAKE_TOOLCHAIN_FILE="${MIXXX_VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" -DCMAKE_SYSTEM_NAME=Android -DBUILD_TESTING=OFF -DBUILD_BENCH=OFF ..); then exit 0; fi
             sleep 5
           done
-          echo "Android CMake configuration failed after 3 clean attempts."
           exit 1
-
       - name: Build APK only
         shell: bash
         run: |
           set -o pipefail
           cmake --build build-android --target apk --parallel 2 --verbose 2>&1 | tee "$RUNNER_TEMP/android-apk-build.log"
-
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v7
@@ -126,13 +80,11 @@ jobs:
           archive: true
           if-no-files-found: error
           retention-days: 14
-
       - name: Verify APK
         shell: bash
         run: |
           test -f build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           ls -lh build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
