@@ -1,3 +1,4 @@
+import Mixxx 1.0 as Mixxx
 import QtQuick
 import "../LateNightTheme"
 import "." as LateNightSamplers
@@ -7,7 +8,26 @@ Item {
 
     required property bool show
 
-    visible: show
+    Mixxx.ControlProxy {
+        id: showControl
+
+        group: "[Skin]"
+        key: "show_samplers"
+
+        onInitializedChanged: {
+            if (initialized)
+                value = root.show ? 1.0 : 0.0;
+        }
+    }
+
+    function syncControlToButtonState() {
+        if (showControl.initialized)
+            showControl.value = root.show ? 1.0 : 0.0;
+    }
+
+    onShowChanged: root.syncControlToButtonState()
+
+    visible: show || (showControl.initialized && showControl.value > 0.0)
     height: visible ? Math.min(360, Math.max(0, parent.height - 64)) : 0
     width: parent.width
     clip: true
