@@ -1,0 +1,41 @@
+name: One-time Android AUX Sampler visibility fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/android_mobile_visibility_trigger.md
+permissions:
+  contents: write
+jobs:
+  patch-mobile-layout:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Patch Android mobile viewport layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('res/skins/LateNightQML/main.qml')
+          text = p.read_text()
+          start = text.index('    Rectangle {\n        id: bitgridBar')
+          end = text.index('    // Android-only direct rack surfaces.', start)
+          block = text[start:end]
+          block = block.replace('        anchors.topMargin: 27\n', '        anchors.topMargin: 0\n', 1)
+          block = block.replace('        height: 34\n', '        height: Qt.platform.os === "android" ? 42 : 34\n', 1)
+          block = block.replace('        width: 472\n', '        width: Qt.platform.os === "android" ? parent.width : 472\n', 1)
+          block = block.replace('        z: 10000\n', '        z: 100000\n', 1)
+          block = block.replace('            spacing: 4\n', '            spacing: Qt.platform.os === "android" ? 2 : 4\n', 1)
+          block = block.replace('                width: 89\n', '                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.parent.spacing) / 5)) : 89\n')
+          block = block.replace('                    font.pixelSize: 12\n', '                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12\n')
+          text = text[:start] + block + text[end:]
+          p.write_text(text)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add res/skins/LateNightQML/main.qml
+          git commit -m 'fix(android): adapt AUX and Sampler test strip to phone viewport'
+          git push origin HEAD:main
