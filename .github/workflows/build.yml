@@ -20,10 +20,10 @@ jobs:
           set -euo pipefail
           SRC_DIR="packaging/android/icon-source"
           DST_DIR="packaging/android/res/mipmap-xxhdpi"
-          DST="$DST_DIR/nrave_icon.png"
+          DST="$DST_DIR/nrave_icon.webp"
           mkdir -p "$DST_DIR"
           : > "$DST"
-          for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
+          for part in "$SRC_DIR"/nrave_icon_144.webp.b64.part*; do
             test -s "$part"
             printf 'Decoding %s (%s bytes)\n' "$(basename "$part")" "$(wc -c < "$part")"
             base64 --decode "$part" >> "$DST"
@@ -31,19 +31,15 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
-          p = Path("packaging/android/res/mipmap-xxhdpi/nrave_icon.png")
+          p = Path("packaging/android/res/mipmap-xxhdpi/nrave_icon.webp")
           d = p.read_bytes()
-          if not d.startswith(b"\x89PNG\r\n\x1a\n"):
-              raise SystemExit("Invalid NRave launcher PNG")
-          width = int.from_bytes(d[16:20], "big")
-          height = int.from_bytes(d[20:24], "big")
-          if (width, height) != (144, 144):
-              raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
-          expected = "c10312bb6fd140c89b9581e465cd02433cf971ca34135c64b5e96060bc486c88"
+          if not (d.startswith(b"RIFF") and d[8:12] == b"WEBP"):
+              raise SystemExit("Invalid NRave launcher WebP")
+          expected = "7a6215ce5cdbc63e02977d7c4ae5e14386403e532bfff0258caf0a8a7afa1183"
           actual = hashlib.sha256(d).hexdigest()
           if actual != expected:
               raise SystemExit(f"NRave launcher artwork mismatch: expected {expected}, got {actual}")
-          print(f"Verified exact NRave launcher artwork: {len(d)} bytes, 144x144 PNG, SHA-256 {actual}")
+          print(f"Verified exact lossless NRave launcher artwork: {len(d)} bytes, SHA-256 {actual}")
           PY
       - name: Prepare Android build environment
         shell: bash
