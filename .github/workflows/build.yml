@@ -16,6 +16,102 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Apply direct Android AUX and Sampler rack actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("res/skins/LateNightQML/Toolbar/Toolbar.qml")
+          text = p.read_text()
+          marker = "// NRAVE_ANDROID_DIRECT_RACK_POPUPS_BUILD_V1"
+          if marker not in text:
+              sampler_old = '''                    onActivated: {
+                        showSamplersControl.value = checked ? 1.0 : 0.0;
+                    }
+'''
+              sampler_new = '''                    onActivated: {
+                        showSamplersControl.value = checked ? 1.0 : 0.0;
+                        if (Qt.platform.os === "android") {
+                            if (checked) {
+                                const pos = root.mapToItem(Overlay.overlay, 0, root.height);
+                                samplerAndroidPopup.x = pos.x;
+                                samplerAndroidPopup.y = pos.y;
+                                samplerAndroidPopup.width = Math.max(1, root.width);
+                                samplerAndroidPopup.height = Math.max(260, Math.min(460, Overlay.overlay.height - pos.y));
+                                samplerAndroidPopup.open();
+                            } else {
+                                samplerAndroidPopup.close();
+                            }
+                        }
+                    }
+'''
+              aux_old = '''                    onActivated: {
+                        showMicAuxControl.value = checked ? 1.0 : 0.0;
+                    }
+'''
+              aux_new = '''                    onActivated: {
+                        showMicAuxControl.value = checked ? 1.0 : 0.0;
+                        if (Qt.platform.os === "android") {
+                            if (checked) {
+                                const pos = root.mapToItem(Overlay.overlay, 0, root.height);
+                                micAuxAndroidPopup.x = pos.x;
+                                micAuxAndroidPopup.y = pos.y;
+                                micAuxAndroidPopup.width = Math.max(1, root.width);
+                                micAuxAndroidPopup.height = Math.max(220, Math.min(360, Overlay.overlay.height - pos.y));
+                                micAuxAndroidPopup.open();
+                            } else {
+                                micAuxAndroidPopup.close();
+                            }
+                        }
+                    }
+'''
+              if sampler_old not in text or aux_old not in text:
+                  raise SystemExit("Toolbar action anchors not found")
+              text = text.replace(sampler_old, sampler_new, 1)
+              text = text.replace(aux_old, aux_new, 1)
+              anchor = "    // BEGIN PAPUSHA ABLETON LINK UI\n"
+              popup_block = '''    // NRAVE_ANDROID_DIRECT_RACK_POPUPS_BUILD_V1
+    Popup {
+        id: samplerAndroidPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        padding: 0
+        z: 100000
+        background: Rectangle { color: LateNightTheme.toolbarRootBackgroundColor }
+        Loader {
+            anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "../Samplers/SamplersRack.qml"
+        }
+    }
+    Popup {
+        id: micAuxAndroidPopup
+        modal: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        padding: 0
+        z: 100001
+        background: Rectangle { color: LateNightTheme.toolbarRootBackgroundColor }
+        Loader {
+            anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "../MicAux/FunctionalMicAuxRack.qml"
+        }
+    }
+
+'''
+              if anchor not in text:
+                  raise SystemExit("Toolbar popup insertion anchor not found")
+              text = text.replace(anchor, popup_block + anchor, 1)
+              text = text.replace(
+                  "    color: LateNightTheme.toolbarRootBackgroundColor\n    height: 26\n",
+                  "    color: LateNightTheme.toolbarRootBackgroundColor\n    height: 26\n\n    " + marker + "\n",
+                  1,
+              )
+              p.write_text(text)
+          PY
       - name: Integrate mobile AUX and Samplers into MainWindow layout
         shell: bash
         run: |
