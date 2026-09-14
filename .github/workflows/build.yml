@@ -14,42 +14,58 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Materialize NRave launcher artwork without image processing
+      - name: Materialize NRave launcher artwork
         shell: bash
         run: |
           set -euo pipefail
-          SRC_DIR="packaging/android/icon-source"
+          SRC="packaging/android/icon-source/ic_launcher.png.b64"
           DST_DIR="packaging/android/res/mipmap-xxxhdpi"
           DST="$DST_DIR/nrave_icon.png"
           mkdir -p "$DST_DIR"
           find "$DST_DIR" -type f -delete
-          : > "$DST"
-          for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
-            test -s "$part"
-            data="$(tr -d '\r\n\t ' < "$part")"
-            rem=$(( ${#data} % 4 ))
-            case "$rem" in
-              0) ;;
-              2) data="${data}==" ;;
-              3) data="${data}=" ;;
-              *) echo "Invalid base64 chunk length in $(basename "$part")"; exit 1 ;;
-            esac
-            printf '%s' "$data" | base64 --decode >> "$DST"
-          done
+          tr -d '\r\n\t ' < "$SRC" | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, struct
+          import hashlib, struct, zlib
           p = Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
           d = p.read_bytes()
           if not d.startswith(b"\x89PNG\r\n\x1a\n"):
-              raise SystemExit("Invalid NRave launcher PNG")
-          width, height = struct.unpack(">II", d[16:24])
-          if (width, height) != (144, 144):
-              raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
-          print(f"Materialized launcher artwork unchanged after base64 decode: {len(d)} bytes, {width}x{height}, SHA-256 {hashlib.sha256(d).hexdigest()}")
+              raise SystemExit("Invalid NRave launcher PNG signature")
+          pos = 8
+          seen_ihdr = seen_iend = False
+          while pos < len(d):
+              if pos + 12 > len(d):
+                  raise SystemExit("Truncated PNG chunk header")
+              n = struct.unpack(">I", d[pos:pos+4])[0]
+              typ = d[pos+4:pos+8]
+              endpos = pos + 12 + n
+              if endpos > len(d):
+                  raise SystemExit(f"Truncated PNG chunk {typ!r}")
+              payload = d[pos+8:pos+8+n]
+              crc = struct.unpack(">I", d[pos+8+n:endpos])[0]
+              if (zlib.crc32(typ + payload) & 0xffffffff) != crc:
+                  raise SystemExit(f"Invalid PNG CRC in {typ.decode('latin1')}")
+              if typ == b"IHDR":
+                  if n != 13:
+                      raise SystemExit("Invalid IHDR length")
+                  width, height, bit_depth, color_type, comp, filt, interlace = struct.unpack(">IIBBBBB", payload)
+                  if (width, height) != (144, 144):
+                      raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
+                  if comp != 0 or filt != 0:
+                      raise SystemExit("Unsupported PNG compression/filter method")
+                  seen_ihdr = True
+              if typ == b"IEND":
+                  if n != 0 or endpos != len(d):
+                      raise SystemExit("Invalid PNG IEND/trailing data")
+                  seen_iend = True
+                  break
+              pos = endpos
+          if not seen_ihdr or not seen_iend:
+              raise SystemExit("PNG missing IHDR or IEND")
+          print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
           PY
-          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
-            echo 'ERROR: helper/base64 files must not be present under packaging/android/res'
+          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' -o -name '*.webp' \) | grep -q .; then
+            echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
           fi
       - name: Prepare Android build environment
