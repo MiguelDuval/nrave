@@ -22,10 +22,12 @@ jobs:
           DST_DIR="packaging/android/res/mipmap-xxhdpi"
           DST="$DST_DIR/nrave_icon.png"
           mkdir -p "$DST_DIR"
+          : > "$DST"
           for part in "$SRC_DIR"/nrave_icon_144.b64.part*; do
             test -s "$part"
+            printf 'Decoding %s (%s bytes)\n' "$(basename "$part")" "$(wc -c < "$part")"
+            base64 --decode "$part" >> "$DST"
           done
-          cat "$SRC_DIR"/nrave_icon_144.b64.part* | tr -d '[:space:]' | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
