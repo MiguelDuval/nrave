@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           SRC="packaging/android/icon-source/ic_launcher.png.b64"
-          DST="packaging/android/res/mipmap-xxxhdpi/ic_launcher.png"
+          DST="packaging/android/res/mipmap-xxxhdpi/nrave_icon.png"
           test -s "$SRC"
           ICON_DATA="$(tr -d '[:space:]' < "$SRC")"
           case $((${#ICON_DATA} % 4)) in
@@ -31,7 +31,7 @@ jobs:
           printf '%s' "$ICON_DATA" | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
-          p=Path("packaging/android/res/mipmap-xxxhdpi/ic_launcher.png")
+          p=Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
           d=p.read_bytes()
           if not d.startswith(b"\x89PNG\r\n\x1a\n"): raise SystemExit("Invalid NRave launcher PNG")
           if int.from_bytes(d[16:20],"big") != 144 or int.from_bytes(d[20:24],"big") != 144: raise SystemExit("Launcher PNG must be 144x144")
