@@ -5,11 +5,16 @@ import "../LateNightTheme"
 Item {
     id: root
 
-    property bool show: showMicrophonesControl.initialized && showMicrophonesControl.value > 0
+    // Do not gate visibility on ControlProxy.initialized. The toolbar and this
+    // overlay use the same [Skin] control, and the proxy can initialize one
+    // frame later on Android. The value itself is sufficient and updates when
+    // initialization completes.
+    property bool show: showMicrophonesControl.value > 0
 
     visible: show
-    height: visible ? Math.min(micAuxRack.implicitHeight, parent.height - 64) : 0
+    height: show ? Math.min(micAuxRack.implicitHeight, Math.max(0, parent.height - 64)) : 0
     width: parent.width
+    clip: true
     z: 10010
 
     Rectangle {
