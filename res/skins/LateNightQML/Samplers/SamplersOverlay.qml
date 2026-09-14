@@ -1,5 +1,5 @@
-import Mixxx 1.0 as Mixxx
 import QtQuick
+import QtQuick.Controls
 import "../LateNightTheme"
 import "." as LateNightSamplers
 
@@ -8,39 +8,36 @@ Item {
 
     required property bool show
 
-    Mixxx.ControlProxy {
-        id: showControl
+    function syncPopupToState() {
+        if (root.show)
+            samplersPopup.open();
+        else
+            samplersPopup.close();
+    }
 
-        group: "[Skin]"
-        key: "show_samplers"
+    onShowChanged: root.syncPopupToState()
 
-        onInitializedChanged: {
-            if (initialized)
-                value = root.show ? 1.0 : 0.0;
+    Component.onCompleted: root.syncPopupToState()
+
+    Popup {
+        id: samplersPopup
+
+        x: 0
+        y: 62
+        width: root.parent ? root.parent.width : 0
+        height: root.parent ? Math.min(360, Math.max(0, root.parent.height - 62)) : 0
+        modal: false
+        focus: false
+        closePolicy: Popup.NoAutoClose
+        padding: 0
+
+        background: Rectangle {
+            color: "#080808"
+            opacity: 0.98
         }
-    }
 
-    function syncControlToButtonState() {
-        if (showControl.initialized)
-            showControl.value = root.show ? 1.0 : 0.0;
-    }
-
-    onShowChanged: root.syncControlToButtonState()
-
-    visible: show || (showControl.initialized && showControl.value > 0.0)
-    height: visible ? Math.min(360, Math.max(0, parent.height - 64)) : 0
-    width: parent.width
-    clip: true
-    z: 10020
-
-    Rectangle {
-        anchors.fill: parent
-        color: "#080808"
-        opacity: 0.98
-    }
-
-    LateNightSamplers.SamplersRack {
-        id: samplersRack
-        anchors.fill: parent
+        LateNightSamplers.SamplersRack {
+            anchors.fill: parent
+        }
     }
 }
