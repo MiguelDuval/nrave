@@ -3,8 +3,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import "LateNightTheme"
-import "MicAux" as LateNightMicAux
-import "Samplers" as LateNightSamplers
 
 ApplicationWindow {
     id: root
