@@ -2,6 +2,7 @@ import "../../qml" as Skin
 import "LateNightTheme"
 import "Deck" as LateNightDeck
 import "Effects" as LateNightEffects
+import "MicAux" as LateNightMicAux
 import "Mixer" as LateNightMixer
 import "Samplers" as LateNightSamplers
 import "Toolbar" as LateNightToolbar
@@ -13,6 +14,8 @@ import QtQuick.Layouts
 
 Item {
     id: root
+
+    // NRAVE_MOBILE_AUX_SAMPLER_INTEGRATION_V1
 
     required property ApplicationWindow applicationWindow
     property alias menuBar: nativeApplicationMenuLoader.item
@@ -467,7 +470,7 @@ Item {
 
                 readonly property real basePaneHeight: Math.max(deckRowsHeight, mixer.visible ? mixer.implicitHeight : 0)
                 readonly property real deckRowsHeight: root.show4decks ? visibleDeckHeight * 2 : visibleDeckHeight
-                readonly property real requiredPaneHeight: basePaneHeight + effectsSection.height + samplersSection.height
+                readonly property real requiredPaneHeight: basePaneHeight + effectsSection.height + samplersSection.height + micAuxSection.height
                 readonly property real visibleDeckHeight: root.maximizeLibrary ? (root.showMaximizedDecks ? root.minimizedDeckHeight : 0) : root.fullDeckHeight
 
                 SplitView.fillHeight: library.active
@@ -774,7 +777,7 @@ Item {
                     id: samplersSection
 
                     clip: true
-                    height: root.showSamplers && !root.maximizeLibrary ? samplers.implicitHeight : 0
+                    height: root.showSamplers && !root.maximizeLibrary ? Math.max(samplers.implicitHeight, 360) : 0
                     opacity: root.showSamplers && !root.maximizeLibrary ? 1 : 0
                     visible: height > 0
                     width: parent.width
@@ -796,9 +799,36 @@ Item {
                     LateNightSamplers.SamplersRack {
                         id: samplers
 
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
+                        anchors.fill: parent
+                    }
+                }
+                Item {
+                    id: micAuxSection
+
+                    clip: true
+                    height: root.showMicAux && !root.maximizeLibrary ? Math.max(micAuxRack.implicitHeight, 180) : 0
+                    opacity: root.showMicAux && !root.maximizeLibrary ? 1 : 0
+                    visible: height > 0
+                    width: parent.width
+                    y: samplersSection.y + samplersSection.height
+                    z: 2
+
+                    Behavior on height {
+                        NumberAnimation {
+                            duration: 150
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
+
+                    LateNightMicAux.MicAuxRack {
+                        id: micAuxRack
+
+                        anchors.fill: parent
                     }
                 }
                 Loader {
