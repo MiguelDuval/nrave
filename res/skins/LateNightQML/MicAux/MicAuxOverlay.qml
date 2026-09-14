@@ -1,15 +1,32 @@
+import Mixxx 1.0 as Mixxx
 import QtQuick
 import "../LateNightTheme"
 
 Item {
     id: root
 
-    // Visibility is owned by the toolbar button in MainWindow. Do not create a
-    // second ControlProxy here: on Android that can race the toolbar state and
-    // leave the button active while the overlay stays hidden.
     required property bool show
 
-    visible: show
+    Mixxx.ControlProxy {
+        id: showControl
+
+        group: "[Skin]"
+        key: "show_microphones"
+
+        onInitializedChanged: {
+            if (initialized)
+                value = root.show ? 1.0 : 0.0;
+        }
+    }
+
+    function syncControlToButtonState() {
+        if (showControl.initialized)
+            showControl.value = root.show ? 1.0 : 0.0;
+    }
+
+    onShowChanged: root.syncControlToButtonState()
+
+    visible: show || (showControl.initialized && showControl.value > 0.0)
     height: visible ? Math.min(180, Math.max(0, parent.height - 64)) : 0
     width: parent.width
     clip: true
