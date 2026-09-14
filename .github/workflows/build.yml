@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Materialize NRave launcher icon
+      - name: Materialize and verify NRave launcher icon
         shell: bash
         run: |
           set -euo pipefail
@@ -33,6 +33,7 @@ jobs:
           printf '%s' "$ICON_DATA" | base64 --decode > "$DST"
           python3 - <<'PY'
           from pathlib import Path
+          import hashlib
           p = Path("packaging/android/res/mipmap-xxhdpi/nrave_icon.png")
           d = p.read_bytes()
           if not d.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -41,7 +42,11 @@ jobs:
           height = int.from_bytes(d[20:24], "big")
           if (width, height) != (144, 144):
               raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
-          print(f"Verified NRave launcher icon: {len(d)} bytes, 144x144 PNG")
+          expected = "c10312bb6fd140c89b9581e465cd02433cf971ca34135c64b5e96060bc486c88"
+          actual = hashlib.sha256(d).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"NRave launcher artwork mismatch: expected {expected}, got {actual}")
+          print(f"Verified exact NRave launcher artwork: {len(d)} bytes, 144x144 PNG, SHA-256 {actual}")
           PY
       - name: Prepare Android build environment
         shell: bash
