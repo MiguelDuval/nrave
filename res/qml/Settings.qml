@@ -58,7 +58,7 @@ Popup {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 34
                         activeColor: Theme.white
-                        text: "← Back to Mixxx"
+                        text: "← Back to Nrave"
 
                         onClicked: {
                             root.close();
@@ -234,7 +234,7 @@ Popup {
                     Layout.preferredHeight: 32
                     Layout.preferredWidth: Math.min(360, parent.width)
                     activeColor: Theme.white
-                    text: "Open full Mixxx Preferences"
+                    text: "Open full Nrave Preferences"
 
                     onClicked: {
                         root.close();
