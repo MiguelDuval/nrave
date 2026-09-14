@@ -35,9 +35,9 @@ ApplicationWindow {
         key: "sync_enabled"
     }
 
-    // Read the actual [Skin] state directly. This bypasses the desktop
-    // MainWindow/SplitView geometry for Android, where these racks must remain
-    // visible even when the normal pane has no remaining vertical space.
+    // Read the real [Skin] controls directly. These are also the controls used
+    // by MainWindow/Toolbar, so the diagnostic buttons below do not create a
+    // second state machine.
     Mixxx.ControlProxy {
         id: mobileShowSamplersControl
         group: "[Skin]"
@@ -109,10 +109,10 @@ ApplicationWindow {
         }
     }
 
-    // Dedicated mobile control strip. The Android Link button is a direct
-    // third child of this Row so its position is deterministic: BITGRID 1,
-    // BITGRID 2, LINK. It does not depend on toolbar layout or ControlProxy
-    // initialization just to become visible.
+    // Dedicated mobile control strip. The AUX and SAMPLER TEST buttons are
+    // intentionally independent of Toolbar.qml: they write the same [Skin]
+    // controls that the real buttons are supposed to write. This isolates the
+    // Android input/toolbar path without changing the rack implementation.
     Rectangle {
         id: bitgridBar
 
@@ -121,7 +121,7 @@ ApplicationWindow {
         anchors.topMargin: 27
         color: LateNightTheme.toolbarRootBackgroundColor
         height: 34
-        width: 283
+        width: 472
         z: 10000
 
         Row {
@@ -131,7 +131,6 @@ ApplicationWindow {
 
             Rectangle {
                 id: bitgrid1Button
-
                 color: bitgrid1MouseArea.pressed ? LateNightTheme.toolbarButtonActiveBackgroundColor : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
@@ -151,14 +150,12 @@ ApplicationWindow {
                 MouseArea {
                     id: bitgrid1MouseArea
                     anchors.fill: parent
-                    cursorShape: Qt.ArrowCursor
                     onClicked: bitgrid1Action.trigger()
                 }
             }
 
             Rectangle {
                 id: bitgrid2Button
-
                 color: bitgrid2MouseArea.pressed ? LateNightTheme.toolbarButtonActiveBackgroundColor : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
@@ -178,14 +175,12 @@ ApplicationWindow {
                 MouseArea {
                     id: bitgrid2MouseArea
                     anchors.fill: parent
-                    cursorShape: Qt.ArrowCursor
                     onClicked: bitgrid2Action.trigger()
                 }
             }
 
             Rectangle {
                 id: abletonLinkButton
-
                 color: abletonLinkMouseArea.pressed
                         ? LateNightTheme.toolbarButtonActiveBackgroundColor
                         : LateNightTheme.toolbarButtonInactiveBackgroundColor
@@ -221,19 +216,71 @@ ApplicationWindow {
                     id: abletonLinkMouseArea
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton
-                    cursorShape: Qt.ArrowCursor
                     preventStealing: true
                     onPressed: {
                         abletonLinkControl.value = abletonLinkControl.value > 0.0 ? 0.0 : 1.0;
                     }
                 }
             }
+
+            Rectangle {
+                id: auxDirectTestButton
+                color: mobileShowMicAuxControl.value > 0.5
+                        ? LateNightTheme.toolbarButtonActiveBackgroundColor
+                        : LateNightTheme.toolbarButtonInactiveBackgroundColor
+                height: parent.height
+                radius: 2
+                width: 89
+
+                Text {
+                    anchors.fill: parent
+                    color: LateNightTheme.toolbarButtonInactiveTextColor
+                    font.family: "Open Sans"
+                    font.pixelSize: 12
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: "AUX TEST"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: mobileShowMicAuxControl.value = mobileShowMicAuxControl.value > 0.5 ? 0.0 : 1.0
+                }
+            }
+
+            Rectangle {
+                id: samplerDirectTestButton
+                color: mobileShowSamplersControl.value > 0.5
+                        ? LateNightTheme.toolbarButtonActiveBackgroundColor
+                        : LateNightTheme.toolbarButtonInactiveBackgroundColor
+                height: parent.height
+                radius: 2
+                width: 89
+
+                Text {
+                    anchors.fill: parent
+                    color: LateNightTheme.toolbarButtonInactiveTextColor
+                    font.family: "Open Sans"
+                    font.pixelSize: 12
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: "SAMPLER TEST"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: mobileShowSamplersControl.value = mobileShowSamplersControl.value > 0.5 ? 0.0 : 1.0
+                }
+            }
         }
     }
 
-    // Android-only direct rack surfaces. They intentionally bypass the
-    // desktop SplitView sizing path so the toolbar toggles have an immediately
-    // visible destination on mobile.
+    // Android-only direct rack surfaces. They deliberately bypass desktop
+    // SplitView sizing. Loader is used instead of a QML module import so the
+    // build-time compatibility patch cannot accidentally remove the component
+    // dependency again.
     Item {
         id: mobileSamplersPanel
 
@@ -242,7 +289,7 @@ ApplicationWindow {
         anchors.top: bitgridBar.bottom
         clip: true
         height: Qt.platform.os === "android" && mobileShowSamplersControl.value > 0.5 && !(mainWindowLoader.item && mainWindowLoader.item.maximizeLibrary)
-                ? Math.min(Math.max(mobileSamplersRack.implicitHeight, 360), Math.max(0, root.height - bitgridBar.bottom))
+                ? Math.min(Math.max(mobileSamplersLoader.item ? mobileSamplersLoader.item.implicitHeight : 360, 360), Math.max(0, root.height - bitgridBar.bottom))
                 : 0
         visible: height > 0
         z: 20000
@@ -252,9 +299,11 @@ ApplicationWindow {
             color: LateNightTheme.toolbarRootBackgroundColor
         }
 
-        LateNightSamplers.SamplersRack {
-            id: mobileSamplersRack
+        Loader {
+            id: mobileSamplersLoader
             anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "Samplers/SamplersRack.qml"
         }
     }
 
@@ -266,7 +315,7 @@ ApplicationWindow {
         anchors.top: mobileSamplersPanel.bottom
         clip: true
         height: Qt.platform.os === "android" && mobileShowMicAuxControl.value > 0.5 && !(mainWindowLoader.item && mainWindowLoader.item.maximizeLibrary)
-                ? Math.min(Math.max(mobileMicAuxRack.implicitHeight, 180), Math.max(0, root.height - mobileSamplersPanel.bottom))
+                ? Math.min(Math.max(mobileMicAuxLoader.item ? mobileMicAuxLoader.item.implicitHeight : 180, 180), Math.max(0, root.height - mobileSamplersPanel.bottom))
                 : 0
         visible: height > 0
         z: 20001
@@ -276,9 +325,11 @@ ApplicationWindow {
             color: LateNightTheme.toolbarRootBackgroundColor
         }
 
-        LateNightMicAux.MicAuxRack {
-            id: mobileMicAuxRack
+        Loader {
+            id: mobileMicAuxLoader
             anchors.fill: parent
+            active: Qt.platform.os === "android"
+            source: "MicAux/MicAuxRack.qml"
         }
     }
 
