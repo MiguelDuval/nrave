@@ -118,29 +118,29 @@ ApplicationWindow {
 
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.topMargin: 27
+        anchors.topMargin: 0
         color: LateNightTheme.toolbarRootBackgroundColor
-        height: 34
-        width: 472
-        z: 10000
+        height: Qt.platform.os === "android" ? 42 : 34
+        width: Qt.platform.os === "android" ? parent.width : 472
+        z: 100000
 
         Row {
             anchors.fill: parent
             anchors.margins: 4
-            spacing: 4
+            spacing: Qt.platform.os === "android" ? 2 : 4
 
             Rectangle {
                 id: bitgrid1Button
                 color: bitgrid1MouseArea.pressed ? LateNightTheme.toolbarButtonActiveBackgroundColor : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
-                width: 89
+                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.spacing) / 5)) : 89
 
                 Text {
                     anchors.fill: parent
                     color: LateNightTheme.toolbarButtonInactiveTextColor
                     font.family: "Open Sans"
-                    font.pixelSize: 12
+                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -159,13 +159,13 @@ ApplicationWindow {
                 color: bitgrid2MouseArea.pressed ? LateNightTheme.toolbarButtonActiveBackgroundColor : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
-                width: 89
+                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.spacing) / 5)) : 89
 
                 Text {
                     anchors.fill: parent
                     color: LateNightTheme.toolbarButtonInactiveTextColor
                     font.family: "Open Sans"
-                    font.pixelSize: 12
+                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -186,7 +186,7 @@ ApplicationWindow {
                         : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
-                width: 89
+                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.spacing) / 5)) : 89
 
                 BorderImage {
                     anchors.fill: parent
@@ -205,7 +205,7 @@ ApplicationWindow {
                             ? LateNightTheme.toolbarButtonActiveTextColor
                             : LateNightTheme.toolbarButtonInactiveTextColor
                     font.family: "Open Sans"
-                    font.pixelSize: 12
+                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -230,13 +230,13 @@ ApplicationWindow {
                         : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
-                width: 89
+                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.spacing) / 5)) : 89
 
                 Text {
                     anchors.fill: parent
                     color: LateNightTheme.toolbarButtonInactiveTextColor
                     font.family: "Open Sans"
-                    font.pixelSize: 12
+                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -256,13 +256,13 @@ ApplicationWindow {
                         : LateNightTheme.toolbarButtonInactiveBackgroundColor
                 height: parent.height
                 radius: 2
-                width: 89
+                width: Qt.platform.os === "android" ? Math.max(50, Math.floor((parent.width - 4 * parent.spacing) / 5)) : 89
 
                 Text {
                     anchors.fill: parent
                     color: LateNightTheme.toolbarButtonInactiveTextColor
                     font.family: "Open Sans"
-                    font.pixelSize: 12
+                    font.pixelSize: Qt.platform.os === "android" ? 10 : 12
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
