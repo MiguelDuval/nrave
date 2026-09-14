@@ -3,7 +3,6 @@ name: Android APK
 # This repository intentionally keeps a single CI workflow: build the Android APK.
 # FLX4 + Ableton Link + Android USB support are built from main.
 # Mobile Pad FX panel + reliable effect-slot selection are now the active source.
-# Trigger a clean APK build from the reviewed PadFX/mobile UI repair.
 on:
   workflow_dispatch:
   push:
@@ -27,12 +26,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ICON_B64="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp.b64"
-          ICON_WEBP="packaging/android/res/mipmap-xxxhdpi/ic_launcher.webp"
+          RES_DIR="packaging/android/res/mipmap-xxxhdpi"
+          ICON_B64="$RES_DIR/ic_launcher.webp.b64"
+          ICON_WEBP="$RES_DIR/ic_launcher.webp"
           test -s "$ICON_B64"
           ICON_DATA="$(tr -d '[:space:]' < "$ICON_B64")"
-          # The checked-in base64 payload is intentionally unpadded. Restore the
-          # standard RFC 4648 padding before decoding so GNU coreutils accepts it.
           case $((${#ICON_DATA} % 4)) in
             0) ;;
             2) ICON_DATA="${ICON_DATA}==" ;;
@@ -50,6 +48,13 @@ jobs:
               raise SystemExit("Materialized launcher icon is not a valid WebP file")
           print(f"Verified launcher icon: {len(data)} bytes, valid RIFF/WEBP")
           PY
+
+          # Base64 transport files are only source material for CI. They must
+          # never remain inside Android res/ because aapt treats every file in
+          # a resource directory as a resource and rejects names such as
+          # ic_launcher.webp.b64 / ic_launcher.png.b64.part01.
+          rm -f "$RES_DIR"/*.b64 "$RES_DIR"/*.b64.part* "$RES_DIR"/*.part01
+          test ! -e "$ICON_B64"
 
       - name: Prepare Android build environment
         shell: bash
@@ -86,9 +91,6 @@ jobs:
           rm -rf build-android
           rm -rf "${BUILDENV_BASEPATH}/${BUILDENV_NAME}"
           mkdir -p build-android
-
-          # The upstream Android dependency ZIP can occasionally arrive truncated.
-          # Retry from a clean dependency directory so CMake never reuses a partial archive.
           for attempt in 1 2 3; do
             echo "=== Configure attempt ${attempt}/3 ==="
             rm -rf "${BUILDENV_BASEPATH}/${BUILDENV_NAME}"
@@ -106,7 +108,6 @@ jobs:
             echo "Android CMake configuration failed on attempt ${attempt}; retrying with a clean dependency directory."
             sleep 5
           done
-
           echo "Android CMake configuration failed after 3 clean attempts."
           exit 1
 
