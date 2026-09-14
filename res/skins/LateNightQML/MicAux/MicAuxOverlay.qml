@@ -1,21 +1,19 @@
-import Mixxx 1.0 as Mixxx
 import QtQuick
 import "../LateNightTheme"
 
 Item {
     id: root
 
-    // Do not gate visibility on ControlProxy.initialized. The toolbar and this
-    // overlay use the same [Skin] control, and the proxy can initialize one
-    // frame later on Android. The value itself is sufficient and updates when
-    // initialization completes.
-    property bool show: showMicrophonesControl.value > 0
+    // Visibility is owned by the toolbar button in MainWindow. Do not create a
+    // second ControlProxy here: on Android that can race the toolbar state and
+    // leave the button active while the overlay stays hidden.
+    required property bool show
 
     visible: show
-    height: show ? Math.min(micAuxRack.implicitHeight, Math.max(0, parent.height - 64)) : 0
+    height: visible ? Math.min(micAuxRack.implicitHeight, Math.max(0, parent.height - 64)) : 0
     width: parent.width
     clip: true
-    z: 10010
+    z: 10020
 
     Rectangle {
         anchors.fill: parent
@@ -28,11 +26,5 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-    }
-
-    Mixxx.ControlProxy {
-        id: showMicrophonesControl
-        group: "[Skin]"
-        key: "show_microphones"
     }
 }
