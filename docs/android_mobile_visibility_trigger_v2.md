@@ -1,1 +1,1 @@
-Verified one-time trigger for the Android mobile AUX/Sampler viewport fix.
+Verified trigger for direct Android AUX/Sampler rack path. Second pass.
