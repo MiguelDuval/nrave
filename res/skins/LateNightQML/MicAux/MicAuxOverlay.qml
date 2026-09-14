@@ -10,7 +10,7 @@ Item {
     required property bool show
 
     visible: show
-    height: visible ? Math.min(micAuxRack.implicitHeight, Math.max(0, parent.height - 64)) : 0
+    height: visible ? Math.min(180, Math.max(0, parent.height - 64)) : 0
     width: parent.width
     clip: true
     z: 10020
@@ -23,8 +23,6 @@ Item {
 
     FunctionalMicAuxRack {
         id: micAuxRack
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.fill: parent
     }
 }
