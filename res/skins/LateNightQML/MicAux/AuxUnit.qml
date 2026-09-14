@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import "../Controls" as Controls
 import "../Deck" as DeckControls
+import "../LateNightTheme"
 import "../Mixer" as MixerControls
 import Mixxx 1.0 as Mixxx
 import QtQuick
@@ -9,45 +10,30 @@ import QtQuick.Layouts
 
 Item {
     id: root
-
     property string group: "[Auxiliary" + unitNumber + "]"
     readonly property bool inputConfigured: inputConfiguredControl.value > 0
     required property int unitNumber
-
     implicitHeight: unitLoader.item?.implicitHeight ?? 57
     implicitWidth: unitLoader.item?.implicitWidth ?? 47
 
-    Loader {
-        id: unitLoader
-        anchors.fill: parent
-        sourceComponent: root.inputConfigured ? configuredUnit : unconfiguredUnit
-    }
-
-    Mixxx.ControlProxy {
-        id: inputConfiguredControl
-        group: root.group
-        key: "input_configured"
-    }
+    Loader { id: unitLoader; anchors.fill: parent; sourceComponent: root.inputConfigured ? configuredUnit : unconfiguredUnit }
+    Mixxx.ControlProxy { id: inputConfiguredControl; group: root.group; key: "input_configured" }
 
     Component {
         id: configuredUnit
-
         Controls.Panel {
             color: "#1e1e20"
             implicitHeight: 68
             implicitWidth: contentLayout.implicitWidth + contentLayout.anchors.leftMargin + contentLayout.anchors.rightMargin
-
             RowLayout {
                 id: contentLayout
                 anchors.fill: parent
                 anchors.margins: 2
                 spacing: 2
-
                 ColumnLayout {
                     Layout.fillHeight: true
                     Layout.preferredWidth: 43
                     spacing: 1
-
                     Text {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 18
@@ -73,20 +59,13 @@ Item {
                         stretchIcon: true
                     }
                 }
-                Controls.ImageVuMeter {
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredHeight: 55
-                    Layout.preferredWidth: 8
-                    group: root.group
-                    levelKey: "vu_meter"
-                }
+                Controls.ImageVuMeter { Layout.alignment: Qt.AlignVCenter; Layout.preferredHeight: 55; Layout.preferredWidth: 8; group: root.group; levelKey: "vu_meter" }
                 ColumnLayout {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     Layout.leftMargin: 3
                     Layout.rightMargin: 3
                     spacing: 1
-
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
                         Layout.preferredHeight: 30
@@ -109,17 +88,12 @@ Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 22
                         spacing: 1
-                        MixerControls.FxAssignButtons {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredHeight: 20
-                            groupName: root.group
-                        }
+                        MixerControls.FxAssignButtons { Layout.alignment: Qt.AlignHCenter; Layout.preferredHeight: 20; groupName: root.group }
                     }
                 }
             }
         }
     }
-
     Component {
         id: unconfiguredUnit
         Controls.Panel {
