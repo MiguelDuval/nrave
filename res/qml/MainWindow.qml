@@ -176,6 +176,15 @@ Item {
                     checkable: true
                     text: "Sampler"
                 }
+                Skin.ControlButton {
+                    id: recordButton
+
+                    activeColor: Theme.white
+                    group: "[Recording]"
+                    key: "toggle_recording"
+                    text: "Record"
+                    toggleable: true
+                }
                 Item {
                     Layout.fillWidth: true
                 }
