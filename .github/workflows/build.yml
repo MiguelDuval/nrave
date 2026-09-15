@@ -35,6 +35,7 @@ jobs:
           grep -n -A8 -B2 'id: recordButton' res/qml/MainWindow.qml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --no-tags --depth=2 origin main
           git checkout HEAD^ -- .github/workflows/build.yml
           git add res/qml/MainWindow.qml .github/workflows/build.yml
           git commit -m "feat: add Android Record button"
