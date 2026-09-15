@@ -20,49 +20,22 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
           path = Path("res/qml/MainWindow.qml")
           text = path.read_text(encoding="utf-8")
-          old = '''                Skin.Button {
-                    id: showDevToolsButton
-
-                    activeColor: Theme.white
-                    checkable: true
-                    checked: devToolsWindow.visible
-                    text: "Develop"
-
-                    onClicked: {
-                        if (devToolsWindow.visible)
-                            devToolsWindow.close();
-                        else
-                            devToolsWindow.show();
-                    }
-
-                    DeveloperToolsWindow {
-                        id: devToolsWindow
-
-                        height: 480
-                        width: 640
-                    }
-                }
-                Skin.Button {
-                    id: showPreferencesButton
-
-                    activeColor: Theme.white
-                    checked: settingsPopup.opened
-                    icon.height: 16
-                    icon.source: "images/gear.svg"
-                    icon.width: 16
-                    implicitWidth: implicitHeight
-
-                    onClicked: {
-                        if (!settingsPopup.opened) {
-                            settingsPopup.open();
-                        }
-                    }
-                    onPressAndHold: {
-                        Mixxx.PreferencesDialog.show();
-                    }
-                }'''
+          pattern = re.compile(
+              r'                Skin\\.Button \\{\\n'
+              r'                    id: showDevToolsButton\\n'
+              r'(?s:.*?)'
+              r'                \\n                Skin\\.Button \\{\\n'
+              r'                    id: showPreferencesButton\\n'
+              r'(?s:.*?)'
+              r'                \\n                \\}\\n'
+          )
+          match = pattern.search(text)
+          if not match:
+              raise SystemExit("Could not locate Develop + Preferences toolbar block")
+          block = match.group(0)
           new = '''                Skin.Button {
                     id: showDevToolsButton
 
@@ -94,25 +67,24 @@ jobs:
                     id: showPreferencesButton
 
                     visible: false
-                }'''
-          if text.count(old) != 1:
-              raise SystemExit(f"Expected exactly one toolbar block, found {text.count(old)}")
-          text = text.replace(old, new, 1)
+                }
+'''
+          text = text[:match.start()] + new + text[match.end():]
           path.write_text(text, encoding="utf-8")
 
-          if 'text: "Develop"' in text:
+          if text.count('text: "Develop"') != 0:
               raise SystemExit("Develop toolbar label is still present")
-          if 'icon.source: "images/gear.svg"' not in text:
+          if text.count('id: devToolsWindow') != 1:
+              raise SystemExit("DeveloperToolsWindow id count is unexpected")
+          if text.count('Mixxx.PreferencesDialog.show();') != 1:
+              raise SystemExit("Preferences action count is unexpected")
+          if text.count('icon.source: "images/gear.svg"') < 1:
               raise SystemExit("Gear icon binding is missing")
-          if 'id: devToolsWindow' not in text:
-              raise SystemExit("DeveloperToolsWindow must remain available to the menu command")
-          if 'Mixxx.PreferencesDialog.show();' not in text:
-              raise SystemExit("Preferences dialog action is missing")
           print("Toolbar migration applied and guardrails passed")
           PY
 
           sed -i '/<!-- nrave-one-time-build-trigger -->/d' README.md
-          git checkout HEAD^ -- .github/workflows/build.yml
+          git checkout 02c69b7bd657f47c565159566c0491c96fd35f0c -- .github/workflows/build.yml
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
