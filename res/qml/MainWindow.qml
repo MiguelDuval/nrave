@@ -26,6 +26,48 @@ Item {
     property alias showEffects: showEffectsButton.checked
     property alias showSamplers: showSamplersButton.checked
     property alias showAuxiliaries: showAuxButton.checked
+    property int recordingElapsedSeconds: 0
+
+    function formatRecordingDuration(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
+
+    Mixxx.ControlProxy {
+        id: recordingStatus
+
+        group: "[Recording]"
+        key: "status"
+
+        onValueChanged: {
+            if (value >= 2) {
+                if (!recordingTimer.running) {
+                    root.recordingElapsedSeconds = 0;
+                    recordingTimer.start();
+                }
+            } else {
+                recordingTimer.stop();
+                root.recordingElapsedSeconds = 0;
+            }
+        }
+    }
+
+    Timer {
+        id: recordingTimer
+
+        interval: 1000
+        repeat: true
+
+        onTriggered: {
+            if (recordingStatus.value >= 2) {
+                root.recordingElapsedSeconds += 1;
+            } else {
+                stop();
+                root.recordingElapsedSeconds = 0;
+            }
+        }
+    }
 
     Loader {
         id: nativeApplicationMenuLoader
@@ -179,11 +221,43 @@ Item {
                 Skin.ControlButton {
                     id: recordButton
 
+                    activeBackgroundColor: Theme.red
                     activeColor: Theme.white
                     group: "[Recording]"
+                    highlight: recordingStatus.value >= 2
                     key: "toggle_recording"
                     text: "Record"
                     toggleable: true
+                }
+                Item {
+                    id: recordingIndicator
+
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.minimumWidth: 0
+                    Layout.preferredWidth: recordingStatus.value >= 2 ? 72 : 0
+                    implicitHeight: 26
+                    visible: recordingStatus.value >= 2
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 5
+
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: Theme.red
+                            height: 7
+                            radius: 3.5
+                            width: 7
+                        }
+                        Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: Theme.red
+                            font.bold: true
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.buttonFontPixelSize
+                            text: "REC " + root.formatRecordingDuration(root.recordingElapsedSeconds)
+                        }
+                    }
                 }
                 Item {
                     Layout.fillWidth: true
