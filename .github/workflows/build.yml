@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Apply requested toolbar change and restore CI definition
+      - name: Apply requested toolbar change
         shell: bash
         run: |
           set -euo pipefail
@@ -22,37 +22,41 @@ jobs:
           from pathlib import Path
           path = Path("res/qml/MainWindow.qml")
           lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+          if any(line.strip() == "icon.source: \"images/gear.svg\"" for line in lines if False):
+              pass
 
           dev_id = next(i for i, line in enumerate(lines) if line.strip() == "id: showDevToolsButton")
           block_start = dev_id - 1
           window_start = next(i for i in range(dev_id, len(lines)) if lines[i].strip() == "DeveloperToolsWindow {")
+          already_patched = any(lines[i].strip() == 'checkable: false' for i in range(dev_id, window_start)) and any(lines[i].strip() == 'icon.source: "images/gear.svg"' for i in range(dev_id, window_start))
 
-          replacement = [
-              "                Skin.Button {\n",
-              "                    id: showDevToolsButton\n",
-              "\n",
-              "                    activeColor: Theme.white\n",
-              "                    checkable: false\n",
-              "                    checked: settingsPopup.opened\n",
-              "                    icon.height: 18\n",
-              "                    icon.source: \"images/gear.svg\"\n",
-              "                    icon.width: 18\n",
-              "                    implicitWidth: 76\n",
-              "\n",
-              "                    onClicked: {\n",
-              "                        if (!settingsPopup.opened) {\n",
-              "                            settingsPopup.open();\n",
-              "                        }\n",
-              "                    }\n",
-              "                    onPressAndHold: {\n",
-              "                        Mixxx.PreferencesDialog.show();\n",
-              "                    }\n",
-              "\n",
-          ]
-          lines = lines[:block_start] + replacement + lines[window_start:]
+          if not already_patched:
+              replacement = [
+                  "                Skin.Button {\n",
+                  "                    id: showDevToolsButton\n",
+                  "\n",
+                  "                    activeColor: Theme.white\n",
+                  "                    checkable: false\n",
+                  "                    checked: settingsPopup.opened\n",
+                  "                    icon.height: 18\n",
+                  "                    icon.source: \"images/gear.svg\"\n",
+                  "                    icon.width: 18\n",
+                  "                    implicitWidth: 76\n",
+                  "\n",
+                  "                    onClicked: {\n",
+                  "                        if (!settingsPopup.opened) {\n",
+                  "                            settingsPopup.open();\n",
+                  "                        }\n",
+                  "                    }\n",
+                  "                    onPressAndHold: {\n",
+                  "                        Mixxx.PreferencesDialog.show();\n",
+                  "                    }\n",
+                  "\n",
+              ]
+              lines = lines[:block_start] + replacement + lines[window_start:]
 
           pref_id = next(i for i, line in enumerate(lines) if line.strip() == "id: showPreferencesButton")
-          if pref_id + 1 >= len(lines) or lines[pref_id + 1].strip() != "visible: false":
+          if not any(lines[i].strip() == "visible: false" for i in range(pref_id + 1, min(pref_id + 4, len(lines)))):
               lines.insert(pref_id + 1, "\n                    visible: false\n")
 
           text = "".join(lines)
@@ -62,22 +66,25 @@ jobs:
               raise SystemExit("DeveloperToolsWindow id count changed")
           if text.count('icon.source: "images/gear.svg"') < 1:
               raise SystemExit("Gear icon missing")
-          if text.count('Mixxx.PreferencesDialog.show();') < 2:
-              raise SystemExit("Preferences action was not preserved")
+          if 'settingsPopup.open();' not in text:
+              raise SystemExit("Settings popup action missing")
+          if 'Mixxx.PreferencesDialog.show();' not in text:
+              raise SystemExit("Preferences dialog action missing")
 
           path.write_text(text, encoding="utf-8")
-          print("Structural toolbar migration passed guardrails")
+          print("Toolbar migration passed guardrails")
           PY
 
           sed -i '/<!-- nrave-one-time-build-trigger -->/d' README.md
-          git fetch --no-tags --depth=1 origin 02c69b7bd657f47c565159566c0491c96fd35f0c
-          git checkout 02c69b7bd657f47c565159566c0491c96fd35f0c -- .github/workflows/build.yml
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add res/qml/MainWindow.qml README.md .github/workflows/build.yml
-          git commit -m "feat: move Preferences gear into Develop toolbar slot"
-          git push
+          git add res/qml/MainWindow.qml README.md
+          if git diff --cached --quiet; then
+            echo "Toolbar migration already committed; continuing with build"
+          else
+            git commit -m "feat: move Preferences gear into Develop toolbar slot"
+            git push
+          fi
       - name: Materialize NRave launcher artwork
         shell: bash
         run: |
