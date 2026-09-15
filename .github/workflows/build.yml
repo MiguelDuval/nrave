@@ -76,13 +76,12 @@ jobs:
           if not parts:
               raise SystemExit("No NRave splash base64 parts found")
 
-          out = bytearray()
-          for part in parts:
-              text = "".join(part.read_text().split())
-              try:
-                  out.extend(base64.b64decode(text, validate=True))
-              except Exception as exc:
-                  raise SystemExit(f"Invalid base64 in {part.name}: {exc}")
+          encoded = "".join("".join(part.read_text().split()) for part in parts)
+          encoded += "=" * ((-len(encoded)) % 4)
+          try:
+              out = base64.b64decode(encoded, validate=True)
+          except Exception as exc:
+              raise SystemExit(f"Invalid NRave splash base64 stream: {exc}")
 
           dst.write_bytes(out)
           expected = "45b12e5cec5456137fb2970f25ec1a64028c3f6869e26f2c33d784534cb8aba2"
