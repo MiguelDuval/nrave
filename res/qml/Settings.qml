@@ -58,7 +58,7 @@ Popup {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 34
                         activeColor: Theme.white
-                        text: "← Back to Nrave"
+                        text: "← Back to Enrave"
 
                         onClicked: {
                             root.close();
@@ -234,7 +234,7 @@ Popup {
                     Layout.preferredHeight: 32
                     Layout.preferredWidth: Math.min(360, parent.width)
                     activeColor: Theme.white
-                    text: "Open full Nrave Preferences"
+                    text: "Open full Enrave Preferences"
 
                     onClicked: {
                         root.close();
