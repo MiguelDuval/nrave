@@ -65,21 +65,24 @@ Item {
                 }
             }
             Menu {
+                id: loadToSamplerMenu
+
                 enabled: hasCapabilities(Mixxx.LibraryTrackListModel.Capability.LoadToSampler)
                 title: qsTr("Sampler")
+
+                Instantiator {
+                    model: 8
+
+                    delegate: MenuItem {
+                        text: qsTr("Sampler %1").arg(modelData + 1)
+
+                        onTriggered: Mixxx.PlayerManager.getPlayer(`[Sampler${modelData + 1}]`).loadTrack(track)
+                    }
+
+                    onObjectAdded: (index, object) => loadToSamplerMenu.insertItem(index, object)
+                    onObjectRemoved: (index, object) => loadToSamplerMenu.removeItem(object)
+                }
             }
-
-            // Instantiator {
-            //     id: recentFilesInstantiator
-            //     model: settings.recentFiles
-            //     delegate: MenuItem {
-            //         text: settings.displayableFilePath(modelData)
-            //         onTriggered: loadFile(modelData)
-            //     }
-
-            //     onObjectAdded: (index, object) => recentFilesMenu.insertItem(index, object)
-            //     onObjectRemoved: (index, object) => recentFilesMenu.removeItem(object)
-            // }
         }
         Menu {
             id: addToPlaylistMenu
