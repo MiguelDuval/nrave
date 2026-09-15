@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Materialize NRave launcher artwork
+      - name: Materialize NRave artwork
         shell: bash
         run: |
           set -euo pipefail
@@ -63,8 +63,35 @@ jobs:
           if not seen_ihdr or not seen_iend:
               raise SystemExit("PNG missing IHDR or IEND")
           print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
+
+          SPLASH_DIR="packaging/android/icon-source"
+          SPLASH_DST="packaging/android/res/drawable/nrave_splash.webp"
+          mkdir -p "$(dirname "$SPLASH_DST")"
+          cat "$SPLASH_DIR"/nrave_splash.webp.b64.part* | tr -d '\r\n\t ' | base64 --decode > "$SPLASH_DST"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p = Path("packaging/android/res/drawable/nrave_splash.webp")
+          d = p.read_bytes()
+          expected = "45b12e5cec5456137fb2970f25ec1a64028c3f6869e26f2c33d784534cb8aba2"
+          if not d.startswith(b"RIFF") or d[8:12] != b"WEBP":
+              raise SystemExit("Invalid NRave splash WebP signature")
+          actual = hashlib.sha256(d).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
+          if d[12:16] != b"VP8 ":
+              raise SystemExit(f"Unexpected WebP chunk {d[12:16]!r}; expected VP8 ")
+          frame = d[20:]
+          if len(frame) < 10 or frame[3:6] != b"\x9d\x01\x2a":
+              raise SystemExit("Invalid VP8 frame header")
+          width = int.from_bytes(frame[6:8], "little") & 0x3fff
+          height = int.from_bytes(frame[8:10], "little") & 0x3fff
+          if (width, height) != (1536, 857):
+              raise SystemExit(f"NRave splash must be 1536x857, got {width}x{height}")
+          print(f"Validated NRave splash artwork: {len(d)} bytes, {width}x{height}, SHA-256 {expected}")
           PY
-          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' -o -name '*.webp' \) | grep -q .; then
+
+          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
           fi
