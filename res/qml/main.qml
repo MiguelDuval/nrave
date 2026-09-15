@@ -82,6 +82,30 @@ ApplicationWindow {
         source: "BitGridOverlay.qml"
     }
 
+    // Android sampler panel: the new Android UI uses res/qml, not the
+    // LateNightQML skin directory. MainWindow already owns the functional
+    // Sampler objects and exposes showSamplers through its toolbar button.
+    Loader {
+        id: samplerOverlay
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        active: root.isMobile && Mixxx.Core.ready && content.status === Loader.Ready
+                && content.item && content.item.showSamplers
+        asynchronous: false
+        height: active && item ? item.implicitHeight : 0
+        z: 100002
+
+        sourceComponent: Component {
+            Skin.SamplerRow {
+                anchors.fill: parent
+                firstSampler: 1
+                samplerCount: 8
+                minimized: false
+            }
+        }
+    }
+
     Rectangle {
         id: splash
         visible: opacity > 0
@@ -141,7 +165,7 @@ ApplicationWindow {
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
+            NumberAnimation { duration: 500; easing.type: Easing.OutQuad }
         }
     }
 }
