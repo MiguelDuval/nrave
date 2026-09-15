@@ -14,6 +14,154 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Apply and persist recording fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          qml = Path("res/qml/MainWindow.qml")
+          text = qml.read_text()
+          old_format = 'return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");'
+          new_format = 'return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;'
+          if old_format in text:
+              text = text.replace(old_format, new_format, 1)
+
+          old_block = '''                Skin.ControlButton {
+                    id: recordButton
+
+                    activeBackgroundColor: Theme.red
+                    activeColor: Theme.white
+                    group: "[Recording]"
+                    highlight: recordingStatus.value >= 2
+                    key: "toggle_recording"
+                    text: "Record"
+                    toggleable: true
+                }
+                Item {
+                    id: recordingIndicator
+
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.minimumWidth: 0
+                    Layout.preferredWidth: recordingStatus.value >= 2 ? 72 : 0
+                    implicitHeight: 26
+                    visible: recordingStatus.value >= 2
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 5
+
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: Theme.red
+                            height: 7
+                            radius: 3.5
+                            width: 7
+                        }
+                        Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: Theme.red
+                            font.bold: true
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.buttonFontPixelSize
+                            text: "REC " + root.formatRecordingDuration(root.recordingElapsedSeconds)
+                        }
+                    }
+                }
+'''
+          new_block = '''                Skin.ControlButton {
+                    id: recordButton
+
+                    activeBackgroundColor: recordingStatus.value >= 2 ? Theme.red : "#2D4EA1"
+                    activeColor: Theme.white
+                    displayKey: "status"
+                    group: "[Recording]"
+                    key: "toggle_recording"
+                    text: "Record"
+                    toggleable: false
+                }
+                Item {
+                    id: recordingIndicator
+
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.minimumWidth: 0
+                    Layout.preferredWidth: recordingStatus.value === 1 ? 54 : recordingStatus.value >= 2 ? 76 : 0
+                    implicitHeight: 26
+                    visible: recordingStatus.value > 0
+
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 5
+
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: recordingStatus.value >= 2 ? Theme.red : "#2D4EA1"
+                            height: 7
+                            radius: 3.5
+                            width: 7
+                        }
+                        Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: recordingStatus.value >= 2 ? Theme.red : "#2D4EA1"
+                            font.bold: true
+                            font.family: Theme.fontFamily
+                            font.pixelSize: Theme.buttonFontPixelSize
+                            text: recordingStatus.value === 1 ? "READY" : "REC " + root.formatRecordingDuration(root.recordingElapsedSeconds)
+                        }
+                    }
+                }
+'''
+          if old_block in text:
+              text = text.replace(old_block, new_block, 1)
+          elif 'displayKey: "status"' not in text:
+              raise SystemExit("Expected Record UI block not found")
+          qml.write_text(text)
+
+          cpp = Path("src/recording/recordingmanager.cpp")
+          text = cpp.read_text()
+          old_dir = '''void RecordingManager::setRecordingDir() {
+    QDir recordDir(m_pConfig->getValueString(
+        ConfigKey(RECORDING_PREF_KEY, "Directory")));
+'''
+          new_dir = '''void RecordingManager::setRecordingDir() {
+    QString recordingsPath = m_pConfig->getValueString(
+        ConfigKey(RECORDING_PREF_KEY, "Directory"));
+    if (recordingsPath.isEmpty()) {
+        QString musicDir = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+        if (!musicDir.isEmpty()) {
+            recordingsPath = QDir(musicDir).filePath("Mixxx/Recordings");
+        } else {
+            const QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            if (!appDataDir.isEmpty()) {
+                recordingsPath = QDir(appDataDir).filePath("Recordings");
+            }
+        }
+        if (!recordingsPath.isEmpty()) {
+            m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Directory"), recordingsPath);
+        }
+    }
+
+    QDir recordDir(recordingsPath);
+'''
+          if old_dir in text:
+              text = text.replace(old_dir, new_dir, 1)
+          elif 'QString recordingsPath = m_pConfig->getValueString(' not in text:
+              raise SystemExit("Expected RecordingManager directory block not found")
+          cpp.write_text(text)
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add res/qml/MainWindow.qml src/recording/recordingmanager.cpp
+          if [ -f .github/workflows/fix-recording.yml ]; then
+            git rm .github/workflows/fix-recording.yml
+          fi
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: make recording state and storage reliable [skip ci]"
+            git push origin HEAD:main
+          fi
       - name: Materialize NRave launcher artwork
         shell: bash
         run: |
