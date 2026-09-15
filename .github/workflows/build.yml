@@ -70,20 +70,22 @@ jobs:
           cat "$SPLASH_DIR"/nrave_splash.webp.b64.part* | tr -d '\r\n\t ' | base64 --decode > "$SPLASH_DST"
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, struct
+          import hashlib
           p = Path("packaging/android/res/drawable/nrave_splash.webp")
           d = p.read_bytes()
           expected = "45b12e5cec5456137fb2970f25ec1a64028c3f6869e26f2c33d784534cb8aba2"
           if not d.startswith(b"RIFF") or d[8:12] != b"WEBP":
               raise SystemExit("Invalid NRave splash WebP signature")
-          if hashlib.sha256(d).hexdigest() != expected:
-              raise SystemExit(f"NRave splash SHA-256 mismatch: {hashlib.sha256(d).hexdigest()}")
-          chunk = d[12:16]
-          if chunk == b"VP8X":
-              width = 1 + int.from_bytes(d[24:27], "little")
-              height = 1 + int.from_bytes(d[27:30], "little")
-          else:
-              raise SystemExit(f"Unexpected WebP chunk {chunk!r}; expected VP8X")
+          actual = hashlib.sha256(d).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
+          if d[12:16] != b"VP8 ":
+              raise SystemExit(f"Unexpected WebP chunk {d[12:16]!r}; expected VP8 ")
+          frame = d[20:]
+          if len(frame) < 10 or frame[3:6] != b"\x9d\x01\x2a":
+              raise SystemExit("Invalid VP8 frame header")
+          width = int.from_bytes(frame[6:8], "little") & 0x3fff
+          height = int.from_bytes(frame[8:10], "little") & 0x3fff
           if (width, height) != (1536, 857):
               raise SystemExit(f"NRave splash must be 1536x857, got {width}x{height}")
           print(f"Validated NRave splash artwork: {len(d)} bytes, {width}x{height}, SHA-256 {expected}")
