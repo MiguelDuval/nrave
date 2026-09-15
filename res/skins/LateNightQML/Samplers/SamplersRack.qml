@@ -60,22 +60,18 @@ Item {
 
     Mixxx.ControlProxy {
         id: numSamplersControl
-
         group: "[App]"
         key: "num_samplers"
     }
     Mixxx.ControlProxy {
         id: samplerRowsControl
-
         group: "[Skin]"
         key: "sampler_rows"
     }
     Mixxx.ControlProxy {
         id: show4SamplersControl
-
         group: "[Skin]"
         key: "show_4samplers"
-
         onInitializedChanged: root.normalizeMode()
         onValueChanged: {
             if (!root.synchronizingMode && value > 0.5)
@@ -84,10 +80,8 @@ Item {
     }
     Mixxx.ControlProxy {
         id: show8SamplersControl
-
         group: "[Skin]"
         key: "show_8samplers"
-
         onInitializedChanged: root.normalizeMode()
         onValueChanged: {
             if (!root.synchronizingMode && value > 0.5)
@@ -96,10 +90,8 @@ Item {
     }
     Mixxx.ControlProxy {
         id: show16SamplersControl
-
         group: "[Skin]"
         key: "show_16samplers"
-
         onInitializedChanged: root.normalizeMode()
         onValueChanged: {
             if (!root.synchronizingMode && value > 0.5)
@@ -108,10 +100,8 @@ Item {
     }
     Mixxx.ControlProxy {
         id: show32SamplersControl
-
         group: "[Skin]"
         key: "show_32samplers"
-
         onInitializedChanged: root.normalizeMode()
         onValueChanged: {
             if (!root.synchronizingMode && value > 0.5)
@@ -120,10 +110,8 @@ Item {
     }
     Mixxx.ControlProxy {
         id: show48SamplersControl
-
         group: "[Skin]"
         key: "show_48samplers"
-
         onInitializedChanged: root.normalizeMode()
         onValueChanged: {
             if (!root.synchronizingMode && value > 0.5)
@@ -132,10 +120,8 @@ Item {
     }
     Mixxx.ControlProxy {
         id: show64SamplersControl
-
         group: "[Skin]"
         key: "show_64samplers"
-
         onInitializedChanged: root.normalizeMode()
         onValueChanged: {
             if (!root.synchronizingMode && value > 0.5)
@@ -144,27 +130,23 @@ Item {
     }
     Mixxx.ControlProxy {
         id: show8HotcuesControl
-
         group: "[Skin]"
         key: "show_8_hotcues"
     }
     Mixxx.ControlProxy {
         id: showSamplerFxControl
-
         group: "[Skin]"
         key: "show_sampler_fx"
     }
     Mixxx.ControlProxy {
         id: showSamplersControl
-
         group: "[Skin]"
         key: "show_samplers"
     }
 
     // Android gets an independent overlay because the desktop SplitView can
     // legally place the normal sampler section below the visible viewport.
-    // This popup uses the existing sampler controls; it does not duplicate or
-    // replace the sampler engine. It only fixes presentation on the compact UI.
+    // This popup uses the existing sampler controls; it does not replace them.
     Popup {
         id: mobileSamplerPopup
 
@@ -193,7 +175,6 @@ Item {
 
             SamplerMobileRack {
                 id: mobileSamplerRack
-
                 width: mobileSamplerPopup.width - 8
                 x: 4
                 y: 4
@@ -203,7 +184,6 @@ Item {
 
     Component {
         id: fourSamplers
-
         SamplerGroup {
             count: 4
             expandKey: "expand_samplers_1-4"
@@ -214,29 +194,20 @@ Item {
     }
     Component {
         id: samplerRows
-
         ColumnLayout {
             id: rows
-
             property int preloadIndex: 0
-
             function advancePreload() {
                 while (rows.preloadIndex < samplerGroups.count && samplerGroups.itemAt(rows.preloadIndex)?.expandedContentReady)
                     ++rows.preloadIndex;
             }
-
             spacing: 4
-
             Repeater {
                 id: samplerGroups
-
                 model: numSamplersControl.initialized ? Math.min(8, Math.floor(numSamplersControl.value / 8)) : 1
-
                 onItemAdded: rows.advancePreload()
-
                 SamplerGroup {
                     required property int index
-
                     Layout.fillWidth: true
                     count: 8
                     expandKey: "expand_samplers_" + firstSampler + "-" + (firstSampler + 7)
@@ -245,7 +216,6 @@ Item {
                     show8Hotcues: show8HotcuesControl.value > 0
                     showFxAssignments: showSamplerFxControl.value > 0
                     visible: index < root.selectedSamplerCount / 8
-
                     onExpandedContentReadyChanged: rows.advancePreload()
                 }
             }
@@ -254,20 +224,11 @@ Item {
 
     component SamplerMobileRack: ColumnLayout {
         spacing: 4
-
         SamplerGroup {
             Layout.fillWidth: true
-            count: 4
-            expandKey: "expand_samplers_1-4"
+            count: 8
+            expandKey: "expand_samplers_1-8"
             firstSampler: 1
-            show8Hotcues: show8HotcuesControl.value > 0
-            showFxAssignments: showSamplerFxControl.value > 0
-        }
-        SamplerGroup {
-            Layout.fillWidth: true
-            count: 4
-            expandKey: "expand_samplers_5-8"
-            firstSampler: 5
             show8Hotcues: show8HotcuesControl.value > 0
             showFxAssignments: showSamplerFxControl.value > 0
         }
