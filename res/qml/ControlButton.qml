@@ -6,12 +6,15 @@ Skin.Button {
     required property string group
     required property string key
     property bool toggleable: false
+    property string displayKey: ""
+    readonly property bool isRecordingControl: root.group === "[Recording]" && root.key === "toggle_recording"
 
     function toggle() {
         controlBehavior.toggleControl();
     }
 
     highlight: controlBehavior.isActive
+    normalBackgroundColor: root.isRecordingControl && controlBehavior.isActive ? "#2D4EA1" : "#2B2B2B"
     onPressed: {
         controlBehavior.pressPrimary();
     }
@@ -22,9 +25,11 @@ Skin.Button {
     ControlProxyButtonBehavior {
         id: controlBehavior
 
+        activeDisplayThreshold: 0
+        displayKey: root.isRecordingControl ? "status" : root.displayKey
         group: root.group
         key: root.key
-        toggleable: root.toggleable
+        toggleable: root.isRecordingControl ? false : root.toggleable
         handlePointerInput: false
     }
 }
