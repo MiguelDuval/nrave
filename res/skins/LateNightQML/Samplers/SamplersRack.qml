@@ -41,6 +41,7 @@ Item {
 
     Loader {
         id: fourSamplerLoader
+
         active: !numSamplersControl.initialized || numSamplersControl.value >= 4
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: fourSamplers
@@ -49,6 +50,7 @@ Item {
     }
     Loader {
         id: samplerRowsLoader
+
         active: !numSamplersControl.initialized || numSamplersControl.value >= 8
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: samplerRows
@@ -142,18 +144,19 @@ Item {
         key: "show_samplers"
     }
 
-    // Android gets a direct overlay because the desktop SplitView can
-    // legally place the normal sampler section below the visible viewport.
-    // This uses the existing sampler controls; it does not replace the backend.
+    // Android uses a plain Item reparented to the application overlay.
+    // This bypasses Popup positioning/lifecycle and the desktop SplitView entirely.
     Item {
         id: mobileSamplerOverlay
+
         parent: Overlay.overlay
-        visible: root.compactAndroid && showSamplersControl.initialized && showSamplersControl.value > 0
         x: 0
         y: 26
         width: parent ? parent.width : 0
-        height: parent ? Math.min(228, Math.max(120, parent.height - y - 8)) : 120
-        z: 100000
+        height: Math.min(implicitHeight, Math.max(120, parent ? parent.height - y - 8 : implicitHeight))
+        implicitHeight: mobileSamplerRack.implicitHeight + 8
+        z: 10000
+        visible: root.compactAndroid && showSamplersControl.value > 0
 
         Rectangle {
             anchors.fill: parent
@@ -163,7 +166,6 @@ Item {
         }
 
         Flickable {
-            id: mobileSamplerFlickable
             anchors.fill: parent
             anchors.margins: 4
             clip: true
@@ -171,9 +173,19 @@ Item {
             contentHeight: mobileSamplerRack.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
 
-            SamplerMobileRack {
+            ColumnLayout {
                 id: mobileSamplerRack
-                width: mobileSamplerFlickable.width
+                width: parent.width
+                spacing: 4
+
+                SamplerGroup {
+                    Layout.fillWidth: true
+                    count: 8
+                    expandKey: "expand_samplers_1-8"
+                    firstSampler: 1
+                    show8Hotcues: show8HotcuesControl.value > 0
+                    showFxAssignments: showSamplerFxControl.value > 0
+                }
             }
         }
     }
@@ -215,18 +227,6 @@ Item {
                     onExpandedContentReadyChanged: rows.advancePreload()
                 }
             }
-        }
-    }
-
-    component SamplerMobileRack: ColumnLayout {
-        spacing: 4
-        SamplerGroup {
-            Layout.fillWidth: true
-            count: 8
-            expandKey: "expand_samplers_1-8"
-            firstSampler: 1
-            show8Hotcues: show8HotcuesControl.value > 0
-            showFxAssignments: showSamplerFxControl.value > 0
         }
     }
 }
