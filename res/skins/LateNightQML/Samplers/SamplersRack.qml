@@ -41,7 +41,6 @@ Item {
 
     Loader {
         id: fourSamplerLoader
-
         active: !numSamplersControl.initialized || numSamplersControl.value >= 4
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: fourSamplers
@@ -50,7 +49,6 @@ Item {
     }
     Loader {
         id: samplerRowsLoader
-
         active: !numSamplersControl.initialized || numSamplersControl.value >= 8
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: samplerRows
@@ -144,40 +142,38 @@ Item {
         key: "show_samplers"
     }
 
-    // Android gets an independent overlay because the desktop SplitView can
+    // Android gets a direct overlay because the desktop SplitView can
     // legally place the normal sampler section below the visible viewport.
-    // This popup uses the existing sampler controls; it does not replace them.
-    Popup {
-        id: mobileSamplerPopup
-
+    // This uses the existing sampler controls; it does not replace the backend.
+    Item {
+        id: mobileSamplerOverlay
         parent: Overlay.overlay
+        visible: root.compactAndroid && showSamplersControl.initialized && showSamplersControl.value > 0
         x: 0
         y: 26
         width: parent ? parent.width : 0
-        height: Math.min(implicitHeight, Math.max(120, parent ? parent.height - y - 8 : implicitHeight))
-        padding: 0
-        closePolicy: Popup.NoAutoClose
-        modal: false
-        focus: false
-        visible: root.compactAndroid && showSamplersControl.value > 0
+        height: parent ? Math.min(228, Math.max(120, parent.height - y - 8)) : 120
+        z: 100000
 
-        background: Rectangle {
+        Rectangle {
+            anchors.fill: parent
             color: "#171717"
             border.color: "#303030"
             border.width: 1
         }
 
-        contentItem: Flickable {
+        Flickable {
+            id: mobileSamplerFlickable
+            anchors.fill: parent
+            anchors.margins: 4
             clip: true
             contentWidth: width
-            contentHeight: mobileSamplerRack.implicitHeight + 8
+            contentHeight: mobileSamplerRack.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
 
             SamplerMobileRack {
                 id: mobileSamplerRack
-                width: mobileSamplerPopup.width - 8
-                x: 4
-                y: 4
+                width: mobileSamplerFlickable.width
             }
         }
     }
