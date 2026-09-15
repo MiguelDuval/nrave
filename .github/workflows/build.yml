@@ -14,32 +14,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Apply requested toolbar change and restore CI definition
+      - name: Apply requested toolbar change
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re
           path = Path("res/qml/MainWindow.qml")
           text = path.read_text(encoding="utf-8")
-          pattern = re.compile(
-              r'                Skin\\.Button \\{\\n'
-              r'                    id: showDevToolsButton\\n'
-              r'(?s:.*?)'
-              r'                \\n                Skin\\.Button \\{\\n'
-              r'                    id: showPreferencesButton\\n'
-              r'(?s:.*?)'
-              r'                \\n                \\}\\n'
-          )
-          match = pattern.search(text)
-          if not match:
-              raise SystemExit("Could not locate Develop + Preferences toolbar block")
-          block = match.group(0)
-          new = '''                Skin.Button {
-                    id: showDevToolsButton
 
-                    activeColor: Theme.white
+          old_button = '''                    activeColor: Theme.white
+                    checkable: true
+                    checked: devToolsWindow.visible
+                    text: "Develop"
+
+                    onClicked: {
+                        if (devToolsWindow.visible)
+                            devToolsWindow.close();
+                        else
+                            devToolsWindow.show();
+                    }'''
+          new_button = '''                    activeColor: Theme.white
                     checkable: false
                     checked: settingsPopup.opened
                     icon.height: 18
@@ -54,41 +49,37 @@ jobs:
                     }
                     onPressAndHold: {
                         Mixxx.PreferencesDialog.show();
-                    }
+                    }'''
+          if text.count(old_button) != 1:
+              raise SystemExit(f"Expected one Develop button body, found {text.count(old_button)}")
+          text = text.replace(old_button, new_button, 1)
 
-                    DeveloperToolsWindow {
-                        id: devToolsWindow
+          marker = '''                    id: showPreferencesButton
 
-                        height: 480
-                        width: 640
-                    }
-                }
-                Skin.Button {
-                    id: showPreferencesButton
+                    activeColor: Theme.white'''
+          replacement = '''                    id: showPreferencesButton
 
                     visible: false
-                }
-'''
-          text = text[:match.start()] + new + text[match.end():]
-          path.write_text(text, encoding="utf-8")
+                    activeColor: Theme.white'''
+          if text.count(marker) != 1:
+              raise SystemExit(f"Expected one Preferences button, found {text.count(marker)}")
+          text = text.replace(marker, replacement, 1)
 
-          if text.count('text: "Develop"') != 0:
-              raise SystemExit("Develop toolbar label is still present")
+          if 'text: "Develop"' in text:
+              raise SystemExit("Develop label still exposed")
           if text.count('id: devToolsWindow') != 1:
-              raise SystemExit("DeveloperToolsWindow id count is unexpected")
-          if text.count('Mixxx.PreferencesDialog.show();') != 1:
-              raise SystemExit("Preferences action count is unexpected")
+              raise SystemExit("DeveloperToolsWindow id unexpectedly changed")
           if text.count('icon.source: "images/gear.svg"') < 1:
-              raise SystemExit("Gear icon binding is missing")
-          print("Toolbar migration applied and guardrails passed")
+              raise SystemExit("Gear icon missing")
+          if text.count('Mixxx.PreferencesDialog.show();') != 2:
+              raise SystemExit("Unexpected Preferences action count")
+          path.write_text(text, encoding="utf-8")
+          print("Minimal toolbar migration passed guardrails")
           PY
-
-          sed -i '/<!-- nrave-one-time-build-trigger -->/d' README.md
-          git checkout 02c69b7bd657f47c565159566c0491c96fd35f0c -- .github/workflows/build.yml
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add res/qml/MainWindow.qml README.md .github/workflows/build.yml
+          git add res/qml/MainWindow.qml
           git commit -m "feat: move Preferences gear into Develop toolbar slot"
           git push
       - name: Materialize NRave launcher artwork
