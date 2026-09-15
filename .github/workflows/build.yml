@@ -68,6 +68,90 @@ jobs:
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
           fi
+      - name: Persist recording button and storage fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          qml = Path("res/qml/MainWindow.qml")
+          text = qml.read_text()
+          old_record = '''                Skin.ControlButton {
+                    id: recordButton
+
+                    activeBackgroundColor: Theme.red
+                    activeColor: Theme.white
+                    group: "[Recording]"
+                    highlight: recordingStatus.value >= 2
+                    key: "toggle_recording"
+                    text: "Record"
+                    toggleable: true
+                }
+'''
+          new_record = '''                Skin.ControlButton {
+                    id: recordButton
+
+                    activeBackgroundColor: recordingStatus.value >= 2 ? Theme.red : "#2D4EA1"
+                    activeColor: Theme.white
+                    displayKey: "status"
+                    group: "[Recording]"
+                    highlight: recordingStatus.value > 0
+                    key: "toggle_recording"
+                    text: "Record"
+                    toggleable: false
+                }
+'''
+          if old_record in text:
+              text = text.replace(old_record, new_record, 1)
+          elif new_record not in text:
+              raise SystemExit("Record button block not found in expected state")
+          # Use Qt-compatible string formatting instead of relying on padStart.
+          old_format = 'return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");'
+          new_format = 'return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;'
+          if old_format in text:
+              text = text.replace(old_format, new_format, 1)
+          qml.write_text(text)
+
+          cpp = Path("src/recording/recordingmanager.cpp")
+          text = cpp.read_text()
+          old_dir = '''void RecordingManager::setRecordingDir() {
+    QDir recordDir(m_pConfig->getValueString(
+        ConfigKey(RECORDING_PREF_KEY, "Directory")));
+'''
+          new_dir = '''void RecordingManager::setRecordingDir() {
+    QString recordingsPath = m_pConfig->getValueString(
+        ConfigKey(RECORDING_PREF_KEY, "Directory"));
+    if (recordingsPath.isEmpty()) {
+        QString musicDir = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
+        if (!musicDir.isEmpty()) {
+            recordingsPath = QDir(musicDir).filePath("Mixxx/Recordings");
+        } else {
+            const QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            if (!appDataDir.isEmpty()) {
+                recordingsPath = QDir(appDataDir).filePath("Recordings");
+            }
+        }
+        if (!recordingsPath.isEmpty()) {
+            m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Directory"), recordingsPath);
+        }
+    }
+
+    QDir recordDir(recordingsPath);
+'''
+          if old_dir in text:
+              text = text.replace(old_dir, new_dir, 1)
+          cpp.write_text(text)
+          PY
+
+          git diff --check
+          if ! git diff --quiet -- res/qml/MainWindow.qml src/recording/recordingmanager.cpp; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add res/qml/MainWindow.qml src/recording/recordingmanager.cpp
+            git commit -m "fix: make recording control functional and initialize storage [skip ci]"
+            git push origin HEAD:main
+          fi
       - name: Prepare Android build environment
         shell: bash
         run: |
