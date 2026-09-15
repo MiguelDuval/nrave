@@ -19,24 +19,6 @@ ApplicationWindow {
     Mixxx.ControlProxy { id: bitgrid1Action; group: "[Channel1]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: bitgrid2Action; group: "[Channel2]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: abletonLinkControl; group: "[AbletonLink]"; key: "sync_enabled" }
-    Mixxx.ControlProxy {
-        id: showSamplersControl
-        group: "[Skin]"
-        key: "show_samplers"
-        onValueChanged: {
-            if (value > 0.5 && mobileSamplerExpandControl.initialized)
-                mobileSamplerExpandControl.value = 1.0;
-        }
-    }
-    Mixxx.ControlProxy {
-        id: mobileSamplerExpandControl
-        group: "[Skin]"
-        key: "expand_samplers_1-8"
-        onInitializedChanged: {
-            if (initialized && Qt.platform.os === "android" && showSamplersControl.value > 0.5)
-                value = 1.0;
-        }
-    }
 
     function updateVisibility() {
         if (!Mixxx.Core.ready) return;
@@ -120,7 +102,7 @@ ApplicationWindow {
 
     Rectangle {
         id: mobileSamplerPanel
-        visible: Qt.platform.os === "android" && showSamplersControl.value > 0.5
+        visible: Qt.platform.os === "android" && mainWindowLoader.status === Loader.Ready && mainWindowLoader.item && mainWindowLoader.item.showSamplers
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: bitgridBar.bottom
