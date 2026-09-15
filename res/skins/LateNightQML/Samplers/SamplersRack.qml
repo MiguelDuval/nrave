@@ -41,7 +41,6 @@ Item {
 
     Loader {
         id: fourSamplerLoader
-
         active: !numSamplersControl.initialized || numSamplersControl.value >= 4
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: fourSamplers
@@ -50,7 +49,6 @@ Item {
     }
     Loader {
         id: samplerRowsLoader
-
         active: !numSamplersControl.initialized || numSamplersControl.value >= 8
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: samplerRows
@@ -144,19 +142,24 @@ Item {
         key: "show_samplers"
     }
 
-    // Android uses a plain Item reparented to the application overlay.
-    // This bypasses Popup positioning/lifecycle and the desktop SplitView entirely.
+    // Android uses a plain Item with a one-time reparent into the window overlay.
+    // Avoid a live parent binding because reparenting would otherwise change the
+    // context used to resolve Overlay.overlay and can collapse the visual item.
     Item {
         id: mobileSamplerOverlay
 
-        parent: Overlay.overlay
+        parent: root.parent
         x: 0
         y: 26
         width: parent ? parent.width : 0
-        height: Math.min(implicitHeight, Math.max(120, parent ? parent.height - y - 8 : implicitHeight))
-        implicitHeight: mobileSamplerRack.implicitHeight + 8
+        height: Math.max(120, Math.min(204, parent ? parent.height - y - 8 : 204))
         z: 10000
         visible: root.compactAndroid && showSamplersControl.value > 0
+
+        Component.onCompleted: {
+            if (root.compactAndroid && Overlay.overlay)
+                mobileSamplerOverlay.parent = Overlay.overlay;
+        }
 
         Rectangle {
             anchors.fill: parent
