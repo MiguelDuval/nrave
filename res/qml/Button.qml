@@ -7,6 +7,7 @@ AbstractButton {
     id: root
 
     property color activeColor: Theme.buttonActiveColor
+    property color activeBackgroundColor: "#2D4EA1"
     property bool highlight: false
     property color normalColor: Theme.buttonNormalColor
     property color pressedColor: activeColor
@@ -106,7 +107,7 @@ AbstractButton {
             when: root.pressed
 
             PropertyChanges {
-                color: root.checked ? "#3a60be" : Theme.darkGray3
+                color: root.highlight || root.checked ? root.activeBackgroundColor : Theme.darkGray3
                 target: backgroundImage
             }
             PropertyChanges {
@@ -123,7 +124,7 @@ AbstractButton {
             when: (root.highlight || root.checked) && !root.pressed
 
             PropertyChanges {
-                color: "#2D4EA1"
+                color: root.activeBackgroundColor
                 target: backgroundImage
             }
             PropertyChanges {
