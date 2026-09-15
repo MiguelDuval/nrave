@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import Mixxx 1.0 as Mixxx
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
@@ -11,6 +12,7 @@ Item {
     readonly property int mode: Math.max(0, Math.min(5, Math.round(samplerRowsControl.value)))
     readonly property bool modeControlsInitialized: show4SamplersControl.initialized && show8SamplersControl.initialized && show16SamplersControl.initialized && show32SamplersControl.initialized && show48SamplersControl.initialized && show64SamplersControl.initialized
     readonly property int selectedSamplerCount: [4, 8, 16, 32, 48, 64][mode]
+    readonly property bool compactAndroid: Qt.platform.os === "android"
     property bool synchronizingMode: false
 
     function normalizeMode() {
@@ -43,7 +45,7 @@ Item {
         active: !numSamplersControl.initialized || numSamplersControl.value >= 4
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: fourSamplers
-        visible: root.mode === 0
+        visible: root.mode === 0 && !root.compactAndroid
         width: root.width
     }
     Loader {
@@ -52,9 +54,10 @@ Item {
         active: !numSamplersControl.initialized || numSamplersControl.value >= 8
         height: visible ? (item?.implicitHeight ?? 40) : 0
         sourceComponent: samplerRows
-        visible: root.mode !== 0
+        visible: root.mode !== 0 && !root.compactAndroid
         width: root.width
     }
+
     Mixxx.ControlProxy {
         id: numSamplersControl
 
@@ -151,6 +154,53 @@ Item {
         group: "[Skin]"
         key: "show_sampler_fx"
     }
+    Mixxx.ControlProxy {
+        id: showSamplersControl
+
+        group: "[Skin]"
+        key: "show_samplers"
+    }
+
+    // Android gets an independent overlay because the desktop SplitView can
+    // legally place the normal sampler section below the visible viewport.
+    // This popup uses the existing sampler controls; it does not duplicate or
+    // replace the sampler engine. It only fixes presentation on the compact UI.
+    Popup {
+        id: mobileSamplerPopup
+
+        parent: Overlay.overlay
+        x: 0
+        y: 26
+        width: parent ? parent.width : 0
+        height: Math.min(implicitHeight, Math.max(120, parent ? parent.height - y - 8 : implicitHeight))
+        padding: 0
+        closePolicy: Popup.NoAutoClose
+        modal: false
+        focus: false
+        visible: root.compactAndroid && showSamplersControl.value > 0
+
+        background: Rectangle {
+            color: "#171717"
+            border.color: "#303030"
+            border.width: 1
+        }
+
+        contentItem: Flickable {
+            clip: true
+            contentWidth: width
+            contentHeight: mobileSamplerRack.implicitHeight + 8
+            boundsBehavior: Flickable.StopAtBounds
+
+            SamplerMobileRack {
+                id: mobileSamplerRack
+
+                width: mobileSamplerPopup.width - 8
+                x: 4
+                y: 4
+            }
+        }
+    }
+
     Component {
         id: fourSamplers
 
@@ -199,6 +249,27 @@ Item {
                     onExpandedContentReadyChanged: rows.advancePreload()
                 }
             }
+        }
+    }
+
+    component SamplerMobileRack: ColumnLayout {
+        spacing: 4
+
+        SamplerGroup {
+            Layout.fillWidth: true
+            count: 4
+            expandKey: "expand_samplers_1-4"
+            firstSampler: 1
+            show8Hotcues: show8HotcuesControl.value > 0
+            showFxAssignments: showSamplerFxControl.value > 0
+        }
+        SamplerGroup {
+            Layout.fillWidth: true
+            count: 4
+            expandKey: "expand_samplers_5-8"
+            firstSampler: 5
+            show8Hotcues: show8HotcuesControl.value > 0
+            showFxAssignments: showSamplerFxControl.value > 0
         }
     }
 }
