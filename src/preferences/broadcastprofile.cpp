@@ -66,7 +66,7 @@ constexpr const char* kStreamPublic = "StreamPublic";
 constexpr const char* kStreamWebsite = "StreamWebsite";
 
 #ifdef __QTKEYCHAIN__
-constexpr const char* kKeychainPrefix = "Mixxx - ";
+constexpr const char* kKeychainPrefix = "NRave - ";
 #endif
 
 constexpr int kDefaultBitrate = 128;
@@ -81,7 +81,7 @@ constexpr bool kDefaultNoDelayFirstReconnect = true;
 constexpr bool kDefaultOggDynamicupdate = false;
 constexpr double kDefaultReconnectFirstDelay = 0.0;
 constexpr double kDefaultReconnectPeriod = 5.0;
-const QString kDefaultStreamName = QStringLiteral("Mixxx");
+const QString kDefaultStreamName = QStringLiteral("NRave");
 const QString kDefaultStreamDesc =
         QObject::tr("This stream is online for testing purposes!");
 const QString kDefaultStreamGenre = QObject::tr("Live Mix");
@@ -617,7 +617,7 @@ void BroadcastProfile::relayConnectionStatus(int newConnectionStatus) {
 }
 
 // This was useless before, but now comes in handy for multi-broadcasting,
-// where it means "this connection is enabled and will be started by Mixxx"
+// where it means "this connection is enabled and will be started by NRave"
 bool BroadcastProfile::getEnabled() const {
     return m_enabled;
 }

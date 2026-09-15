@@ -120,7 +120,7 @@
        <item>
         <widget class="QPushButton" name="backButton">
          <property name="text">
-          <string>Back to Mixxx</string>
+          <string>Back to NRave</string>
          </property>
         </widget>
        </item>

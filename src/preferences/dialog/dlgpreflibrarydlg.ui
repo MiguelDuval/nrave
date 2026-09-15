@@ -45,7 +45,7 @@
          <font/>
         </property>
         <property name="toolTip">
-         <string>Add a directory where your music is stored. Mixxx will watch this directory and its subdirectories for new tracks.</string>
+         <string>Add a directory where your music is stored. NRave will watch this directory and its subdirectories for new tracks.</string>
         </property>
         <property name="text">
          <string>Add</string>
@@ -56,7 +56,7 @@
       <item row="1" column="1">
        <widget class="QPushButton" name="pushButton_relocate_dir">
         <property name="toolTip">
-         <string>If an existing music directory is moved, Mixxx doesn't know where to find the audio files in it. Choose Relink to select the music directory in its new location. &lt;br/&gt; This will re-establish the links to the audio files in the Mixxx library.</string>
+         <string>If an existing music directory is moved, NRave doesn't know where to find the audio files in it. Choose Relink to select the music directory in its new location. &lt;br/&gt; This will re-establish the links to the audio files in the NRave library.</string>
         </property>
         <property name="text">
          <string extracomment="This will re-establish the links to the audio files in the Mixxx database if you move an music directory to a new location.">Relink</string>
@@ -70,7 +70,7 @@
          <font/>
         </property>
         <property name="toolTip">
-         <string>If removed, Mixxx will no longer watch this directory and its subdirectories for new tracks.</string>
+         <string>If removed, NRave will no longer watch this directory and its subdirectories for new tracks.</string>
         </property>
         <property name="text">
          <string>Remove</string>
@@ -147,7 +147,7 @@
       <item row="1" column="0">
        <widget class="QCheckBox" name="checkBox_serato_metadata_export">
         <property name="toolTip">
-         <string>Keeps track color, beat grid, bpm lock, cue points, and loops synchronized with SERATO_MARKERS/MARKERS2 file tags.&lt;br/&gt;&lt;br/&gt;WARNING: Enabling this option also enables the reimport of Serato metadata after files have been modified outside of Mixxx. On reimport existing metadata in Mixxx is replaced with the metadata found in file tags. Custom metadata not included in file tags like loop colors is lost.</string>
+         <string>Keeps track color, beat grid, bpm lock, cue points, and loops synchronized with SERATO_MARKERS/MARKERS2 file tags.&lt;br/&gt;&lt;br/&gt;WARNING: Enabling this option also enables the reimport of Serato metadata after files have been modified outside of NRave. On reimport existing metadata in NRave is replaced with the metadata found in file tags. Custom metadata not included in file tags like loop colors is lost.</string>
         </property>
         <property name="text">
          <string>Synchronize Serato track metadata from/to file tags (experimental)</string>
@@ -502,7 +502,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_history_cleanup">
         <property name="toolTip">
-         <string>History playlist with less than N tracks will be deleted&lt;br/&gt;&lt;br/&gt;Note: the cleanup will be performed during startup and shutdown of Mixxx.</string>
+         <string>History playlist with less than N tracks will be deleted&lt;br/&gt;&lt;br/&gt;Note: the cleanup will be performed during startup and shutdown of NRave.</string>
         </property>
         <property name="text">
          <string>Delete history playlist with less than N tracks</string>
@@ -612,7 +612,7 @@
       <item row="7" column="0">
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>You will need to restart Mixxx for these settings to take effect.</string>
+         <string>You will need to restart NRave for these settings to take effect.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -702,7 +702,7 @@
       <item>
        <widget class="QLabel" name="label_settingsDir">
         <property name="text">
-         <string>The Mixxx settings directory contains the library database, various configuration files, log files, track analysis data, as well as custom controller mappings.</string>
+         <string>The NRave settings directory contains the library database, various configuration files, log files, track analysis data, as well as custom controller mappings.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -725,7 +725,7 @@
       <item>
        <widget class="QLabel" name="label_settingsWarning">
         <property name="text">
-         <string>Edit those files only if you know what you are doing and only while Mixxx is not running.</string>
+         <string>Edit those files only if you know what you are doing and only while NRave is not running.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -741,7 +741,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Open Mixxx Settings Folder</string>
+         <string>Open NRave Settings Folder</string>
         </property>
        </widget>
       </item>

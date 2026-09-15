@@ -54,7 +54,7 @@
         <property name="toolTip">
          <string>When the analyzer places the intro start point automatically,
 it will place it at the main cue point if the main cue point has been set previously.
-This may be helpful for upgrading to Mixxx 2.3 from earlier versions.
+This may be helpful for upgrading to NRave 2.3 from earlier versions.
 
 If this option is disabled, the intro start point is automatically placed at the first sound.</string>
         </property>
@@ -76,14 +76,14 @@ If this option is disabled, the intro start point is automatically placed at the
       <item row="0" column="1" colspan="2">
        <widget class="QComboBox" name="ComboBoxCueMode">
         <property name="toolTip">
-         <string>Mixxx mode:
+         <string>NRave mode:
 - Cue button while pause at cue point = preview
 - Cue button while pause not at cue point = set cue point
 - Cue button while playing = pause at cue point
-Mixxx mode (no blinking):
-- Same as Mixxx mode but with no blinking indicators
+NRave mode (no blinking):
+- Same as NRave mode but with no blinking indicators
 Pioneer mode:
-- Same as Mixxx mode with a flashing play button
+- Same as NRave mode with a flashing play button
 Denon mode:
 - Cue button at cue point = preview
 - Cue button not at cue point = pause at cue point
@@ -615,7 +615,7 @@ You can always drag-and-drop tracks on screen to clone a deck.</string>
         <item row="2" column="2">
          <widget class="QRadioButton" name="radioButtonLockBpm">
           <property name="toolTip">
-           <string>The tempo of a previous soft leader track at the beginning of the transition is kept steady. After the transition, the follower track will maintain this original tempo. This technique serves as a workaround to avoid dynamic tempo changes, as seen during the outro of rubato-style tracks. For instance, it prevents the follower track from continuing with a slowed-down tempo of the soft leader. This corresponds to the behavior before Mixxx 2.4. Changes from explicit selected leaders are always applied.</string>
+           <string>The tempo of a previous soft leader track at the beginning of the transition is kept steady. After the transition, the follower track will maintain this original tempo. This technique serves as a workaround to avoid dynamic tempo changes, as seen during the outro of rubato-style tracks. For instance, it prevents the follower track from continuing with a slowed-down tempo of the soft leader. This corresponds to the behavior before NRave 2.4. Changes from explicit selected leaders are always applied.</string>
           </property>
           <property name="text">
            <string>Use steady tempo</string>

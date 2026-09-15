@@ -114,7 +114,7 @@
     <item row="5" column="0" colspan="2">
      <widget class="QCheckBox" name="checkboxKeyColorsEnabled">
       <property name="toolTip">
-       <string>When key colors are enabled, Mixxx will display a color hint
+       <string>When key colors are enabled, NRave will display a color hint
 associated with each key.</string>
       </property>
       <property name="text">

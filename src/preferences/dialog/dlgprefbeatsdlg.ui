@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QCheckBox" name="checkBoxAnalyzerEnabled">
      <property name="toolTip">
-      <string>When beat detection is enabled, Mixxx detects the beats per minute and beats of your tracks,
+      <string>When beat detection is enabled, NRave detects the beats per minute and beats of your tracks,
 automatically shows a beat-grid for them, and allows you to synchronize tracks using their beat information.</string>
      </property>
      <property name="text">
@@ -60,7 +60,7 @@ Often results in higher quality beatgrids, but will not do well on tracks that h
        <widget class="QCheckBox" name="checkBoxFastAnalysis">
         <property name="toolTip">
          <string>Enable fast beat detection.
-If activated Mixxx only analyzes the first minute of a track for beat information.
+If activated NRave only analyzes the first minute of a track for beat information.
 This can speed up beat detection on slower computers but may result in lower quality beatgrids.</string>
         </property>
         <property name="text">
@@ -71,7 +71,7 @@ This can speed up beat detection on slower computers but may result in lower qua
       <item>
        <widget class="QCheckBox" name="checkBoxReanalyze">
         <property name="toolTip">
-         <string>e.g. from 3rd-party programs or Mixxx versions before 1.11.
+         <string>e.g. from 3rd-party programs or NRave versions before 1.11.
 (Not checked: Analyze only, if no beats exist.)</string>
         </property>
         <property name="text">

@@ -811,7 +811,7 @@ Select from different types of displays for the waveform overview, which differ 
      <item>
       <widget class="QLabel" name="waveformCachingInfo">
        <property name="text">
-        <string>Mixxx caches the waveforms of your tracks on disk the first time you load a track. This reduces CPU usage when you are playing live but requires extra disk space.</string>
+        <string>NRave caches the waveforms of your tracks on disk the first time you load a track. This reduces CPU usage when you are playing live but requires extra disk space.</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>

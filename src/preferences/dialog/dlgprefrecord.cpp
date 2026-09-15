@@ -34,7 +34,7 @@ DlgPrefRecord::DlgPrefRecord(QWidget* parent, UserSettingsPointer pConfig)
         // Initialize recordings path in config to old default path.
         // Do it here so we show current value in UI correctly.
         QString musicDir = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
-        QDir recordDir(musicDir + "/Mixxx/Recordings");
+        QDir recordDir(musicDir + "/NRave/Recordings");
         recordingsPath = recordDir.absolutePath();
         m_pConfig->setValue(ConfigKey(RECORDING_PREF_KEY, "Directory"), recordingsPath);
     }

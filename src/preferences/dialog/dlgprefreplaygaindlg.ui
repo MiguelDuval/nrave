@@ -275,7 +275,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>ReplayGain targets a reference loudness of -18 LUFS (Loudness Units relative to Full Scale). You may increase it if you find Mixxx is too quiet or reduce it if you find that your tracks are clipping. You may also want to decrease the volume of unanalyzed tracks if you find they are often louder than ReplayGained tracks. For podcasting a loudness of -16 LUFS is recommended.
+         <string>ReplayGain targets a reference loudness of -18 LUFS (Loudness Units relative to Full Scale). You may increase it if you find NRave is too quiet or reduce it if you find that your tracks are clipping. You may also want to decrease the volume of unanalyzed tracks if you find they are often louder than ReplayGained tracks. For podcasting a loudness of -16 LUFS is recommended.
 
 The loudness target is approximate and assumes track pregain and main output level are unchanged.</string>
         </property>
@@ -290,7 +290,7 @@ The loudness target is approximate and assumes track pregain and main output lev
       <item row="1" column="0">
        <widget class="QLabel" name="label_26">
         <property name="text">
-         <string>When an unanalyzed track is playing, Mixxx will avoid an abrupt volume change by not applying a newly calculated ReplayGain value.</string>
+         <string>When an unanalyzed track is playing, NRave will avoid an abrupt volume change by not applying a newly calculated ReplayGain value.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

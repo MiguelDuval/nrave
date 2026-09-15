@@ -249,7 +249,7 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent,
                     m_settingsModified = true;
                     QMessageBox::information(this,
                             tr("Information"),
-                            tr("Mixxx must be restarted for the PipeWire "
+                            tr("NRave must be restarted for the PipeWire "
                                "API selection to take effect."));
                 });
 
@@ -505,7 +505,7 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent,
                 tr("To enable Realtime scheduling (currently disabled), see the %1.")
                         .arg(coloredLinkString(
                                 m_pLinkColor,
-                                QStringLiteral("Mixxx Wiki"),
+                                QStringLiteral("NRave Wiki"),
                                 MIXXX_WIKI_AUDIO_LATENCY_URL)));
     }
 #else
@@ -529,16 +529,16 @@ DlgPrefSound::DlgPrefSound(QWidget* pParent,
 
     hardwareGuide->setText(
             tr("The %1 lists sound cards and controllers you may want to "
-               "consider for using Mixxx.")
+               "consider for using NRave.")
                     .arg(coloredLinkString(
                             m_pLinkColor,
-                            tr("Mixxx DJ Hardware Guide"),
+                            tr("NRave DJ Hardware Guide"),
                             MIXXX_WIKI_HARDWARE_COMPATIBILITY_URL)));
 
     QString deckBusHintStr = deckBusHint->text();
     deckBusHintStr += " " +
             coloredLinkString(m_pLinkColor,
-                    tr("Find details in the Mixxx user manual"),
+                    tr("Find details in the NRave user manual"),
                     MIXXX_MANUAL_OUTPUT_AND_INPUT_DEVICES);
     deckBusHint->setText(deckBusHintStr);
 
@@ -594,7 +594,7 @@ void DlgPrefSound::slotApply() {
                         keylockDualthreadedCheckBox->isEnabled())) {
             QMessageBox::information(this,
                     tr("Information"),
-                    tr("Mixxx must be restarted before the multi-threaded "
+                    tr("NRave must be restarted before the multi-threaded "
                        "RubberBand setting change will take effect."));
         }
 #endif
@@ -1371,7 +1371,7 @@ void DlgPrefSound::checkLatencyCompensation() {
             latencyCompensationSpinBox->setEnabled(true);
             const QString lineBreak("<br/>");
             const QString kMicMonitorHintTrString =
-                    tr("Refer to the Mixxx User Manual for details.");
+                    tr("Refer to the NRave User Manual for details.");
             // TODO(Be): Make the "User Manual" text link to the manual.
             if (m_pLatencyCompensation.get() == 0.0) {
                 latencyCompensationWarningLabel->setText(kWarningIconHtmlString +

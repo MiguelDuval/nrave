@@ -244,14 +244,14 @@ UserSettingsPointer Upgrade::versionUpgrade(const QString& settingsPath) {
         }
         delete oldFile;
 #ifdef __WINDOWS__
-        oldFilePath = oldLocation.filePath("MixxxMIDIBindings.xml");
+        oldFilePath = oldLocation.filePath("NRaveMIDIBindings.xml");
 #else
-        oldFilePath = oldLocation.filePath(".MixxxMIDIBindings.xml");
+        oldFilePath = oldLocation.filePath(".NRaveMIDIBindings.xml");
 #endif
-        newFilePath = newLocation.filePath("MixxxMIDIBindings.xml");
+        newFilePath = newLocation.filePath("NRaveMIDIBindings.xml");
         oldFile = new QFile(oldFilePath);
         if (oldFile->exists()) {
-            qWarning() << "The MIDI mapping file format has changed in this version of Mixxx. You will need to reconfigure your MIDI controller. See the Wiki for full details on the new format.";
+            qWarning() << "The MIDI mapping file format has changed in this version of NRave. You will need to reconfigure your MIDI controller. See the Wiki for full details on the new format.";
             if (oldFile->copy(newFilePath)) {
                 oldFile->remove();
             } else {
@@ -271,9 +271,9 @@ UserSettingsPointer Upgrade::versionUpgrade(const QString& settingsPath) {
         // Tidy up
         delete oldFile;
 #ifdef __WINDOWS__
-        QFile::remove(oldLocation.filePath("MixxxMIDIDevice.xml")); // Obsolete file, so just delete it
+        QFile::remove(oldLocation.filePath("NRaveMIDIDevice.xml")); // Obsolete file, so just delete it
 #else
-        QFile::remove(oldLocation.filePath(".MixxxMIDIDevice.xml")); // Obsolete file, so just delete it
+        QFile::remove(oldLocation.filePath(".NRaveMIDIDevice.xml")); // Obsolete file, so just delete it
 #endif
 
 #ifdef __WINDOWS__
@@ -340,18 +340,18 @@ UserSettingsPointer Upgrade::versionUpgrade(const QString& settingsPath) {
 #elif defined(__WINDOWS__)
         qDebug() << "Config version is empty, trying to read pre-1.12.0 config";
         // Try to read the config from the pre-1.12.0 final directory on Windows (we moved it in 1.12.0 final)
-        QScopedPointer<QFile> oldConfigFile(new QFile(QDir::homePath().append("/Local Settings/Application Data/Mixxx/mixxx.cfg")));
+        QScopedPointer<QFile> oldConfigFile(new QFile(QDir::homePath().append("/Local Settings/Application Data/NRave/mixxx.cfg")));
         if (oldConfigFile->exists() && ! CmdlineArgs::Instance().getSettingsPathSet()) {
             qDebug() << "Found pre-1.12.0 config for Windows";
             // Note: We changed MIXXX_SETTINGS_PATH in 1.12.0 final on Windows
             // so it must be hardcoded to "Local Settings/Application
-            // Data/Mixxx/" here for legacy.
+            // Data/NRave/" here for legacy.
             config = UserSettingsPointer(new ConfigObject<ConfigValue>(
-                QDir::homePath().append("/Local Settings/Application Data/Mixxx/mixxx.cfg")));
+                QDir::homePath().append("/Local Settings/Application Data/NRave/mixxx.cfg")));
             // Just to be sure all files like logs and soundconfig go with mixxx.cfg
             // TODO(XXX) Trailing slash not needed anymore as we switches from String::append
             // to QDir::filePath elsewhere in the code. This is candidate for removal.
-            CmdlineArgs::Instance().setSettingsPath(QDir::homePath().append("/Local Settings/Application Data/Mixxx/"));
+            CmdlineArgs::Instance().setSettingsPath(QDir::homePath().append("/Local Settings/Application Data/NRave/"));
             configVersion = config->getValueString(ConfigKey("[Config]","Version"));
         }
         else {
@@ -657,8 +657,8 @@ UserSettingsPointer Upgrade::versionUpgrade(const QString& settingsPath) {
 bool Upgrade::askReScanLibrary() {
     QMessageBox msgBox;
     msgBox.setIconPixmap(QPixmap(MIXXX_ICON_PATH));
-    msgBox.setWindowTitle(QMessageBox::tr("Upgrading Mixxx"));
-    msgBox.setText(QMessageBox::tr("Mixxx now supports displaying cover art.\n"
+    msgBox.setWindowTitle(QMessageBox::tr("Upgrading NRave"));
+    msgBox.setText(QMessageBox::tr("NRave now supports displaying cover art.\n"
                       "Do you want to scan your library for cover files now?"));
     QPushButton* rescanButton = msgBox.addButton(
         QMessageBox::tr("Scan"), QMessageBox::AcceptRole);
@@ -671,17 +671,17 @@ bool Upgrade::askReScanLibrary() {
 
 bool Upgrade::askReanalyzeBeats() {
     QString windowTitle =
-            QMessageBox::tr("Upgrading Mixxx from v1.9.x/1.10.x.");
+            QMessageBox::tr("Upgrading NRave from v1.9.x/1.10.x.");
     QString mainHeading =
-            QMessageBox::tr("Mixxx has a new and improved beat detector.");
+            QMessageBox::tr("NRave has a new and improved beat detector.");
     QString paragraph1 = QMessageBox::tr(
-        "When you load tracks, Mixxx can re-analyze them "
+        "When you load tracks, NRave can re-analyze them "
         "and generate new, more accurate beatgrids. This will make "
         "automatic beatsync and looping more reliable.");
     QString paragraph2 = QMessageBox::tr(
         "This does not affect saved cues, hotcues, playlists, or crates.");
     QString paragraph3 = QMessageBox::tr(
-        "If you do not want Mixxx to re-analyze your tracks, choose "
+        "If you do not want NRave to re-analyze your tracks, choose "
         "\"Keep Current Beatgrids\". You can change this setting at any time "
         "from the \"Beat Detection\" section of the Preferences.");
     QString keepCurrent = QMessageBox::tr("Keep Current Beatgrids");

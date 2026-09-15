@@ -390,7 +390,7 @@
       <item>
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Module files are decoded at once and kept in RAM to allow for seeking and smooth operation in Mixxx. About 10MB of RAM are required for 1 minute of audio.</string>
+         <string>Module files are decoded at once and kept in RAM to allow for seeking and smooth operation in NRave. About 10MB of RAM are required for 1 minute of audio.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

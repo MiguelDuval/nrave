@@ -58,7 +58,7 @@ Popup {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 34
                         activeColor: Theme.white
-                        text: "← Back to Enrave"
+                        text: "← Back to NRave"
 
                         onClicked: {
                             root.close();
@@ -150,7 +150,7 @@ Popup {
                                 anchors.verticalCenter: parent.verticalCenter
                                 color: Theme.white
                                 font.bold: parent.ListView.isCurrentItem
-                                text: label.replace(/\bMixxx\b/g, "Enrave")
+                                text: label.replace(/\bMixxx\b/g, "NRave")
                             }
                             TapHandler {
                                 onTapped: {
@@ -187,7 +187,7 @@ Popup {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: implicitHeight
                                     color: Theme.white
-                                    text: searchSetting.input.text ? display.replace(searchSetting.input.text, `<b>${searchSetting.input.text}</b>`).replace(/\bMixxx\b/g, "Enrave") : display.replace(/\bMixxx\b/g, "Enrave")
+                                    text: searchSetting.input.text ? display.replace(searchSetting.input.text, `<b>${searchSetting.input.text}</b>`).replace(/\bMixxx\b/g, "NRave") : display.replace(/\bMixxx\b/g, "NRave")
                                     textFormat: Text.RichText
                                 }
                                 Text {
@@ -195,7 +195,7 @@ Popup {
                                     Layout.preferredHeight: implicitHeight
                                     color: Theme.midGray
                                     font.pixelSize: 10
-                                    text: searchSetting.input.text ? whatsThis.replace(searchSetting.input.text, `<b>${searchSetting.input.text}</b>`).replace(/\bMixxx\b/g, "Enrave") : whatsThis.replace(/\bMixxx\b/g, "Enrave")
+                                    text: searchSetting.input.text ? whatsThis.replace(searchSetting.input.text, `<b>${searchSetting.input.text}</b>`).replace(/\bMixxx\b/g, "NRave") : whatsThis.replace(/\bMixxx\b/g, "NRave")
                                     textFormat: Text.RichText
                                 }
                             }
@@ -234,7 +234,7 @@ Popup {
                     Layout.preferredHeight: 32
                     Layout.preferredWidth: Math.min(360, parent.width)
                     activeColor: Theme.white
-                    text: "Open full Enrave Preferences"
+                    text: "Open full NRave Preferences"
 
                     onClicked: {
                         root.close();
