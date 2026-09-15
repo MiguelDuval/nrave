@@ -46,7 +46,6 @@ Skin.Button {
 
         group: "[Recording]"
         key: "status"
-        enabled: root.isRecordingControl
 
         onValueChanged: {
             root.updateRecordingVisual();
