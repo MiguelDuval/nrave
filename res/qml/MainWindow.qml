@@ -235,7 +235,7 @@ Item {
         Loader {
             id: androidSamplerPanel
 
-            active: Qt.platform.os === "android" && root.showSamplers && !root.maximizeLibrary
+            active: Qt.platform.os === "android" && root.showSamplers
             height: active && item ? item.implicitHeight : 0
             width: parent.width
             asynchronous: false
@@ -577,8 +577,6 @@ Item {
 
                     Behavior on height {
                         SpringAnimation {
-                            id: deck3HeightAnimation
-
                             damping: 0.2
                             duration: 500
                             spring: 2
@@ -620,8 +618,6 @@ Item {
 
                     Behavior on height {
                         SpringAnimation {
-                            id: deck4HeightAnimation
-
                             damping: 0.2
                             duration: 500
                             spring: 2
@@ -658,7 +654,7 @@ Item {
                 //     id: samplers
                 //     visible: root.showSamplers
                 //     width: parent.width
-
+                //
                 //     Skin.FadeBehavior on visible {
                 //         fadeTarget: samplers
                 //     }
@@ -687,55 +683,19 @@ Item {
                             when: root.maximizeLibrary && !root.show4decks
 
                             AnchorChanges {
-                                anchors.top: deck1.bottom
+                                anchors.top: deck2.bottom
                                 target: library
                             }
                         },
                         State {
-                            when: !root.maximizeLibrary && root.height - mixer.height < 400
+                            when: !root.maximizeLibrary
 
-                            PropertyChanges {
+                            AnchorChanges {
+                                anchors.top: deck4.visible ? deck4.bottom : deck2.bottom
                                 target: library
-                                visible: false
                             }
                         }
                     ]
-
-                    anchors {
-                        bottom: parent.bottom
-                        top: mixer.bottom
-                    }
-                }
-            }
-        }
-    }
-    Skin.Settings {
-        id: settingsPopup
-
-        height: Math.min(840, parent.height)
-        modal: true
-        width: Math.min(1400, parent.width)
-        x: Math.round((parent.width - width) / 2)
-        y: Math.round((parent.height - height) / 2)
-
-        Overlay.modal: Rectangle {
-            id: overlayModal
-
-            readonly property bool hasHardwareAcceleration: Mixxx.Config.useAcceleration
-            property real radius: 12
-
-            anchors.fill: parent
-            color: Qt.alpha('#00000010', hasHardwareAcceleration ? 1.0 : 0.6)
-
-            Repeater {
-                model: hasHardwareAcceleration ? 1 : 0
-
-                GaussianBlur {
-                    anchors.fill: overlayModal
-                    deviation: 4
-                    radius: Math.max(0, overlayModal.radius)
-                    samples: 16
-                    source: content
                 }
             }
         }
