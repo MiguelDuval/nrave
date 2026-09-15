@@ -19,6 +19,7 @@ ApplicationWindow {
     Mixxx.ControlProxy { id: bitgrid1Action; group: "[Channel1]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: bitgrid2Action; group: "[Channel2]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: abletonLinkControl; group: "[AbletonLink]"; key: "sync_enabled" }
+    Mixxx.ControlProxy { id: showSamplersControl; group: "[Skin]"; key: "show_samplers" }
 
     function updateVisibility() {
         if (!Mixxx.Core.ready) return;
@@ -102,25 +103,32 @@ ApplicationWindow {
 
     Rectangle {
         id: mobileSamplerPanel
-        visible: Qt.platform.os === "android" && mainWindowLoader.status === Loader.Ready && mainWindowLoader.item && mainWindowLoader.item.showSamplers
+        visible: Qt.platform.os === "android" && mainWindowLoader.status === Loader.Ready && (showSamplersControl.value > 0.5 || (mainWindowLoader.item && mainWindowLoader.item.showSamplers))
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: bitgridBar.bottom
         anchors.topMargin: 4
-        height: 204
+        height: 46
         color: LateNightTheme.samplerPanelColor
         border.color: LateNightTheme.mixerPanelBorderTop
         border.width: 1
         z: 10000
-        LateNightSamplers.SamplerGroup {
+
+        RowLayout {
             anchors.fill: parent
-            anchors.margins: 4
-            count: 8
-            expandKey: "expand_samplers_1-8"
-            firstSampler: 1
-            preloadExpandedContent: true
-            show8Hotcues: true
-            showFxAssignments: false
+            anchors.margins: 2
+            spacing: 2
+
+            Repeater {
+                model: 8
+
+                LateNightSamplers.SamplerMini {
+                    required property int index
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    group: "[Sampler" + (index + 1) + "]"
+                }
+            }
         }
     }
 
