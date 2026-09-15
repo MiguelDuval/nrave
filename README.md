@@ -43,7 +43,7 @@ For help using Mixxx, there are a variety of options:
 
 ## Translation
 
-Help to spread Mixxx with translations into more languages, as well as to update and ensure the accuracy of existing translations.
+Help to spread Mixxx with translations into several languages, as well as to update and ensure the accuracy of existing translations.
 
 - [Help translate content]
 - [Mixxx i18n wiki]
@@ -80,7 +80,9 @@ license.
 [creating skins]: https://mixxx.org/wiki/doku.php/Creating-Skins
 [help translate content]: https://explore.transifex.com/mixxx-dj-software/
 [Mixxx i18n wiki]: https://github.com/mixxxdj/mixxx/wiki/Internationalization
-[Mixxx localization forum]: https://mixxx.discourse.group/c/translation/13
+[Mixxx localization forum]: https://github.com/mixxxdj/mixxx/wiki/Internationalization
 [hardware compatibility]: https://manual.mixxx.org/2.3/en/hardware/manuals.html
 [zulip]: https://mixxx.zulipchat.com/
-[discourse]: https://mixxx.discourse.group/
+[discourse]: https://mixxx.discourse.group/ 
+
+<!-- nrave-one-time-build-trigger -->
