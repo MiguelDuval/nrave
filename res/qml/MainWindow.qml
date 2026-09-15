@@ -20,10 +20,12 @@ Item {
     readonly property int numDecks: 4
     readonly property int numPreviewDecks: 1
     readonly property int numSamplers: 16
+    readonly property int numAuxiliaries: 4
     readonly property int waveformOverviewTypeRgb: 2
     readonly property bool show4decks: show4DecksButton.checked && show4DecksButton.visible
     property alias showEffects: showEffectsButton.checked
     property alias showSamplers: showSamplersButton.checked
+    property alias showAuxiliaries: showAuxButton.checked
 
     Loader {
         id: nativeApplicationMenuLoader
@@ -74,6 +76,14 @@ Item {
 
         onInitializedChanged: {
             value = root.numSamplers;
+        }
+    }
+    Mixxx.ControlProxy {
+        group: "[App]"
+        key: "num_auxiliaries"
+
+        onInitializedChanged: {
+            value = root.numAuxiliaries;
         }
     }
     Mixxx.ControlProxy {
@@ -229,6 +239,22 @@ Item {
             sourceComponent: Component {
                 Skin.PadFxPanel {
                     anchors.fill: parent
+                }
+            }
+        }
+        Loader {
+            id: androidAuxPanel
+
+            active: Qt.platform.os === "android" && root.showAuxiliaries && !root.maximizeLibrary
+            height: active && item ? item.implicitHeight : 0
+            width: parent.width
+            asynchronous: false
+
+            sourceComponent: Component {
+                Skin.AuxiliaryRow {
+                    anchors.fill: parent
+                    auxiliaryCount: root.numAuxiliaries
+                    fxUnitCount: 4
                 }
             }
         }
