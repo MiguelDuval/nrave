@@ -63,7 +63,6 @@ jobs:
           print(f"Validated NRave launcher artwork: {len(d)} bytes, SHA-256 {hashlib.sha256(d).hexdigest()}")
           PY
 
-          SPLASH_DIR="packaging/android/icon-source"
           SPLASH_DST="packaging/android/res/drawable/nrave_splash.webp"
           mkdir -p "$(dirname "$SPLASH_DST")"
           python3 - <<'PY'
@@ -72,20 +71,27 @@ jobs:
 
           src_dir = Path("packaging/android/icon-source")
           dst = Path("packaging/android/res/drawable/nrave_splash.webp")
-          parts = sorted(src_dir.glob("nrave_splash.webp.b64.part*"), key=lambda p: int(p.name.rsplit("part", 1)[1]))
+          parts = sorted(
+              src_dir.glob("nrave_splash.webp.b64.part*"),
+              key=lambda p: int(p.name.rsplit("part", 1)[1]),
+          )
           if not parts:
               raise SystemExit("No NRave splash base64 parts found")
 
-          encoded = "".join("".join(part.read_text().split()) for part in parts)
-          # Padding is meaningful only at the end of a base64 stream. Some stored
-          # chunks may carry their own trailing '='; remove it before reassembling.
-          encoded = encoded.replace("=", "")
-          encoded += "=" * ((-len(encoded)) % 4)
-          try:
-              out = base64.b64decode(encoded, validate=True)
-          except Exception as exc:
-              raise SystemExit(f"Invalid NRave splash base64 stream: {exc}")
+          # The repository stores the splash as independent base64-encoded binary chunks.
+          # Decode each chunk separately, adding padding only to that chunk, then join
+          # the decoded bytes. Joining the base64 text first breaks byte alignment when
+          # a chunk length is not divisible by four.
+          out = bytearray()
+          for part in parts:
+              encoded = "".join(part.read_text().split())
+              encoded += "=" * ((-len(encoded)) % 4)
+              try:
+                  out.extend(base64.b64decode(encoded, validate=True))
+              except Exception as exc:
+                  raise SystemExit(f"Invalid NRave splash base64 chunk {part.name}: {exc}")
 
+          out = bytes(out)
           dst.write_bytes(out)
           expected = "45b12e5cec5456137fb2970f25ec1a64028c3f6869e26f2c33d784534cb8aba2"
           actual = hashlib.sha256(out).hexdigest()
@@ -93,7 +99,7 @@ jobs:
               raise SystemExit("Invalid NRave splash WebP signature")
           if actual != expected:
               raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
-          print(f"Validated NRave splash artwork from {len(parts)} parts: {len(out)} bytes, SHA-256 {expected}")
+          print(f"Validated NRave splash artwork from {len(parts)} chunks: {len(out)} bytes, SHA-256 {expected}")
           PY
           if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
