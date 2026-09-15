@@ -72,11 +72,14 @@ jobs:
 
           src_dir = Path("packaging/android/icon-source")
           dst = Path("packaging/android/res/drawable/nrave_splash.webp")
-          parts = sorted(src_dir.glob("nrave_splash.webp.b64.part*"))
+          parts = sorted(src_dir.glob("nrave_splash.webp.b64.part*"), key=lambda p: int(p.name.rsplit("part", 1)[1]))
           if not parts:
               raise SystemExit("No NRave splash base64 parts found")
 
           encoded = "".join("".join(part.read_text().split()) for part in parts)
+          # Padding is meaningful only at the end of a base64 stream. Some stored
+          # chunks may carry their own trailing '='; remove it before reassembling.
+          encoded = encoded.replace("=", "")
           encoded += "=" * ((-len(encoded)) % 4)
           try:
               out = base64.b64decode(encoded, validate=True)
@@ -152,5 +155,3 @@ jobs:
           archive: false
           if-no-files-found: error
           retention-days: 30
-
-# Trigger Android APK build after splash decoding fix.
