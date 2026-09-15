@@ -66,7 +66,7 @@ constexpr const char* kStreamPublic = "StreamPublic";
 constexpr const char* kStreamWebsite = "StreamWebsite";
 
 #ifdef __QTKEYCHAIN__
-constexpr const char* kKeychainPrefix = "NRave - ";
+constexpr const char* kKeychainPrefix = "Mixxx - ";
 #endif
 
 constexpr int kDefaultBitrate = 128;

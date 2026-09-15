@@ -244,11 +244,11 @@ UserSettingsPointer Upgrade::versionUpgrade(const QString& settingsPath) {
         }
         delete oldFile;
 #ifdef __WINDOWS__
-        oldFilePath = oldLocation.filePath("NRaveMIDIBindings.xml");
+        oldFilePath = oldLocation.filePath("MixxxMIDIBindings.xml");
 #else
-        oldFilePath = oldLocation.filePath(".NRaveMIDIBindings.xml");
+        oldFilePath = oldLocation.filePath(".MixxxMIDIBindings.xml");
 #endif
-        newFilePath = newLocation.filePath("NRaveMIDIBindings.xml");
+        newFilePath = newLocation.filePath("MixxxMIDIBindings.xml");
         oldFile = new QFile(oldFilePath);
         if (oldFile->exists()) {
             qWarning() << "The MIDI mapping file format has changed in this version of NRave. You will need to reconfigure your MIDI controller. See the Wiki for full details on the new format.";
