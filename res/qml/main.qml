@@ -165,7 +165,7 @@ ApplicationWindow {
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: 500; easing.type: Easing.OutQuad }
+            NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
         }
     }
 }
