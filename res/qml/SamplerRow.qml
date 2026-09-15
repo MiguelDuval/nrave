@@ -1,8 +1,10 @@
 pragma ComponentBehavior: Bound
 
 import "." as Skin
+import Mixxx 1.0 as Mixxx
 import QtQuick 2.12
 import QtQuick.Layouts 1.12
+import "Theme"
 
 Item {
     id: root
@@ -61,8 +63,6 @@ Item {
                 implicitHeight: 56
 
                 Skin.ControlButton {
-                    id: playButton
-
                     anchors.fill: parent
                     activeColor: Theme.samplerColor
                     group: "[Sampler" + (root.firstSampler + samplerSlot.index) + "]"
