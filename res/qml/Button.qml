@@ -8,6 +8,7 @@ AbstractButton {
 
     property color activeColor: Theme.buttonActiveColor
     property color activeBackgroundColor: "#2D4EA1"
+    property color normalBackgroundColor: "#2B2B2B"
     property bool highlight: false
     property color normalColor: Theme.buttonNormalColor
     property color pressedColor: activeColor
@@ -22,7 +23,7 @@ AbstractButton {
             id: backgroundImage
 
             anchors.fill: parent
-            color: '#2B2B2B'
+            color: root.normalBackgroundColor
             radius: 2
         }
         DropShadow {
