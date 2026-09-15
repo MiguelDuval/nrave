@@ -273,15 +273,20 @@ Item {
                     id: showDevToolsButton
 
                     activeColor: Theme.white
-                    checkable: true
-                    checked: devToolsWindow.visible
-                    text: "Develop"
+                    checkable: false
+                    checked: settingsPopup.opened
+                    icon.height: 18
+                    icon.source: "images/gear.svg"
+                    icon.width: 18
+                    implicitWidth: 76
 
                     onClicked: {
-                        if (devToolsWindow.visible)
-                            devToolsWindow.close();
-                        else
-                            devToolsWindow.show();
+                        if (!settingsPopup.opened) {
+                            settingsPopup.open();
+                        }
+                    }
+                    onPressAndHold: {
+                        Mixxx.PreferencesDialog.show();
                     }
 
                     DeveloperToolsWindow {
@@ -293,6 +298,8 @@ Item {
                 }
                 Skin.Button {
                     id: showPreferencesButton
+
+                    visible: false
 
                     activeColor: Theme.white
                     checked: settingsPopup.opened
