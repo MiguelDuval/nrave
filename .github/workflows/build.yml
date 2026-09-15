@@ -14,6 +14,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Integrate Record status indicator
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("res/qml/MainWindow.qml")
+          text = path.read_text()
+          if 'id: recordingStatus' not in text:
+              marker = '''    property alias showAuxiliaries: showAuxButton.checked\n\n'''
+              insert = '''    property alias showAuxiliaries: showAuxButton.checked\n    property int recordingElapsedSeconds: 0\n\n    function formatRecordingDuration(totalSeconds) {\n        const minutes = Math.floor(totalSeconds / 60);\n        const seconds = totalSeconds % 60;\n        return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");\n    }\n\n    Mixxx.ControlProxy {\n        id: recordingStatus\n\n        group: "[Recording]"\n        key: "status"\n\n        onValueChanged: {\n            if (value >= 2) {\n                if (!recordingTimer.running) {\n                    root.recordingElapsedSeconds = 0;\n                    recordingTimer.start();\n                }\n            } else {\n                recordingTimer.stop();\n                root.recordingElapsedSeconds = 0;\n            }\n        }\n    }\n\n    Timer {\n        id: recordingTimer\n\n        interval: 1000\n        repeat: true\n\n        onTriggered: {\n            if (recordingStatus.value >= 2) {\n                root.recordingElapsedSeconds += 1;\n            } else {\n                stop();\n                root.recordingElapsedSeconds = 0;\n            }\n        }\n    }\n\n'''
+              if marker not in text:
+                  raise SystemExit('Record root property marker not found; refusing to modify source.')
+              text = text.replace(marker, insert, 1)
+          old_button = '''                Skin.ControlButton {\n                    id: recordButton\n\n                    activeColor: Theme.white\n                    group: "[Recording]"\n                    key: "toggle_recording"\n                    text: "Record"\n                    toggleable: true\n                }\n'''
+          new_button = '''                Skin.ControlButton {\n                    id: recordButton\n\n                    activeBackgroundColor: Theme.red\n                    activeColor: Theme.white\n                    group: "[Recording]"\n                    highlight: recordingStatus.value >= 2\n                    key: "toggle_recording"\n                    text: "Record"\n                    toggleable: true\n                }\n                Item {\n                    id: recordingIndicator\n\n                    Layout.alignment: Qt.AlignVCenter\n                    Layout.minimumWidth: 0\n                    Layout.preferredWidth: recordingStatus.value >= 2 ? 72 : 0\n                    implicitHeight: 26\n                    visible: recordingStatus.value >= 2\n\n                    Row {\n                        anchors.centerIn: parent\n                        spacing: 5\n\n                        Rectangle {\n                            anchors.verticalCenter: parent.verticalCenter\n                            color: Theme.red\n                            height: 7\n                            radius: 3.5\n                            width: 7\n                        }\n                        Label {\n                            anchors.verticalCenter: parent.verticalCenter\n                            color: Theme.red\n                            font.bold: true\n                            font.family: Theme.fontFamily\n                            font.pixelSize: Theme.buttonFontPixelSize\n                            text: "REC " + root.formatRecordingDuration(root.recordingElapsedSeconds)\n                        }\n                    }\n                }\n'''
+          if old_button not in text:
+              raise SystemExit('Existing Record button block not found; refusing to modify source.')
+          text = text.replace(old_button, new_button, 1)
+          path.write_text(text)
+          PY
+          git diff --check
+          grep -n -A45 -B6 'id: recordingStatus' res/qml/MainWindow.qml
+          grep -n -A30 -B2 'id: recordButton' res/qml/MainWindow.qml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- res/qml/MainWindow.qml; then
+            echo 'Record UI already integrated; nothing to commit.'
+          else
+            git add res/qml/MainWindow.qml
+            git commit -m "feat: show active recording status and duration"
+            git push origin HEAD:main
+          fi
       - name: Materialize NRave launcher artwork
         shell: bash
         run: |
