@@ -14,32 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Integrate Android Record button
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path("res/qml/MainWindow.qml")
-          text = path.read_text()
-          if 'id: recordButton' in text:
-              print('Record button already integrated; nothing to patch.')
-              raise SystemExit(0)
-          needle = '''                Skin.Button {\n                    id: showSamplersButton\n\n                    activeColor: Theme.white\n                    checkable: true\n                    text: "Sampler"\n                }\n                Item {'''
-          replacement = '''                Skin.Button {\n                    id: showSamplersButton\n\n                    activeColor: Theme.white\n                    checkable: true\n                    text: "Sampler"\n                }\n                Skin.ControlButton {\n                    id: recordButton\n\n                    activeColor: Theme.white\n                    group: "[Recording]"\n                    key: "toggle_recording"\n                    text: "Record"\n                    toggleable: false\n                }\n                Item {'''
-          if needle not in text:
-              raise SystemExit('Expected toolbar anchor not found; refusing to modify source.')
-          path.write_text(text.replace(needle, replacement, 1))
-          PY
-          git diff --check
-          grep -n -A8 -B2 'id: recordButton' res/qml/MainWindow.qml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --no-tags --depth=2 origin main
-          git checkout HEAD^ -- .github/workflows/build.yml
-          git add res/qml/MainWindow.qml .github/workflows/build.yml
-          git commit -m "feat: add Android Record button"
-          git push origin HEAD:main
       - name: Materialize NRave launcher artwork
         shell: bash
         run: |
