@@ -82,7 +82,7 @@ license.
 [Mixxx i18n wiki]: https://github.com/mixxxdj/mixxx/wiki/Internationalization
 [Mixxx localization forum]: https://mixxx.discourse.group/c/translation/13
 [hardware compatibility]: https://manual.mixxx.org/2.3/en/hardware/manuals.html
-[zulip]: https://mixxx.zulip.org/
+[zulip]: https://mixxx.zulipchat.com/
 [discourse]: https://mixxx.discourse.group/
 
 <!-- nrave-one-time-build-trigger -->
