@@ -7,9 +7,7 @@ import "Samplers" as LateNightSamplers
 
 ApplicationWindow {
     id: root
-
     property int displayedProgress: 0
-
     color: startupScreen.backgroundColor
     height: 1008
     menuBar: mainWindowLoader.item ? mainWindowLoader.item.menuBar : null
@@ -21,7 +19,6 @@ ApplicationWindow {
     Mixxx.ControlProxy { id: bitgrid1Action; group: "[Channel1]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: bitgrid2Action; group: "[Channel2]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: abletonLinkControl; group: "[AbletonLink]"; key: "sync_enabled" }
-
     Mixxx.ControlProxy {
         id: showSamplersControl
         group: "[Skin]"
@@ -73,9 +70,7 @@ ApplicationWindow {
         asynchronous: true
         onProgressChanged: root.updateProgress()
         onStatusChanged: root.handleMainWindowLoaderStatus()
-        sourceComponent: Component {
-            MainWindow { applicationWindow: root; anchors.fill: parent }
-        }
+        sourceComponent: Component { MainWindow { applicationWindow: root; anchors.fill: parent } }
     }
 
     Rectangle {
@@ -107,7 +102,7 @@ ApplicationWindow {
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        text: parent.parentData.modelData
+                        text: modelData
                     }
                     MouseArea {
                         id: mouse
@@ -135,7 +130,6 @@ ApplicationWindow {
         border.color: LateNightTheme.mixerPanelBorderTop
         border.width: 1
         z: 10000
-
         LateNightSamplers.SamplerGroup {
             anchors.fill: parent
             anchors.margins: 4
@@ -156,6 +150,5 @@ ApplicationWindow {
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
     }
-
     Component.onCompleted: { updateProgress(); updateVisibility(); }
 }
