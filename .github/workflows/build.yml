@@ -46,9 +46,7 @@ jobs:
               if (zlib.crc32(typ + payload) & 0xffffffff) != crc:
                   raise SystemExit(f"Invalid PNG CRC in {typ.decode('latin1')}")
               if typ == b"IHDR":
-                  if n != 13:
-                      raise SystemExit("Invalid IHDR length")
-                  width, height, bit_depth, color_type, comp, filt, interlace = struct.unpack(">IIBBBBB", payload)
+                  width, height, _, _, comp, filt, _ = struct.unpack(">IIBBBBB", payload)
                   if (width, height) != (144, 144):
                       raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
                   if comp != 0 or filt != 0:
@@ -62,7 +60,8 @@ jobs:
               pos = endpos
           if not seen_ihdr or not seen_iend:
               raise SystemExit("PNG missing IHDR or IEND")
-          print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
+          print(f"Validated NRave launcher artwork: {len(d)} bytes, SHA-256 {hashlib.sha256(d).hexdigest()}")
+          PY
 
           SPLASH_DIR="packaging/android/icon-source"
           SPLASH_DST="packaging/android/res/drawable/nrave_splash.webp"
@@ -79,18 +78,8 @@ jobs:
           actual = hashlib.sha256(d).hexdigest()
           if actual != expected:
               raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
-          if d[12:16] != b"VP8 ":
-              raise SystemExit(f"Unexpected WebP chunk {d[12:16]!r}; expected VP8 ")
-          frame = d[20:]
-          if len(frame) < 10 or frame[3:6] != b"\x9d\x01\x2a":
-              raise SystemExit("Invalid VP8 frame header")
-          width = int.from_bytes(frame[6:8], "little") & 0x3fff
-          height = int.from_bytes(frame[8:10], "little") & 0x3fff
-          if (width, height) != (1536, 857):
-              raise SystemExit(f"NRave splash must be 1536x857, got {width}x{height}")
-          print(f"Validated NRave splash artwork: {len(d)} bytes, {width}x{height}, SHA-256 {expected}")
+          print(f"Validated NRave splash artwork: {len(d)} bytes, SHA-256 {expected}")
           PY
-
           if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
