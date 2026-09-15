@@ -8,6 +8,7 @@ import "Samplers" as LateNightSamplers
 ApplicationWindow {
     id: root
     property int displayedProgress: 0
+    property bool diagnosticForcePanel: false
     color: startupScreen.backgroundColor
     height: 1008
     menuBar: mainWindowLoader.item ? mainWindowLoader.item.menuBar : null
@@ -27,6 +28,11 @@ ApplicationWindow {
             if (initialized && value < 8)
                 value = 8;
         }
+    }
+    Mixxx.ControlProxy {
+        id: diagnosticShowSamplersControl
+        group: "[Skin]"
+        key: "show_samplers"
     }
 
     function updateVisibility() {
@@ -103,6 +109,110 @@ ApplicationWindow {
                             else if (modelData === "BITGRID 2") bitgrid2Action.trigger();
                             else abletonLinkControl.value = abletonLinkControl.value > 0.0 ? 0.0 : 1.0;
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: samplerDiagnosticPanel
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: bitgridBar.bottom
+        anchors.topMargin: 4
+        height: 106
+        color: "#ff00aa"
+        border.color: "#ffffff"
+        border.width: 2
+        z: 20000
+        visible: Qt.platform.os === "android"
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 5
+            spacing: 2
+
+            Text {
+                color: "#ffffff"
+                font.pixelSize: 13
+                font.bold: true
+                text: "SAMPLER DIAGNOSTIC BUILD"
+            }
+            Text {
+                color: "#ffffff"
+                font.pixelSize: 12
+                text: "OS=" + Qt.platform.os
+                    + "  Loader=" + mainWindowLoader.status
+                    + "  Main.showSamplers=" + (mainWindowLoader.item ? mainWindowLoader.item.showSamplers : "<null>")
+            }
+            Text {
+                color: "#ffffff"
+                font.pixelSize: 12
+                text: "Skin/show_samplers=" + diagnosticShowSamplersControl.value
+                    + "  App/num_samplers=" + numSamplersControl.value
+                    + "  RealPanel.visible=" + mobileSamplerPanel.visible
+            }
+            Row {
+                spacing: 5
+                Rectangle {
+                    width: 150
+                    height: 24
+                    radius: 3
+                    color: "#111111"
+                    Text { anchors.fill: parent; color: "#ffffff"; text: "TOGGLE Skin control"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 11 }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: diagnosticShowSamplersControl.value = diagnosticShowSamplersControl.value > 0.5 ? 0.0 : 1.0
+                    }
+                }
+                Rectangle {
+                    width: 150
+                    height: 24
+                    radius: 3
+                    color: "#111111"
+                    Text { anchors.fill: parent; color: "#ffffff"; text: "TOGGLE test panel"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 11 }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: diagnosticForcePanel = !diagnosticForcePanel
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: diagnosticTestStrip
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: samplerDiagnosticPanel.bottom
+        anchors.topMargin: 3
+        height: 44
+        color: "#00d5ff"
+        border.color: "#ffffff"
+        border.width: 2
+        z: 20000
+        visible: Qt.platform.os === "android" && (diagnosticForcePanel || (mainWindowLoader.item && mainWindowLoader.item.showSamplers))
+
+        Row {
+            anchors.fill: parent
+            anchors.margins: 3
+            spacing: 3
+            Repeater {
+                model: 8
+                Rectangle {
+                    width: (parent.width - 21) / 8
+                    height: parent.height
+                    color: "#101010"
+                    radius: 2
+                    Text {
+                        anchors.fill: parent
+                        color: "#ffffff"
+                        text: "S" + (index + 1)
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: 12
+                        font.bold: true
                     }
                 }
             }
