@@ -31,7 +31,7 @@ Item {
     function formatRecordingDuration(totalSeconds) {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-        return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+        return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
     }
 
     Mixxx.ControlProxy {
@@ -221,13 +221,14 @@ Item {
                 Skin.ControlButton {
                     id: recordButton
 
-                    activeBackgroundColor: Theme.red
+                    activeBackgroundColor: recordingStatus.value >= 2 ? Theme.red : "#2D4EA1"
                     activeColor: Theme.white
+                    displayKey: "status"
                     group: "[Recording]"
-                    highlight: recordingStatus.value >= 2
+                    highlight: recordingStatus.value > 0
                     key: "toggle_recording"
                     text: "Record"
-                    toggleable: true
+                    toggleable: false
                 }
                 Item {
                     id: recordingIndicator
@@ -676,40 +677,14 @@ Item {
                         top: parent.top
                     }
                 }
-                Loader {
+                Deck {
                     id: deck3
 
-                    readonly property string group: "[Channel3]"
-
-                    active: root.show4decks
-                    height: active ? (root.maximizeLibrary ? 80 : mixer.height / 2) : 0
-
-                    Behavior on height {
-                        SpringAnimation {
-                            duration: 500
-                            damping: 0.2
-                            spring: 2
-                        }
-                    }
-                    sourceComponent: Component {
-                        Deck {
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            editMode: root.editDeck
-                            group: deck3.group
-                            minimized: root.maximizeLibrary
-                        }
-                    }
-                    states: [
-                        State {
-                            when: root.maximizeLibrary
-
-                            AnchorChanges {
-                                anchors.right: parent.horizontalCenter
-                                target: deck3
-                            }
-                        }
-                    ]
+                    editMode: root.editDeck
+                    group: "[Channel3]"
+                    height: mixer.height / 2
+                    minimized: false
+                    visible: root.show4decks && !root.maximizeLibrary
 
                     anchors {
                         left: parent.left
@@ -717,40 +692,14 @@ Item {
                         top: deck1.bottom
                     }
                 }
-                Loader {
+                Deck {
                     id: deck4
 
-                    readonly property string group: "[Channel4]"
-
-                    active: root.show4decks
-                    height: active ? (root.maximizeLibrary ? 80 : mixer.height / 2) : 0
-
-                    Behavior on height {
-                        SpringAnimation {
-                            duration: 500
-                            damping: 0.2
-                            spring: 2
-                        }
-                    }
-                    sourceComponent: Component {
-                        Deck {
-                            anchors.bottom: parent.bottom
-                            anchors.right: parent.right
-                            editMode: root.editDeck
-                            group: deck4.group
-                            minimized: root.maximizeLibrary
-                        }
-                    }
-                    states: [
-                        State {
-                            when: root.maximizeLibrary
-
-                            AnchorChanges {
-                                anchors.left: parent.horizontalCenter
-                                target: deck4
-                            }
-                        }
-                    ]
+                    editMode: root.editDeck
+                    group: "[Channel4]"
+                    height: mixer.height / 2
+                    minimized: false
+                    visible: root.show4decks && !root.maximizeLibrary
 
                     anchors {
                         left: mixer.right
@@ -758,89 +707,18 @@ Item {
                         top: deck2.bottom
                     }
                 }
-
-                // Skin.SamplerRow {
-                //     id: samplers
-                //     visible: root.showSamplers
-                //     width: parent.width
-                //
-                //     Skin.FadeBehavior on visible {
-                //         fadeTarget: samplers
-                //     }
-                // }
-                Loader {
-                    id: library
-
-                    active: root.maximizeLibrary || root.height - mixer.height >= 400
-                    width: parent.width
-
-                    sourceComponent: Component {
-                        Skin.Library {
-                            anchors.fill: parent
-                        }
-                    }
-                    states: [
-                        State {
-                            when: root.maximizeLibrary && root.show4decks
-
-                            AnchorChanges {
-                                anchors.top: deck4.bottom
-                                target: library
-                            }
-                        },
-                        State {
-                            when: root.maximizeLibrary && !root.show4decks
-
-                            AnchorChanges {
-                                anchors.top: deck1.bottom
-                                target: library
-                            }
-                        },
-                        State {
-                            when: !root.maximizeLibrary && root.height - mixer.height < 400
-
-                            PropertyChanges {
-                                target: library
-                                visible: false
-                            }
-                        }
-                    ]
-
-                    anchors {
-                        bottom: parent.bottom
-                        top: mixer.bottom
-                    }
-                }
             }
-        }
-    }
-    Skin.Settings {
-        id: settingsPopup
+            Loader {
+                id: library
 
-        height: Math.min(840, parent.height)
-        modal: true
-        width: Math.min(1400, parent.width)
-        x: Math.round((parent.width - width) / 2)
-        y: Math.round((parent.height - height) / 2)
+                active: !root.showEffects && !root.showSamplers && !root.showAuxiliaries
+                height: active && item ? item.implicitHeight : 0
+                width: parent.width
 
-        Overlay.modal: Rectangle {
-            id: overlayModal
-
-            readonly property bool hasHardwareAcceleration: Mixxx.Config.useAcceleration
-            property real radius: 12
-
-            anchors.fill: parent
-            color: Qt.alpha('#00000010', hasHardwareAcceleration ? 1.0 : 0.6)
-
-            Repeater {
-                model: hasHardwareAcceleration ? 1 : 0
-
-                GaussianBlur {
-                    anchors.fill: overlayModal
-                    deviation: 4
-                    radius: Math.max(0, overlayModal.radius)
-                    samples: 16
-                    source: content
+                sourceComponent: Component {
+                    Skin.Library {
+                        anchors.fill: parent
+                    }
                 }
             }
         }
