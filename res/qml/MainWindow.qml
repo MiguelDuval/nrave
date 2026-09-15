@@ -232,6 +232,23 @@ Item {
                 }
             }
         }
+        Loader {
+            id: androidSamplerPanel
+
+            active: Qt.platform.os === "android" && root.showSamplers && !root.maximizeLibrary
+            height: active && item ? item.implicitHeight : 0
+            width: parent.width
+            asynchronous: false
+
+            sourceComponent: Component {
+                Skin.SamplerRow {
+                    anchors.fill: parent
+                    firstSampler: 1
+                    samplerCount: 8
+                    minimized: true
+                }
+            }
+        }
         SplitView {
             id: splitView
 
@@ -604,7 +621,6 @@ Item {
                     Behavior on height {
                         SpringAnimation {
                             id: deck4HeightAnimation
-
                             damping: 0.2
                             duration: 500
                             spring: 2
@@ -714,7 +730,7 @@ Item {
                 model: hasHardwareAcceleration ? 1 : 0
 
                 GaussianBlur {
-                    anchors.fill: overlayModal
+                    anchors.fill: parent
                     deviation: 4
                     radius: Math.max(0, overlayModal.radius)
                     samples: 16
