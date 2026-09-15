@@ -621,6 +621,7 @@ Item {
                     Behavior on height {
                         SpringAnimation {
                             id: deck4HeightAnimation
+
                             damping: 0.2
                             duration: 500
                             spring: 2
@@ -730,7 +731,7 @@ Item {
                 model: hasHardwareAcceleration ? 1 : 0
 
                 GaussianBlur {
-                    anchors.fill: parent
+                    anchors.fill: overlayModal
                     deviation: 4
                     radius: Math.max(0, overlayModal.radius)
                     samples: 16
