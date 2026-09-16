@@ -159,6 +159,11 @@ SkinPointer SkinLoader::getConfiguredSkin() const {
 }
 
 QString SkinLoader::getDefaultSkinName() const {
+#ifdef MIXXX_USE_QML
+    if (CmdlineArgs::Instance().isQml()) {
+        return "LateNightQML";
+    }
+#endif
     return "LateNight";
 }
 
@@ -169,10 +174,9 @@ QWidget* SkinLoader::loadConfiguredSkin(QWidget* pParent,
     SkinPointer pSkin = getConfiguredSkin();
 
     // If we don't have a skin then fail. This makes sense here, because the
-    // method above already tried to fall back to the default skin if the
-    // configured one is not available. If `pSkin` is nullptr, we both the
-    // configured and the default skin were not found, so there is nothing we
-    // can do.
+    // method above already tried to fall back to the default skin if it is not
+    // available. If `pSkin` is nullptr, we both the configured and the default
+    // skin were not found, so there is nothing we can do.
     VERIFY_OR_DEBUG_ASSERT(pSkin != nullptr && pSkin->isValid()) {
         return nullptr;
     }
@@ -256,7 +260,7 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
     // This getDeveloper() check is technically redundant because the callers
     // (getSystemSkins, getSkin) already check it before scanning QML paths.
     // Kept here for defense-in-depth in case future callers forget the guard.
-    if (CmdlineArgs::Instance().getDeveloper()) {
+    if (CmdlineArgs::Instance().getDeveloper() || CmdlineArgs::Instance().isQml()) {
         pSkin = qml::QmlSkin::fromDirectory(dir);
         if (pSkin && pSkin->isValid()) {
             return pSkin;
@@ -269,7 +273,7 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
 
 bool SkinLoader::isDeveloperOnlyQmlSkin([[maybe_unused]] const QString& skinName) const {
 #ifdef MIXXX_USE_QML
-    if (CmdlineArgs::Instance().getDeveloper()) {
+    if (CmdlineArgs::Instance().getDeveloper() || CmdlineArgs::Instance().isQml()) {
         return false;
     }
     const QList<QDir> skinSearchPaths = getSkinSearchPaths();
