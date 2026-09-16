@@ -1,5 +1,4 @@
 import "." as Skin
-import "../skins/LateNightQML" as LateNightSkin
 import Mixxx 1.0 as Mixxx
 import QtQuick 2.12
 import QtQuick.Controls
@@ -40,30 +39,18 @@ ApplicationWindow {
             return;
         }
 
-        console.debug("Selecting main window component:",
-                root.useLateNightQmlSkin ? "LateNightQML.MainWindow" : "Skin.MainWindow",
+        // Keep the skin document lazy. QmlApplication owns the single
+        // application entry point (this file); the selected skin is a child
+        // component loaded only after Core is ready. On Android, packaged skins
+        // are addressable through the Android assets filesystem.
+        const sourceUrl = root.useLateNightQmlSkin
+                ? (root.isMobile
+                        ? "assets:/skins/LateNightQML/MainWindow.qml"
+                        : "qrc:/skins/LateNightQML/MainWindow.qml")
+                : "MainWindow.qml";
+        console.debug("Loading configured main window:", sourceUrl,
                 "configSkin:", Mixxx.Config.configSkin);
-        content.sourceComponent = root.useLateNightQmlSkin
-                ? lateNightMainWindowComponent
-                : androidDefaultMainWindowComponent;
-    }
-
-    Component {
-        id: androidDefaultMainWindowComponent
-
-        Skin.MainWindow {
-            applicationWindow: root
-            anchors.fill: parent
-        }
-    }
-
-    Component {
-        id: lateNightMainWindowComponent
-
-        LateNightSkin.MainWindow {
-            applicationWindow: root
-            anchors.fill: parent
-        }
+        content.setSource(sourceUrl, { "applicationWindow": root });
     }
 
     Connections {
@@ -99,12 +86,11 @@ ApplicationWindow {
         asynchronous: true
         onStatusChanged: {
             if (status === Loader.Error) {
-                console.error("Failed to instantiate configured main window:",
-                        root.useLateNightQmlSkin ? "LateNightQML.MainWindow" : "Skin.MainWindow",
+                console.error("Failed to load configured main window:", source,
                         "configSkin:", Mixxx.Config.configSkin);
-                // Do not fall back to Android Default here. A LateNight failure
-                // must remain visible as a real loading error rather than being
-                // disguised as a successful load of the legacy UI.
+                // Do not fall back to Android Default here. A skin-loading
+                // failure must remain observable instead of being disguised
+                // as a successful legacy UI load.
             }
         }
     }
