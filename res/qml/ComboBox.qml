@@ -4,6 +4,7 @@ import QtQuick.Controls 2.12
 import QtQuick.Shapes
 import Qt5Compat.GraphicalEffects
 import "Theme"
+import Mixxx 1.0 as Mixxx
 
 ComboBox {
     id: root
@@ -12,8 +13,39 @@ ComboBox {
     property list<var> footerItems: []
     property int popupMaxItem: 6
     property alias popupWidth: popupItem.width
+    property bool skinSelectorMode: false
 
     signal activateFooter(int index)
+
+    Component.onCompleted: {
+        // Interface.qml historically supplied a placeholder ["Unnamed"] for
+        // the Android skin selector. Turn that placeholder into the real
+        // selectable mobile QML skins without changing other ComboBoxes.
+        if (root.count === 1 && root.textAt(0) === "Unnamed") {
+            root.skinSelectorMode = true;
+            root.model = ["Android Default", "LateNight QML (Experimental)"];
+            root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+        }
+    }
+
+    Connections {
+        target: Mixxx.Config
+        enabled: root.skinSelectorMode
+        function onConfigSkinChanged() {
+            root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+        }
+    }
+
+    onCurrentIndexChanged: {
+        if (!root.skinSelectorMode || root.currentIndex < 0) {
+            return;
+        }
+        const selectedSkin = root.currentIndex === 1 ? "LateNightQML" : "";
+        if (Mixxx.Config.configSkin !== selectedSkin) {
+            Mixxx.Config.configSkin = selectedSkin;
+            Mixxx.Application.reloadSkin();
+        }
+    }
 
     indicator.width: 20
 

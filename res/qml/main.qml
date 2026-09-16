@@ -11,6 +11,7 @@ ApplicationWindow {
     readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
     readonly property int designWidth: 1792
     readonly property int designHeight: 1008
+    readonly property bool useLateNightQmlSkin: isMobile && Mixxx.Config.configSkin === "LateNightQML"
     property var bitGridOverlay: bitgridOverlay.item
 
     color: Theme.backgroundColor
@@ -30,14 +31,42 @@ ApplicationWindow {
                 : Window.Windowed;
     }
 
+    function loadConfiguredSkin() {
+        if (!Mixxx.Core.ready) {
+            return;
+        }
+
+        const sourceUrl = root.useLateNightQmlSkin
+                ? "assets:/skins/LateNightQML/MainWindow.qml"
+                : "MainWindow.qml";
+        content.setSource(sourceUrl, { "applicationWindow": root });
+    }
+
     Connections {
         target: Mixxx.Core
         function onReadyChanged() {
             root.updateVisibility();
+            if (Mixxx.Core.ready) {
+                root.loadConfiguredSkin();
+            }
         }
     }
 
-    Component.onCompleted: root.updateVisibility()
+    Connections {
+        target: Mixxx.Config
+        function onConfigSkinChanged() {
+            if (Mixxx.Core.ready) {
+                root.loadConfiguredSkin();
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        root.updateVisibility();
+        if (Mixxx.Core.ready) {
+            root.loadConfiguredSkin();
+        }
+    }
 
     Loader {
         id: content
@@ -46,13 +75,8 @@ ApplicationWindow {
         asynchronous: true
         onStatusChanged: {
             if (status === Loader.Error) {
-                console.error("Failed to load the Mixxx main window")
+                console.error("Failed to load the configured main window")
                 Qt.quit()
-            }
-        }
-        sourceComponent: Component {
-            MainWindow {
-                applicationWindow: root
             }
         }
     }
