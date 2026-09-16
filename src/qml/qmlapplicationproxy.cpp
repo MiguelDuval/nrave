@@ -1,5 +1,6 @@
 #include "qml/qmlapplicationproxy.h"
 
+#include <QDebug>
 #include <QDir>
 
 #include "config.h"
@@ -183,6 +184,13 @@ QString QmlApplicationProxy::menuShortcut(
 }
 
 void QmlApplicationProxy::reloadSkin() {
+    // Skin selection is changed directly from QML. Persist the in-memory
+    // preference before recreating the QML engine so an Android process restart
+    // cannot revert to the previous skin.
+    if (s_pConfig && !s_pConfig->save()) {
+        qWarning() << "Failed to persist QML skin selection";
+    }
+
     if (s_reloadCallback) {
         s_reloadCallback();
     }
