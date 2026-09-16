@@ -1,4 +1,5 @@
 import "." as Skin
+import "../skins/LateNightQML" as LateNightSkin
 import Mixxx 1.0 as Mixxx
 import QtQuick 2.12
 import QtQuick.Controls
@@ -39,18 +40,30 @@ ApplicationWindow {
             return;
         }
 
-        // QmlApplication is able to load the QML entry point directly from
-        // Android's packaged assets. The experimental LateNight skin is also
-        // packaged under assets:/skins, so do not depend on MANAGE_EXTERNAL_STORAGE
-        // or on a shared /storage/emulated/0/Mixxx directory just to load the skin.
-        const sourceUrl = root.useLateNightQmlSkin
-                ? (root.isMobile
-                        ? "assets:/skins/LateNightQML/MainWindow.qml"
-                        : "qrc:/skins/LateNightQML/MainWindow.qml")
-                : "MainWindow.qml";
-        console.debug("Loading configured main window:", sourceUrl,
+        console.debug("Selecting main window component:",
+                root.useLateNightQmlSkin ? "LateNightQML.MainWindow" : "Skin.MainWindow",
                 "configSkin:", Mixxx.Config.configSkin);
-        content.setSource(sourceUrl, { "applicationWindow": root });
+        content.sourceComponent = root.useLateNightQmlSkin
+                ? lateNightMainWindowComponent
+                : androidDefaultMainWindowComponent;
+    }
+
+    Component {
+        id: androidDefaultMainWindowComponent
+
+        Skin.MainWindow {
+            applicationWindow: root
+            anchors.fill: parent
+        }
+    }
+
+    Component {
+        id: lateNightMainWindowComponent
+
+        LateNightSkin.MainWindow {
+            applicationWindow: root
+            anchors.fill: parent
+        }
     }
 
     Connections {
@@ -86,15 +99,12 @@ ApplicationWindow {
         asynchronous: true
         onStatusChanged: {
             if (status === Loader.Error) {
-                console.error("Failed to load configured main window:", source,
+                console.error("Failed to instantiate configured main window:",
+                        root.useLateNightQmlSkin ? "LateNightQML.MainWindow" : "Skin.MainWindow",
                         "configSkin:", Mixxx.Config.configSkin);
-                // Never turn a skin-loading error into a total application exit.
-                // Fall back to the known-good Android/default QML window so the
-                // application remains usable and the skin problem is diagnosable.
-                if (source !== "MainWindow.qml") {
-                    console.error("Falling back to Android Default QML window");
-                    setSource("MainWindow.qml", { "applicationWindow": root });
-                }
+                // Do not fall back to Android Default here. A LateNight failure
+                // must remain visible as a real loading error rather than being
+                // disguised as a successful load of the legacy UI.
             }
         }
     }
