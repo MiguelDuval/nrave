@@ -22,6 +22,19 @@ Item {
         width: 278
         y: root.showXfader ? 0 : Math.max(0, (parent.height - (root.showEqKnobs ? 150 : 136)) / 2)
 
+        Rectangle {
+            color: "#0a0c0f"
+            height: 94
+            radius: 3
+            width: 26
+            x: 127
+            y: 39
+            border.color: "#24282d"
+            border.width: 1
+        }
+        Rectangle { color: "#30353b"; height: 1; width: 20; x: 130; y: 44 }
+        Rectangle { color: "#30353b"; height: 1; width: 20; x: 130; y: 127 }
+
         MixerChannel2Deck {
             anchors.right: parent.horizontalCenter
             anchors.rightMargin: 25
@@ -79,7 +92,6 @@ Item {
             y: 7
         }
         LateNightControls.ImageVuMeter { group: root.groups[0]; height: 80; width: 8; x: 118; y: 46 }
-        Rectangle { color: "#040404"; height: 80; width: 14; x: 133; y: 46 }
         LateNightControls.ImageVuMeter { backgroundVariant: 0; drawGroove: false; group: "[Main]"; height: 80; levelKey: "vu_meter_left"; peakKey: "peak_indicator_left"; width: 6; x: 134; y: 46 }
         LateNightControls.ImageVuMeter { backgroundVariant: 0; drawGroove: false; group: "[Main]"; height: 80; levelKey: "vu_meter_right"; peakKey: "peak_indicator_right"; width: 6; x: 140; y: 46 }
         LateNightControls.ImageVuMeter { group: root.groups[1]; height: 80; width: 8; x: 154; y: 46 }
