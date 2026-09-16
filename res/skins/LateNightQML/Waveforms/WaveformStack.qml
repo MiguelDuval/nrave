@@ -74,6 +74,27 @@ Item {
         }
     }
 
+    // Deliberate physical-style divider: the two primary waveforms remain
+    // visually independent while the real waveform controls stay untouched.
+    Rectangle {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        color: "#31363c"
+        height: 1
+        opacity: 0.9
+        width: parent.width
+        z: 4
+    }
+    Rectangle {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        color: "#08090b"
+        height: 3
+        opacity: 0.55
+        width: parent.width
+        z: 3
+    }
+
     // Upstream LateNightQML pattern: BeatGrid is a direct overlay control
     // owned by WaveformStack, not a nested custom MouseArea/IconButton.
     Item {
