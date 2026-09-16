@@ -19,9 +19,6 @@ ComboBox {
     signal activateFooter(int index)
 
     Component.onCompleted: {
-        // Interface.qml historically supplied a placeholder ["Unnamed"] for
-        // the Android skin selector. Turn that placeholder into the real
-        // selectable mobile QML skins without changing other ComboBoxes.
         if (root.count === 1 && root.textAt(0) === "Unnamed") {
             root.skinSelectorInitializing = true;
             root.skinSelectorMode = true;
@@ -48,6 +45,7 @@ ComboBox {
         const selectedSkin = root.currentIndex === 1 ? "LateNightQML" : "";
         if (Mixxx.Config.configSkin !== selectedSkin) {
             Mixxx.Config.configSkin = selectedSkin;
+            Mixxx.Application.reloadSkin();
         }
     }
 
@@ -56,7 +54,6 @@ ComboBox {
     background: Item {
         Rectangle {
             id: background
-
             anchors.fill: parent
             anchors.margins: 4
             border.color: '#000000'
@@ -66,7 +63,6 @@ ComboBox {
         }
         InnerShadow {
             id: bottomInnerEffect
-
             anchors.fill: parent
             color: "#40000000"
             horizontalOffset: -2
@@ -78,7 +74,6 @@ ComboBox {
         }
         InnerShadow {
             id: topInnerEffect
-
             anchors.fill: parent
             color: "#40000000"
             horizontalOffset: 2
@@ -108,15 +103,12 @@ ComboBox {
     }
     delegate: ItemDelegate {
         id: itemDlgt
-
         required property int index
-
         highlighted: root.highlightedIndex === this.index
         padding: 4
         text: root.textAt(this.index)
         verticalPadding: 8
         width: root.width
-
         background: Rectangle {
             border.color: itemDlgt.highlighted ? Theme.deckLineColor : "transparent"
             border.width: 1
@@ -133,24 +125,19 @@ ComboBox {
     }
     popup: Popup {
         id: popupItem
-
         height: root.contentItem.height * (Math.min(root.popupMaxItem, Math.max(root.count, 1)) + 1)
         padding: 0
         width: root.width
         x: root.width - width
         y: root.height - 4
-
         background: Item {
         }
         contentItem: Item {
             Item {
                 id: content
-
                 anchors.fill: parent
-
                 Shape {
                     id: listIndicator
-
                     anchors.right: parent.right
                     anchors.rightMargin: 3
                     anchors.top: parent.top
@@ -159,7 +146,6 @@ ComboBox {
                     layer.enabled: true
                     layer.samples: 4
                     width: 20
-
                     ShapePath {
                         capStyle: ShapePath.RoundCap
                         fillColor: Theme.embeddedBackgroundColor
@@ -168,19 +154,9 @@ ComboBox {
                         startY: 0
                         strokeColor: Theme.embeddedBackgroundColor
                         strokeWidth: 2
-
-                        PathLine {
-                            x: listIndicator.width
-                            y: listIndicator.height
-                        }
-                        PathLine {
-                            x: 0
-                            y: listIndicator.height
-                        }
-                        PathLine {
-                            x: listIndicator.width / 2
-                            y: 0
-                        }
+                        PathLine { x: listIndicator.width; y: listIndicator.height }
+                        PathLine { x: 0; y: listIndicator.height }
+                        PathLine { x: listIndicator.width / 2; y: 0 }
                     }
                 }
                 Skin.EmbeddedBackground {
@@ -189,7 +165,6 @@ ComboBox {
                     anchors.right: parent.right
                     anchors.top: listIndicator.bottom
                     clip: true
-
                     ListView {
                         anchors.fill: parent
                         bottomMargin: 0
@@ -199,28 +174,23 @@ ComboBox {
                         model: root.popup.visible ? root.delegateModel : null
                         rightMargin: 0
                         topMargin: 0
-
                         ScrollIndicator.vertical: ScrollIndicator {
                         }
                         footer: Item {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             height: childrenRect.height
-
                             Repeater {
                                 model: root.footerItems
-
                                 Rectangle {
                                     y: index * height
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     color: "transparent"
                                     height: root.contentItem.height
-
                                     Item {
                                         anchors.fill: parent
                                         anchors.margins: 6
-
                                         Text {
                                             anchors.bottom: parent.bottom
                                             anchors.top: parent.top
@@ -241,13 +211,9 @@ ComboBox {
                                     }
                                     MouseArea {
                                         id: footerItemMouseArea
-
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
-
-                                        onPressed: {
-                                            root.activateFooter(index);
-                                        }
+                                        onPressed: root.activateFooter(index)
                                     }
                                 }
                             }
