@@ -14,6 +14,7 @@ ComboBox {
     property int popupMaxItem: 6
     property alias popupWidth: popupItem.width
     property bool skinSelectorMode: false
+    property bool skinSelectorInitializing: false
 
     signal activateFooter(int index)
 
@@ -22,9 +23,11 @@ ComboBox {
         // the Android skin selector. Turn that placeholder into the real
         // selectable mobile QML skins without changing other ComboBoxes.
         if (root.count === 1 && root.textAt(0) === "Unnamed") {
+            root.skinSelectorInitializing = true;
             root.skinSelectorMode = true;
             root.model = ["Android Default", "LateNight QML (Experimental)"];
             root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+            root.skinSelectorInitializing = false;
         }
     }
 
@@ -32,12 +35,14 @@ ComboBox {
         target: Mixxx.Config
         enabled: root.skinSelectorMode
         function onConfigSkinChanged() {
-            root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+            if (!root.skinSelectorInitializing) {
+                root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+            }
         }
     }
 
     onCurrentIndexChanged: {
-        if (!root.skinSelectorMode || root.currentIndex < 0) {
+        if (!root.skinSelectorMode || root.skinSelectorInitializing || root.currentIndex < 0) {
             return;
         }
         const selectedSkin = root.currentIndex === 1 ? "LateNightQML" : "";
