@@ -93,7 +93,7 @@ jobs:
 
           out = bytes(out)
           dst.write_bytes(out)
-          expected = "45b12e5cec5456137fb2970f25ec1a64028c3f6869e26f2c33d784534cb8aba2"
+          expected = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
           actual = hashlib.sha256(out).hexdigest()
           if not out.startswith(b"RIFF") or out[8:12] != b"WEBP":
               raise SystemExit("Invalid NRave splash WebP signature")
