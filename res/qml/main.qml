@@ -39,8 +39,14 @@ ApplicationWindow {
             return;
         }
 
+        // QmlApplication is able to load the QML entry point directly from
+        // Android's packaged assets. The experimental LateNight skin is also
+        // packaged under assets:/skins, so do not depend on MANAGE_EXTERNAL_STORAGE
+        // or on a shared /storage/emulated/0/Mixxx directory just to load the skin.
         const sourceUrl = root.useLateNightQmlSkin
-                ? "../skins/LateNightQML/MainWindow.qml"
+                ? (root.isMobile
+                        ? "assets:/skins/LateNightQML/MainWindow.qml"
+                        : "qrc:/skins/LateNightQML/MainWindow.qml")
                 : "MainWindow.qml";
         console.debug("Loading configured main window:", sourceUrl,
                 "configSkin:", Mixxx.Config.configSkin);
