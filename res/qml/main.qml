@@ -40,7 +40,7 @@ ApplicationWindow {
         }
 
         const sourceUrl = root.useLateNightQmlSkin
-                ? "qrc:/skins/LateNightQML/MainWindow.qml"
+                ? "../skins/LateNightQML/MainWindow.qml"
                 : "MainWindow.qml";
         console.debug("Loading configured main window:", sourceUrl,
                 "configSkin:", Mixxx.Config.configSkin);
@@ -93,8 +93,6 @@ ApplicationWindow {
         }
     }
 
-    // This is the real Android QML runtime entrypoint. QmlApplication on
-    // Android copies res/qml into external storage and always loads this file.
     Loader {
         id: abletonLinkOverlay
         anchors.fill: parent
@@ -104,11 +102,6 @@ ApplicationWindow {
         source: "AbletonLinkOverlay.qml"
     }
 
-    // IMPORTANT: this Loader is deliberately created only after Mixxx.Core is
-    // ready and MainWindow has loaded. ControlProxy objects inside
-    // BitGridOverlay therefore see the already-created engine controls.
-    // The overlay itself spans the whole Android window so its editor panel
-    // can be laid out independently from the compact entry buttons.
     Loader {
         id: bitgridOverlay
         anchors.fill: parent
@@ -117,9 +110,6 @@ ApplicationWindow {
         z: 100000
         source: "BitGridOverlay.qml"
     }
-
-    // Samplers are rendered by MainWindow.qml through the Android-safe
-    // SamplerRow adapter. Do not create a second root-level sampler instance.
 
     Rectangle {
         id: splash
