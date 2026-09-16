@@ -1,5 +1,3 @@
-pragma ComponentBehavior: Bound
-
 import QtQuick
 import QtQuick.Layouts
 import Mixxx 1.0 as Mixxx
@@ -87,7 +85,6 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        // Row 1: Title and Elapsed/Remaining Time
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 20
@@ -103,7 +100,7 @@ Item {
                 displayProperty: "titleInfo"
                 editProperty: "title"
                 editable: true
-                pixelSize: 16
+                pixelSize: 17
                 textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
             }
 
@@ -127,7 +124,6 @@ Item {
             }
         }
 
-        // Row 2: 2px Track Color Strip
         Rectangle {
             id: trackColorStrip
             Layout.fillWidth: true
@@ -136,7 +132,6 @@ Item {
             visible: root.hasVisibleTrackColor
         }
 
-        // Spacer when color strip is invisible to keep height stable
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 2
@@ -144,7 +139,6 @@ Item {
             visible: !trackColorStrip.visible
         }
 
-        // Row 3: Artist and Duration
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 16
@@ -160,8 +154,8 @@ Item {
                 displayProperty: "artist"
                 editProperty: "artist"
                 editable: true
-                pixelSize: 18
-                textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
+                pixelSize: 13
+                textColor: root.isLoaded ? LateNightTheme.secondaryDeckTextColor : LateNightTheme.textColorMuted
             }
 
             LateNightTrackPropertyText {
@@ -172,7 +166,7 @@ Item {
                 text: root.isLoaded ? root.formatDuration(durationProxy.value) : ""
                 displayProperty: "durationTextSeconds"
                 editable: false
-                pixelSize: 13
+                pixelSize: 12
                 textColor: root.isLoaded ? LateNightTheme.deckTimeTextColor : LateNightTheme.textColorMuted
                 horizontalAlignment: Text.AlignRight
                 horizontalPadding: 6
