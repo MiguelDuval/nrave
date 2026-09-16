@@ -3,12 +3,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import "LateNightTheme"
-import "Samplers" as LateNightSamplers
 
 ApplicationWindow {
     id: root
+
     property int displayedProgress: 0
-    property bool diagnosticForcePanel: false
+
     color: startupScreen.backgroundColor
     height: 1008
     menuBar: mainWindowLoader.item ? mainWindowLoader.item.menuBar : null
@@ -17,28 +17,12 @@ ApplicationWindow {
     visible: true
     width: 1792
 
-    Mixxx.ControlProxy { id: bitgrid1Action; group: "[Channel1]"; key: "beats_translate_curpos" }
-    Mixxx.ControlProxy { id: bitgrid2Action; group: "[Channel2]"; key: "beats_translate_curpos" }
-    Mixxx.ControlProxy { id: abletonLinkControl; group: "[AbletonLink]"; key: "sync_enabled" }
-    Mixxx.ControlProxy {
-        id: numSamplersControl
-        group: "[App]"
-        key: "num_samplers"
-        onInitializedChanged: {
-            if (initialized && value < 8)
-                value = 8;
-        }
-    }
-    Mixxx.ControlProxy {
-        id: diagnosticShowSamplersControl
-        group: "[Skin]"
-        key: "show_samplers"
-    }
-
     function updateVisibility() {
-        if (!Mixxx.Core.ready) return;
+        if (!Mixxx.Core.ready)
+            return;
         root.visibility = Mixxx.Config.configStartInFullscreenKey ? Window.FullScreen : Window.Windowed;
     }
+
     function updateProgress() {
         if (!Mixxx.Core.ready)
             displayedProgress = Math.max(displayedProgress, Mixxx.Core.initializationProgress);
@@ -47,6 +31,7 @@ ApplicationWindow {
         else
             displayedProgress = Math.max(displayedProgress, 65 + Math.round(mainWindowLoader.progress * 34));
     }
+
     function handleMainWindowLoaderStatus() {
         root.updateProgress();
         if (mainWindowLoader.status === Loader.Error) {
@@ -54,209 +39,56 @@ ApplicationWindow {
             Qt.quit();
         }
     }
+
     Connections {
         target: Mixxx.Core
-        function onInitializationProgressChanged() { root.updateProgress(); root.updateVisibility(); }
-        function onReadyChanged() { root.updateProgress(); root.updateVisibility(); }
+
+        function onInitializationProgressChanged() {
+            root.updateProgress();
+            root.updateVisibility();
+        }
+
+        function onReadyChanged() {
+            root.updateProgress();
+            root.updateVisibility();
+        }
     }
 
     Loader {
         id: mainWindowLoader
-        anchors.fill: parent
+
         active: Mixxx.Core.ready
+        anchors.fill: parent
         asynchronous: true
         onProgressChanged: root.updateProgress()
         onStatusChanged: root.handleMainWindowLoaderStatus()
-        sourceComponent: Component { MainWindow { applicationWindow: root; anchors.fill: parent } }
-    }
 
-    Rectangle {
-        id: bitgridBar
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.topMargin: 27
-        color: LateNightTheme.toolbarRootBackgroundColor
-        height: 34
-        width: 283
-        z: 10000
-        Row {
-            anchors.fill: parent
-            anchors.margins: 4
-            spacing: 4
-            Repeater {
-                model: ["BITGRID 1", "BITGRID 2", "LINK"]
-                Rectangle {
-                    required property string modelData
-                    color: mouse.pressed ? LateNightTheme.toolbarButtonActiveBackgroundColor : LateNightTheme.toolbarButtonInactiveBackgroundColor
-                    height: parent.height
-                    radius: 2
-                    width: 89
-                    Text {
-                        anchors.fill: parent
-                        color: LateNightTheme.toolbarButtonInactiveTextColor
-                        font.family: "Open Sans"
-                        font.pixelSize: 12
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: modelData
-                    }
-                    MouseArea {
-                        id: mouse
-                        anchors.fill: parent
-                        onClicked: {
-                            if (modelData === "BITGRID 1") bitgrid1Action.trigger();
-                            else if (modelData === "BITGRID 2") bitgrid2Action.trigger();
-                            else abletonLinkControl.value = abletonLinkControl.value > 0.0 ? 0.0 : 1.0;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        id: samplerDiagnosticPanel
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: bitgridBar.bottom
-        anchors.topMargin: 4
-        height: 106
-        color: "#ff00aa"
-        border.color: "#ffffff"
-        border.width: 2
-        z: 20000
-        visible: Qt.platform.os === "android"
-
-        Column {
-            anchors.fill: parent
-            anchors.margins: 5
-            spacing: 2
-
-            Text {
-                color: "#ffffff"
-                font.pixelSize: 13
-                font.bold: true
-                text: "SAMPLER DIAGNOSTIC BUILD"
-            }
-            Text {
-                color: "#ffffff"
-                font.pixelSize: 12
-                text: "OS=" + Qt.platform.os
-                    + "  Loader=" + mainWindowLoader.status
-                    + "  Main.showSamplers=" + (mainWindowLoader.item ? mainWindowLoader.item.showSamplers : "<null>")
-            }
-            Text {
-                color: "#ffffff"
-                font.pixelSize: 12
-                text: "Skin/show_samplers=" + diagnosticShowSamplersControl.value
-                    + "  App/num_samplers=" + numSamplersControl.value
-                    + "  RealPanel.visible=" + mobileSamplerPanel.visible
-            }
-            Row {
-                spacing: 5
-                Rectangle {
-                    width: 150
-                    height: 24
-                    radius: 3
-                    color: "#111111"
-                    Text { anchors.fill: parent; color: "#ffffff"; text: "TOGGLE Skin control"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 11 }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: diagnosticShowSamplersControl.value = diagnosticShowSamplersControl.value > 0.5 ? 0.0 : 1.0
-                    }
-                }
-                Rectangle {
-                    width: 150
-                    height: 24
-                    radius: 3
-                    color: "#111111"
-                    Text { anchors.fill: parent; color: "#ffffff"; text: "TOGGLE test panel"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; font.pixelSize: 11 }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: diagnosticForcePanel = !diagnosticForcePanel
-                    }
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        id: diagnosticTestStrip
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: samplerDiagnosticPanel.bottom
-        anchors.topMargin: 3
-        height: 44
-        color: "#00d5ff"
-        border.color: "#ffffff"
-        border.width: 2
-        z: 20000
-        visible: Qt.platform.os === "android" && (diagnosticForcePanel || (mainWindowLoader.item && mainWindowLoader.item.showSamplers))
-
-        Row {
-            anchors.fill: parent
-            anchors.margins: 3
-            spacing: 3
-            Repeater {
-                model: 8
-                Rectangle {
-                    width: (parent.width - 21) / 8
-                    height: parent.height
-                    color: "#101010"
-                    radius: 2
-                    Text {
-                        anchors.fill: parent
-                        color: "#ffffff"
-                        text: "S" + (index + 1)
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: 12
-                        font.bold: true
-                    }
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        id: mobileSamplerPanel
-        visible: Qt.platform.os === "android" && mainWindowLoader.status === Loader.Ready && (numSamplersControl.value >= 8) && (mainWindowLoader.item && mainWindowLoader.item.showSamplers)
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: bitgridBar.bottom
-        anchors.topMargin: 4
-        height: 46
-        color: LateNightTheme.samplerPanelColor
-        border.color: LateNightTheme.mixerPanelBorderTop
-        border.width: 1
-        z: 10000
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 2
-            spacing: 2
-
-            Repeater {
-                model: 8
-
-                LateNightSamplers.SamplerMini {
-                    required property int index
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    group: "[Sampler" + (index + 1) + "]"
-                }
+        sourceComponent: Component {
+            MainWindow {
+                applicationWindow: root
+                anchors.fill: parent
             }
         }
     }
 
     StartupScreen {
         id: startupScreen
+
         anchors.fill: parent
         opacity: mainWindowLoader.status === Loader.Ready ? 0 : 1
         progress: root.displayedProgress
         visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+        }
     }
-    Component.onCompleted: { updateProgress(); updateVisibility(); }
+
+    Component.onCompleted: {
+        updateProgress();
+        updateVisibility();
+    }
 }
