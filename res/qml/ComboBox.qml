@@ -48,7 +48,6 @@ ComboBox {
         const selectedSkin = root.currentIndex === 1 ? "LateNightQML" : "";
         if (Mixxx.Config.configSkin !== selectedSkin) {
             Mixxx.Config.configSkin = selectedSkin;
-            Mixxx.Application.reloadSkin();
         }
     }
 
