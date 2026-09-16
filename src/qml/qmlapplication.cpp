@@ -52,8 +52,6 @@ QString normalizedColorScheme(const QString& colorScheme) {
     return QStringLiteral("PaleMoon");
 }
 
-// Converts a (capturing) lambda into a function pointer that can be passed to
-// qmlRegisterSingletonType.
 template<class F>
 auto lambda_to_singleton_type_factory_ptr(F&& f) {
     static F fn = std::forward<F>(f);
@@ -62,15 +60,11 @@ auto lambda_to_singleton_type_factory_ptr(F&& f) {
     };
 }
 #if defined(Q_OS_ANDROID)
-// Directories under res/qml/ that are compiled into the binary as QML modules
-// and should not be copied to external storage.
 const QStringList kSkipQmlDirs = {
         QStringLiteral("Mixxx"),
 };
 
 bool canWriteToExternalStorage() {
-    // API 30+ (Android 11+) requires MANAGE_EXTERNAL_STORAGE.
-    // Older: WRITE_EXTERNAL_STORAGE is granted at install time.
     if (android_get_device_api_level() >= 30) {
         return QJniObject::callStaticMethod<jboolean>(
                 "android/os/Environment", "isExternalStorageManager");
@@ -127,6 +121,8 @@ QmlApplication::QmlApplication(
     if (canWriteToExternalStorage()) {
         const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
         copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
+        copyAssetDir(QStringLiteral("assets:/skins"),
+                QStringLiteral("/storage/emulated/0/Mixxx/skins"));
         m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
     }
 #endif
@@ -166,15 +162,6 @@ QmlApplication::QmlApplication(
     QString configVersion = m_pCoreServices->getSettings()->getValue(
             ConfigKey("[Config]", "Version"), "");
 
-    // The risk check guards against Mixxx 3.0 potentially running different
-    // database upgrade paths that could corrupt 2.x profiles.
-    //
-    // When a QML skin is auto-detected from preferences (--developer, no
-    // --new-ui), the underlying binary and DB schema are identical to a
-    // normal 2.x launch — there is no data corruption risk. Skip the gate.
-    //
-    // When explicitly launched with --new-ui, the full 3.0 application path
-    // is taken and the gate remains in effect as designed.
     const bool viaNewUiFlag = CmdlineArgs::Instance().isQml();
 
     if (configVersion == VersionStore::FUTURE_UNSTABLE) {
@@ -218,12 +205,7 @@ QmlApplication::QmlApplication(
 
     setupSpinnyCoverControls();
 
-    // FIXME: DlgPreferences has some initialization logic that must be executed
-    // before the GUI is shown, at least for the effects system.
     std::shared_ptr<QDialog> pDlgPreferences = m_pCoreServices->makeDlgPreferences();
-    // Without this, QApplication will quit when the last QWidget QWindow is
-    // closed because it does not take into account the window created by
-    // the QQmlApplicationEngine.
     pDlgPreferences->setAttribute(Qt::WA_QuitOnClose, false);
 
     auto showNoInputConfiguredWarning = [pDlgPreferences](
@@ -266,8 +248,6 @@ QmlApplication::QmlApplication(
                            "hardware preferences first."));
             });
 
-    // Since DlgPreferences is only meant to be used in the main QML engine, it
-    // follows a strict singleton pattern design
     QmlDlgPreferencesProxy::s_pInstance =
             std::make_unique<QmlDlgPreferencesProxy>(pDlgPreferences, this);
     QmlRecordingProxy::s_pRecordingManager = m_pCoreServices->getRecordingManager();
@@ -351,7 +331,6 @@ void QmlApplication::slotFrameSwapped() {
 
 QmlApplication::~QmlApplication() {
     QmlApplicationProxy::registerReloadCallback({});
-    // Delete all the QML singletons in order to prevent leak detection in CoreService
     QmlRecordingProxy::s_pRecordingManager.reset();
     QmlDlgPreferencesProxy::s_pInstance.reset();
     m_visualsManager.reset();
@@ -405,8 +384,6 @@ void QmlApplication::updateSpinnyCoverControls() {
 }
 
 bool QmlApplication::loadQml(const QString& path) {
-    // QQmlApplicationEngine::load creates a new window but also leaves the old one,
-    // so it is necessary to destroy the old QQmlApplicationEngine and create a new one.
     m_pAppEngine = std::make_unique<QQmlApplicationEngine>();
     m_pAppEngine->setUiLanguage(QLocale().name());
 
