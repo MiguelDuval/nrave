@@ -22,8 +22,13 @@ ComboBox {
         if (root.count === 1 && root.textAt(0) === "Unnamed") {
             root.skinSelectorInitializing = true;
             root.skinSelectorMode = true;
-            root.model = ["Android Default", "LateNight QML (Experimental)"];
-            root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+
+            // Mobile skins use explicit identifiers. An empty ResizableSkin
+            // value means "not explicitly selected", so keep LateNight as the
+            // new mobile default rather than conflating it with Android Default.
+            root.model = ["LateNight QML (Experimental)", "Android Default"];
+            root.currentIndex =
+                    Mixxx.Config.configSkin === "AndroidDefault" ? 1 : 0;
             root.skinSelectorInitializing = false;
         }
     }
@@ -33,7 +38,8 @@ ComboBox {
         enabled: root.skinSelectorMode
         function onConfigSkinChanged() {
             if (!root.skinSelectorInitializing) {
-                root.currentIndex = Mixxx.Config.configSkin === "LateNightQML" ? 1 : 0;
+                root.currentIndex =
+                        Mixxx.Config.configSkin === "AndroidDefault" ? 1 : 0;
             }
         }
     }
@@ -42,7 +48,8 @@ ComboBox {
         if (!root.skinSelectorMode || root.skinSelectorInitializing || root.currentIndex < 0) {
             return;
         }
-        const selectedSkin = root.currentIndex === 1 ? "LateNightQML" : "";
+
+        const selectedSkin = root.currentIndex === 0 ? "LateNightQML" : "AndroidDefault";
         if (Mixxx.Config.configSkin !== selectedSkin) {
             Mixxx.Config.configSkin = selectedSkin;
             Mixxx.Application.reloadSkin();
@@ -220,14 +227,6 @@ ComboBox {
                         }
                     }
                 }
-            }
-            DropShadow {
-                anchors.fill: parent
-                color: "#000000"
-                horizontalOffset: 0
-                radius: 8.0
-                source: content
-                verticalOffset: 0
             }
         }
     }
