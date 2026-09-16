@@ -228,6 +228,14 @@ ComboBox {
                     }
                 }
             }
+            DropShadow {
+                anchors.fill: parent
+                color: "#000000"
+                horizontalOffset: 0
+                radius: 8.0
+                source: content
+                verticalOffset: 0
+            }
         }
     }
 }
