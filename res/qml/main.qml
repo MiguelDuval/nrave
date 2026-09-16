@@ -11,7 +11,10 @@ ApplicationWindow {
     readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
     readonly property int designWidth: 1792
     readonly property int designHeight: 1008
-    readonly property bool useLateNightQmlSkin: isMobile && Mixxx.Config.configSkin === "LateNightQML"
+    // On mobile, an empty ResizableSkin means no explicit skin has been
+    // selected yet. LateNight QML is the new mobile default; Android Default
+    // is represented explicitly by the "AndroidDefault" identifier.
+    readonly property bool useLateNightQmlSkin: isMobile && Mixxx.Config.configSkin !== "AndroidDefault"
     property var bitGridOverlay: bitgridOverlay.item
 
     color: Theme.backgroundColor
