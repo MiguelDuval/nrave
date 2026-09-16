@@ -40,8 +40,10 @@ ApplicationWindow {
         }
 
         const sourceUrl = root.useLateNightQmlSkin
-                ? "assets:/skins/LateNightQML/MainWindow.qml"
+                ? "qrc:/skins/LateNightQML/MainWindow.qml"
                 : "MainWindow.qml";
+        console.debug("Loading configured main window:", sourceUrl,
+                "configSkin:", Mixxx.Config.configSkin);
         content.setSource(sourceUrl, { "applicationWindow": root });
     }
 
@@ -78,8 +80,15 @@ ApplicationWindow {
         asynchronous: true
         onStatusChanged: {
             if (status === Loader.Error) {
-                console.error("Failed to load the configured main window")
-                Qt.quit()
+                console.error("Failed to load configured main window:", source,
+                        "configSkin:", Mixxx.Config.configSkin);
+                // Never turn a skin-loading error into a total application exit.
+                // Fall back to the known-good Android/default QML window so the
+                // application remains usable and the skin problem is diagnosable.
+                if (source !== "MainWindow.qml") {
+                    console.error("Falling back to Android Default QML window");
+                    setSource("MainWindow.qml", { "applicationWindow": root });
+                }
             }
         }
     }
