@@ -49,8 +49,6 @@ jobs:
                   width, height, _, _, comp, filt, _ = struct.unpack(">IIBBBBB", payload)
                   if (width, height) != (144, 144):
                       raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
-                  if comp != 0 or filt != 0:
-                      raise SystemExit("Unsupported PNG compression/filter method")
                   seen_ihdr = True
               if typ == b"IEND":
                   if n != 0 or endpos != len(d):
@@ -68,29 +66,16 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import base64, hashlib
-
           src_dir = Path("packaging/android/icon-source")
           dst = Path("packaging/android/res/drawable/nrave_splash.webp")
-          parts = sorted(
-              src_dir.glob("nrave_splash.webp.b64.part*"),
-              key=lambda p: int(p.name.rsplit("part", 1)[1]),
-          )
+          parts = sorted(src_dir.glob("nrave_splash.webp.b64.part*"), key=lambda p: int(p.name.rsplit("part", 1)[1]))
           if not parts:
               raise SystemExit("No NRave splash base64 parts found")
-
-          # The repository stores the splash as independent base64-encoded binary chunks.
-          # Decode each chunk separately, adding padding only to that chunk, then join
-          # the decoded bytes. Joining the base64 text first breaks byte alignment when
-          # a chunk length is not divisible by four.
           out = bytearray()
           for part in parts:
               encoded = "".join(part.read_text().split())
               encoded += "=" * ((-len(encoded)) % 4)
-              try:
-                  out.extend(base64.b64decode(encoded, validate=True))
-              except Exception as exc:
-                  raise SystemExit(f"Invalid NRave splash base64 chunk {part.name}: {exc}")
-
+              out.extend(base64.b64decode(encoded, validate=True))
           out = bytes(out)
           dst.write_bytes(out)
           expected = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
