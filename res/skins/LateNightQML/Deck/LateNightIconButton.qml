@@ -79,7 +79,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         anchors.margins: root.fillMargin
-        radius: root.fillRadius
+        // Circular buttons for DJ UI
+        radius: Math.min(parent.width, parent.height) / 2
         visible: !root.solidFillEnabled && root.fillColor.toString() !== "#00000000" && root.fillColor.toString() !== "transparent"
 
         gradient: Gradient {

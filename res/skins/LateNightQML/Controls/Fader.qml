@@ -28,7 +28,7 @@ Skin.ControlFader {
         fillMode: Image.PreserveAspectFit
     }
 
-    // Keep the public handleSource API intact, but always render a clearly
+// Keep the public handleSource API intact, but always render a clearly
     // visible hardware-style position cap so the current value is readable.
     handle: Item {
         id: handleRoot
@@ -46,7 +46,9 @@ Skin.ControlFader {
 
             anchors.fill: parent
             fillMode: Image.PreserveAspectFit
-            opacity: source && source.toString().length > 0 ? 0.18 : 0
+            // Use SVG source when provided (knob_volume_deck.svg, knob_crossfader.svg, knob_pitch_deck.svg)
+            source: root.handleSource
+            opacity: source && source.toString().length > 0 ? 1.0 : 0.18
         }
 
         Rectangle {

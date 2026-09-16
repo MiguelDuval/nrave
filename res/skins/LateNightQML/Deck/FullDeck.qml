@@ -8,7 +8,7 @@ import "../Waveforms"
 Controls.Panel {
     id: root
 
-    implicitHeight: root.minimized ? 72 : 180
+    implicitHeight: root.minimized ? 64 : 164
     implicitWidth: 620
 
     required property string group
@@ -139,26 +139,26 @@ Controls.Panel {
                 id: middleDeckRow
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                Layout.minimumHeight: root.minimized ? 60 : 106
-                Layout.preferredHeight: root.minimized ? 60 : 106
-                Layout.maximumHeight: root.minimized ? 60 : 106
-                spacing: 6
+                Layout.minimumHeight: root.minimized ? 56 : 96
+                Layout.preferredHeight: root.minimized ? 56 : 96
+                Layout.maximumHeight: root.minimized ? 56 : 96
+                spacing: 5
 
-                SpinnyCoverSlot { id: leftSpinnyBig; Layout.preferredHeight: 100; Layout.preferredWidth: 100; group: root.group; visible: root.showBigSpinnyOrCover && !root.minimized }
+                SpinnyCoverSlot { id: leftSpinnyBig; Layout.preferredHeight: 90; Layout.preferredWidth: 90; group: root.group; visible: root.showBigSpinnyOrCover && !root.minimized }
 
                 ColumnLayout {
                     id: titleOverviewColumn
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Layout.preferredHeight: root.minimized ? 60 : 106
+                    Layout.preferredHeight: root.minimized ? 56 : 96
                     spacing: 2
 
                     TitleTimeRows {
                         id: titleTimeRows
                         Layout.fillWidth: true
-                        Layout.minimumHeight: root.minimized ? 40 : 38
-                        Layout.preferredHeight: root.minimized ? 40 : 38
-                        Layout.maximumHeight: root.minimized ? 40 : 38
+                        Layout.minimumHeight: root.minimized ? 36 : 34
+                        Layout.preferredHeight: root.minimized ? 36 : 34
+                        Layout.maximumHeight: root.minimized ? 36 : 34
                         group: root.group
                         TapHandler { onDoubleTapped: root.toggleFocus() }
                     }
@@ -167,9 +167,9 @@ Controls.Panel {
                         id: overviewAndSpinnyRow
                         Layout.fillWidth: true
                         Layout.fillHeight: false
-                        Layout.minimumHeight: root.minimized ? 20 : 68
-                        Layout.preferredHeight: root.minimized ? 20 : 68
-                        Layout.maximumHeight: root.minimized ? 20 : 68
+                        Layout.minimumHeight: root.minimized ? 20 : 62
+                        Layout.preferredHeight: root.minimized ? 20 : 62
+                        Layout.maximumHeight: root.minimized ? 20 : 62
                         spacing: 1
 
                         DeckBeatgridEditor {
@@ -185,7 +185,7 @@ Controls.Panel {
                             z: 20
                         }
 
-                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 60; Layout.preferredWidth: 60; group: root.group; visible: root.showSmallSpinnyOrCover }
+                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 54; Layout.preferredWidth: 54; group: root.group; visible: root.showSmallSpinnyOrCover }
                         OverviewRow { id: overviewRow; Layout.fillWidth: true; Layout.fillHeight: true; group: root.group }
                     }
                 }
