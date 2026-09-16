@@ -6,40 +6,71 @@ Skin.ControlKnob {
     id: root
 
     readonly property int arcRenderScale: 8
-    property url backgroundSource: LateNightTheme.assetRegularKnobBackground
     property bool displayArc: false
     property color displayArcColor: "transparent"
     property real displayArcOffsetY: 1.998
     property real displayArcRadius: 12.5
-    property int displayArcStart: 1 // Knob.ArcStart.Center
+    property int displayArcStart: 1
     property real displayArcWidth: 2
-    property string indicatorColor: "orange"
+    property string indicatorColor: "accent"
     property string indicatorKind: "regular"
 
     angle: LateNightTheme.isClassic ? 135 : 130
     arc: false
     arcStart: displayArcStart
     color: displayArcColor
-    implicitHeight: backgroundImage.implicitHeight
-    implicitWidth: backgroundImage.implicitWidth
+    implicitHeight: 36
+    implicitWidth: 36
     knobCenterOffsetY: displayArcOffsetY
     showDefaultBackground: false
     showDefaultForeground: false
 
-    background: Image {
-        id: backgroundImage
-
+    // Replace the legacy image-based square knob with a real hardware-style
+    // control: circular graphite body + restrained edge + unambiguous position marker.
+    background: Item {
         anchors.fill: parent
-        fillMode: Image.PreserveAspectFit
-        source: root.backgroundSource
+
+        Rectangle {
+            anchors.centerIn: parent
+            color: "#15171a"
+            height: Math.min(parent.width, parent.height) - 4
+            radius: height / 2
+            width: height
+            border.color: "#32363b"
+            border.width: 1
+
+            Rectangle {
+                anchors.centerIn: parent
+                color: "#0b0d10"
+                height: parent.height - 8
+                radius: height / 2
+                width: height
+            }
+        }
     }
+
     foreground: Item {
         anchors.fill: parent
 
-        Image {
-            anchors.fill: parent
-            fillMode: Image.PreserveAspectFit
-            source: LateNightTheme.mixerKnobIndicator(root.indicatorKind, root.indicatorColor)
+        // A narrow pointer is much easier to read during performance than a
+        // square white image. ControlKnob applies the value rotation to the
+        // foreground item, preserving the existing value/interaction chain.
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            color: root.indicatorColor === "accent" ? LateNightTheme.schemeAccent : Qt.color(root.indicatorColor)
+            height: 10
+            radius: width / 2
+            width: 2
+        }
+
+        Rectangle {
+            anchors.centerIn: parent
+            color: root.indicatorColor === "accent" ? LateNightTheme.schemeAccent : Qt.color(root.indicatorColor)
+            height: 3
+            radius: 1.5
+            width: 3
         }
     }
 
