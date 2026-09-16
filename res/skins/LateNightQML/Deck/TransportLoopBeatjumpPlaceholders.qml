@@ -14,7 +14,7 @@ Item {
     property bool showIntroOutroCues: true
     property bool showLoopControls: true
 
-    height: 55
+    height: 48
     clip: true
 
     Mixxx.ControlProxy {
@@ -102,13 +102,13 @@ Item {
             rowSpacing: 0
             columnSpacing: 0
             Layout.preferredWidth: 68
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 44
 
             // Cue button: left-click = cue_default, right-click = cue_gotoandstop
             // Display from cue_indicator
             LateNightControlButton {
                 Layout.preferredWidth: 42
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 backgroundSource: LateNightTheme.lateNightSubRegionButton("medium")
                 iconSource: LateNightTheme.assetDeckCueButton
                 group: root.group
@@ -128,7 +128,7 @@ Item {
             // Reverse button: left-click = reverse, right-click = reverseroll
             LateNightControlButton {
                 Layout.preferredWidth: 26
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 backgroundSource: LateNightTheme.lateNightSubRegionButton("square")
                 activeBackgroundSuffix: "active"
                 iconSource: LateNightTheme.assetDeckReverseButton
@@ -148,7 +148,7 @@ Item {
             LateNightControlButton {
                 Layout.columnSpan: 2
                 Layout.preferredWidth: 68
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 backgroundSource: LateNightTheme.lateNightSubRegionButton("play")
                 iconSource: LateNightTheme.assetDeckPlayButton
                 group: root.group
@@ -171,7 +171,7 @@ Item {
         // Per-deck BeatGrid visibility toggle.
         LateNightControlButton {
             Layout.preferredWidth: 68
-            Layout.preferredHeight: 26
+            Layout.preferredHeight: 22
             backgroundSource: LateNightTheme.lateNightSubRegionButton("medium")
             iconSource: LateNightTheme.assetDeckBeatgridButton
             toggleable: true
@@ -208,9 +208,9 @@ Item {
             Layout.preferredWidth: 68
             Layout.minimumWidth: 68
             Layout.maximumWidth: 68
-            Layout.preferredHeight: 26
-            Layout.minimumHeight: 26
-            Layout.maximumHeight: 26
+            Layout.preferredHeight: 22
+            Layout.minimumHeight: 22
+            Layout.maximumHeight: 22
             Layout.alignment: Qt.AlignVCenter
             z: 20
 
@@ -264,7 +264,7 @@ Item {
             rowSpacing: 0
             columnSpacing: 0
             Layout.preferredWidth: root.show8Hotcues ? 104 : 52
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 44
             visible: root.showHotcues
 
             Repeater {
@@ -272,7 +272,7 @@ Item {
 
                 delegate: LateNightIconButton {
                     Layout.preferredWidth: 26
-                    Layout.preferredHeight: 26
+                    Layout.preferredHeight: 22
                     iconSource: LateNightTheme.lateNightButton("btn__" + (index + 1) + ".svg")
                     contentOpacity: 1.0
                     inactiveColor: LateNightTheme.deckEmbeddedButtonInactiveColor
@@ -291,7 +291,7 @@ Item {
             rowSpacing: 0
             columnSpacing: 0
             Layout.preferredWidth: 52
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 44
             visible: root.showIntroOutroCues
 
             Repeater {
@@ -304,7 +304,7 @@ Item {
 
                 delegate: LateNightIconButton {
                     Layout.preferredWidth: 26
-                    Layout.preferredHeight: 26
+                    Layout.preferredHeight: 22
                     iconSource: modelData
                     contentOpacity: 0.72
                     inactiveColor: LateNightTheme.deckEmbeddedButtonInactiveColor
@@ -328,12 +328,12 @@ Item {
             rowSpacing: 0
             columnSpacing: 0
             Layout.preferredWidth: 104
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 44
             visible: root.showLoopControls
 
             LateNightIconButton {
                 Layout.preferredWidth: 26
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 iconSource: LateNightTheme.assetDeckLoopButton
                 contentOpacity: 0.82
                 inactiveColor: LateNightTheme.deckDimButtonInactiveColor
@@ -342,7 +342,7 @@ Item {
             BeatSpinBoxPlaceholder {
                 Layout.columnSpan: 3
                 Layout.preferredWidth: 78
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 valueText: root.beatSizeText(beatloopSizeProxy.value)
             }
 
@@ -356,7 +356,7 @@ Item {
 
                 delegate: LateNightIconButton {
                     Layout.preferredWidth: 26
-                    Layout.preferredHeight: 26
+                    Layout.preferredHeight: 22
                     iconSource: modelData
                     contentOpacity: 0.78
                     inactiveColor: LateNightTheme.deckDimButtonInactiveColor
@@ -380,20 +380,20 @@ Item {
             rowSpacing: 0
             columnSpacing: 0
             Layout.preferredWidth: 60
-            Layout.preferredHeight: 52
+            Layout.preferredHeight: 44
             visible: root.showBeatjumpControls
 
             BeatSpinBoxPlaceholder {
                 Layout.columnSpan: 2
                 Layout.preferredWidth: 60
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 preferredWidth: 60
                 valueText: root.beatSizeText(beatjumpSizeProxy.value)
             }
 
             LateNightIconButton {
                 Layout.preferredWidth: 26
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 iconSource: LateNightTheme.assetDeckBeatjumpLeftButton
                 contentOpacity: 0.82
                 inactiveColor: LateNightTheme.deckDimButtonInactiveColor
@@ -401,7 +401,7 @@ Item {
 
             LateNightIconButton {
                 Layout.preferredWidth: 26
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 22
                 iconSource: LateNightTheme.assetDeckBeatjumpRightButton
                 contentOpacity: 0.82
                 inactiveColor: LateNightTheme.deckDimButtonInactiveColor

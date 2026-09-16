@@ -5,13 +5,13 @@ Rectangle {
     id: root
 
     property bool borderVisible: true
-    property color topBorderColor: LateNightTheme.deckPanelBorderLight
-    property color leftBorderColor: LateNightTheme.deckPanelBorderLeft
-    property color bottomBorderColor: LateNightTheme.deckPanelBorderDark
-    property color rightBorderColor: LateNightTheme.deckPanelBorderRight
+    property color topBorderColor: LateNightTheme.borderHairline
+    property color leftBorderColor: LateNightTheme.borderSubtle
+    property color bottomBorderColor: LateNightTheme.borderHairline
+    property color rightBorderColor: LateNightTheme.borderSubtle
 
-    color: LateNightTheme.backgroundColor
-    radius: 1
+    color: LateNightTheme.surfaceLevel1
+    radius: LateNightTheme.radiusSmall
 
     Rectangle {
         anchors.left: parent.left

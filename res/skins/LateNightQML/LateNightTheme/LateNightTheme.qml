@@ -132,7 +132,7 @@ QtObject {
     readonly property url assetSmallKnobBackground: lateNightAsset("knobs", "knob_bg_small.svg")
     readonly property url assetToolbarDropdownIcon: lateNightAsset("buttons", "btn__fx_selector_down.svg")
     readonly property url assetToolbarMenuIcon: lateNightAsset("buttons", "btn__menu.svg")
-    readonly property color backgroundColor: "#1e1e1e"
+    readonly property color backgroundColor: surfaceLevel0
     readonly property color beatgridDisabledCoverColor: "#b4151517"
     readonly property color bpmTapEditorBackgroundColor: "#0f0f0f"
     readonly property color bpmTapEditorButtonColor: "#171719"
@@ -145,17 +145,17 @@ QtObject {
     readonly property color darkGray: "#0f0f0f"
     readonly property color deckActiveButtonTextColor: "#000000"
     readonly property color deckBeatSpinBoxTextColor: isClassic ? "#888888" : "#a7998b"
-    readonly property color deckButtonInactiveColor: isClassic ? "#262626" : "#121213"
-    readonly property color deckDimButtonInactiveColor: isClassic ? "#262626" : "#171719"
-    readonly property color deckEmbeddedButtonInactiveColor: isClassic ? "#262626" : "#1e1e20"
-    readonly property color deckPanelBorderDark: "#0c0c0c"
-    readonly property color deckPanelBorderLeft: "#282828"
-    readonly property color deckPanelBorderLight: "#333333"
-    readonly property color deckPanelBorderRight: deckTopRowBackgroundColor
-    readonly property color deckPanelColor: "#1e1e20"
-    readonly property color deckReadonlyTextColor: isClassic ? "#888888" : "#777777"
-    readonly property color deckTimeTextColor: isClassic ? "#f0bb2b" : "#777777"
-    readonly property color deckTopRowBackgroundColor: "#181818"
+    readonly property color deckButtonInactiveColor: surfaceLevel3
+    readonly property color deckDimButtonInactiveColor: surfaceLevel3
+    readonly property color deckEmbeddedButtonInactiveColor: surfaceLevel3
+    readonly property color deckPanelBorderDark: borderHairline
+    readonly property color deckPanelBorderLeft: borderSubtle
+    readonly property color deckPanelBorderLight: borderEmphasis
+    readonly property color deckPanelBorderRight: borderSubtle
+    readonly property color deckPanelColor: surfaceLevel1
+    readonly property color deckReadonlyTextColor: textTertiary
+    readonly property color deckTimeTextColor: isClassic ? textPrimary : textSecondary
+    readonly property color deckTopRowBackgroundColor: surfaceLevel2
     readonly property color effectsAssignmentActiveTextColor: isClassic ? "#000000" : "#a7998b"
     readonly property color effectsAssignmentInactiveColor: isClassic ? "#262626" : "#151517"
     readonly property color effectsAssignmentInactiveTextColor: isClassic ? "#d2d2d1" : "#555555"
@@ -163,11 +163,11 @@ QtObject {
     readonly property color effectsControlInactiveColor: "#262626"
     readonly property color effectsControllerColor12: isClassic ? "#73b508" : "#518f00"
     readonly property color effectsControllerColor34: isClassic ? "#0795b5" : "#028392"
-    readonly property color effectsFillerColor: isClassic ? "#171717" : "#151517"
-    readonly property color effectsFocusBorderColor: isClassic ? "#d08e00" : "#257b82"
-    readonly property color effectsHeaderColor: isClassic ? "#1e1e1e" : "#151517"
-    readonly property color effectsMasterButtonInactiveColor: isClassic ? "#262626" : "#1e1e20"
-    readonly property color effectsPanelColor: isClassic ? "#1e1e1e" : "#1e1e20"
+    readonly property color effectsFillerColor: surfaceLevel2
+    readonly property color effectsFocusBorderColor: isClassic ? borderFocus : borderFocusAlt
+    readonly property color effectsHeaderColor: surfaceLevel2
+    readonly property color effectsMasterButtonInactiveColor: surfaceLevel3
+    readonly property color effectsPanelColor: surfaceLevel1
     readonly property color effectsParameterActiveColor: "#888888"
     readonly property color effectsParameterArcColor: "#6d6d6d"
     readonly property color effectsParameterInactiveColor: isClassic ? "#333333" : "#2a2a2c"
@@ -209,13 +209,13 @@ QtObject {
     readonly property color mixerMainSeparatorLightColor: isPaleMoon ? "#222222" : mixerPanelBorderLight
     readonly property color mixerSplitActiveColor: isClassic ? "#888888" : "#555555"
     readonly property color mixerSplitInactiveColor: isClassic ? deckEmbeddedButtonInactiveColor : "#222222"
-    readonly property color mixerPanelBorderBottom: isPaleMoon ? "#0c0c0c" : "#0a0a0a"
-    readonly property color mixerPanelBorderDark: "#080808"
-    readonly property color mixerPanelBorderLeft: isPaleMoon ? "#282828" : "#333333"
-    readonly property color mixerPanelBorderLight: "#343434"
-    readonly property color mixerPanelBorderRight: isPaleMoon ? "#181818" : "#0a0a0a"
-    readonly property color mixerPanelBorderTop: "#333333"
-    readonly property color mixerPanelColor: "#1d1d1f"
+    readonly property color mixerPanelBorderBottom: borderHairline
+    readonly property color mixerPanelBorderDark: borderHairline
+    readonly property color mixerPanelBorderLeft: borderSubtle
+    readonly property color mixerPanelBorderLight: borderEmphasis
+    readonly property color mixerPanelBorderRight: borderSubtle
+    readonly property color mixerPanelBorderTop: borderHairline
+    readonly property color mixerPanelColor: surfaceLevel1
     readonly property color mixerPflActiveFillColor: isClassic ? "#db0000" : "#666666"
     readonly property color mixerQuickEffectActiveColor: isClassic ? "#659f08" : "#236b00"
     readonly property color mixerQuickEffectSelectorTextColor: "#918273"
@@ -232,17 +232,17 @@ QtObject {
     readonly property color overviewHotcueBrightTextColor: "#000000"
     readonly property int overviewHotcueBrightnessThreshold: 127
     readonly property color overviewMarkerTextColor: "#ffffff"
-    readonly property color overviewRgbHighColor: "#ff0000"
-    readonly property color overviewRgbLowColor: "#0000ff"
-    readonly property color overviewRgbMidColor: "#00ff00"
-    readonly property color overviewBorderBottomColor: "#2a2a2a"
-    readonly property color overviewBorderLeftColor: "#121212"
-    readonly property color overviewBorderRightColor: "#252525"
-    readonly property color overviewBorderTopColor: "#0d0d0d"
-    readonly property color overviewSettingsBackgroundColor: isClassic ? "#151515" : "#19191a"
+    readonly property color overviewRgbHighColor: "#d5c2a2"
+    readonly property color overviewRgbLowColor: "#2154d7"
+    readonly property color overviewRgbMidColor: "#97632d"
+    readonly property color overviewBorderBottomColor: borderHairline
+    readonly property color overviewBorderLeftColor: borderSubtle
+    readonly property color overviewBorderRightColor: borderSubtle
+    readonly property color overviewBorderTopColor: borderHairline
+    readonly property color overviewSettingsBackgroundColor: surfaceLevel1
     readonly property string playCueActiveIconSuffix: isPaleMoon ? "active" : ""
-    readonly property color primaryDeckTextColor: isClassic ? "#f0bb2b" : "#c2b3a5"
-    readonly property color primaryOverviewBackgroundColor: isClassic ? "#0f0f0f" : "#19191a"
+    readonly property color primaryDeckTextColor: textPrimary
+    readonly property color primaryOverviewBackgroundColor: surfaceLevel1
     readonly property color primaryWaveformSignalColor: isClassic ? "#e7c413" : "#d9b28c"
     readonly property color samplerBpmColor: isClassic ? "#f0bb2b" : "#766b65"
     readonly property color samplerBpmSeparatorLightColor: "#292929"
@@ -257,13 +257,13 @@ QtObject {
     readonly property color samplerExpanderTopBorderColor: isClassic ? "#222222" : "#212123"
     readonly property color samplerGainArcColor: isClassic ? "#db7700" : "#8d3b11"
     readonly property color samplerGainColor: isClassic ? "#db7700" : "#b24c12"
-    readonly property color samplerOverviewBackgroundColor: isClassic ? "#151515" : "#19191a"
-    readonly property color samplerOverviewBackgroundLoadedColor: isClassic ? "#080808" : "#151515"
-    readonly property color samplerOverviewBorderBottomColor: isClassic ? "#333333" : "#2a2a2a"
-    readonly property color samplerOverviewBorderLeftColor: isClassic ? "#0a0a0a" : "#121212"
-    readonly property color samplerOverviewBorderRightColor: isClassic ? "#333333" : "#252525"
-    readonly property color samplerOverviewBorderTopColor: isClassic ? "#0a0a0a" : "#0d0d0d"
-    readonly property color samplerPanelColor: isClassic ? "#1e1e1e" : "#1e1e20"
+    readonly property color samplerOverviewBackgroundColor: surfaceLevel1
+    readonly property color samplerOverviewBackgroundLoadedColor: surfaceLevel0
+    readonly property color samplerOverviewBorderBottomColor: borderHairline
+    readonly property color samplerOverviewBorderLeftColor: borderSubtle
+    readonly property color samplerOverviewBorderRightColor: borderSubtle
+    readonly property color samplerOverviewBorderTopColor: borderHairline
+    readonly property color samplerPanelColor: surfaceLevel1
     readonly property color samplerPflActiveColor: isClassic ? "#db0000" : "#666666"
     readonly property color samplerPitchSliderBarColor: "#888888"
     readonly property color samplerSettingsBorderBottomColor: isClassic ? "#0c0c0c" : "#2a2a2a"
@@ -272,8 +272,8 @@ QtObject {
     readonly property color samplerWaveformFilteredHighColor: isClassic ? "#f3f16f" : "#a17b35"
     readonly property color samplerWaveformFilteredLowColor: isClassic ? "#e7c413" : "#d9b28c"
     readonly property color samplerWaveformFilteredMidColor: isClassic ? "#edaf27" : "#d09271"
-    readonly property color secondaryDeckTextColor: isClassic ? "#0bd9d1" : "#85bdbb"
-    readonly property color secondaryOverviewBackgroundColor: "#001b23"
+    readonly property color secondaryDeckTextColor: textSecondary
+    readonly property color secondaryOverviewBackgroundColor: surfaceLevel1
     readonly property color secondaryWaveformSignalColor: isClassic ? "#09b2ae" : "#7bc6c3"
     readonly property color starsColor12: isClassic ? "#f0bb2b" : "#988f86"
     readonly property color starsColor34: isClassic ? "#0bd9d1" : "#559b99"
@@ -281,47 +281,47 @@ QtObject {
     readonly property color syncExplicitLeaderColor: activePlayCueColor
     readonly property color syncImplicitLeaderColor: isPaleMoon ? "#7d350d" : "#db7700"
     readonly property color syncInactiveBackgroundColor: "#1e1e1e"
-    readonly property color textColor: white
-    readonly property color textColorMuted: "#696969"
-    readonly property color trackPropertyHighlightColor: "#151515"
-    readonly property color trackPropertySelectedTextColor: "#111111"
-    readonly property color trackPropertySelectionColor: white
-    readonly property color toolbarActiveColor: white
-    readonly property color toolbarBackgroundColor: "#242424"
-    readonly property color toolbarBottomBorderColor: "#020202"
+    readonly property color textColor: textPrimary
+    readonly property color textColorMuted: textMuted
+    readonly property color trackPropertyHighlightColor: surfaceLevel3
+    readonly property color trackPropertySelectedTextColor: textOnAccent
+    readonly property color trackPropertySelectionColor: schemeAccent
+    readonly property color toolbarActiveColor: textOnAccent
+    readonly property color toolbarBackgroundColor: surfaceLevel1
+    readonly property color toolbarBottomBorderColor: borderHairline
     readonly property color toolbarBroadcastOnColor: isClassic ? "#659f08" : "#438225"
-    readonly property color toolbarButtonActiveBackgroundColor: isClassic ? "#d09300" : "#777777"
-    readonly property color toolbarButtonActiveTextColor: "#000000"
+    readonly property color toolbarButtonActiveBackgroundColor: schemeAccent
+    readonly property color toolbarButtonActiveTextColor: textOnAccent
     readonly property int toolbarButtonHeight: 26
-    readonly property color toolbarButtonInactiveBackgroundColor: isClassic ? "#262626" : "#151517"
-    readonly property color toolbarButtonInactiveTextColor: isClassic ? "#d2d2d1" : "#777777"
+    readonly property color toolbarButtonInactiveBackgroundColor: surfaceLevel3
+    readonly property color toolbarButtonInactiveTextColor: textSecondary
     readonly property int toolbarButtonWidth: 52
-    readonly property color toolbarClockTextColor: isClassic ? "#f0bb2b" : "#c2b3a5"
-    readonly property color toolbarLatencyBorderColor: "#040404"
-    readonly property color toolbarLatencyLabelColor: "#444444"
-    readonly property color toolbarLatencyOverloadColor: "#ffff00"
-    readonly property color toolbarMenuDisabledTextColor: "#777777"
-    readonly property color toolbarMenuHoverColor: isPaleMoon ? "#2c454f" : "#5e4507"
-    readonly property color toolbarMenuHoverTextColor: "#ffffff"
-    readonly property color toolbarMenuTextColor: "#c2b3a5"
-    readonly property color toolbarMeterBackgroundColor: darkGray
-    readonly property color toolbarPopupBackgroundColor: "#0f0f0f"
-    readonly property color toolbarPopupBorderColor: "#585858"
+    readonly property color toolbarClockTextColor: textPrimary
+    readonly property color toolbarLatencyBorderColor: borderHairline
+    readonly property color toolbarLatencyLabelColor: textTertiary
+    readonly property color toolbarLatencyOverloadColor: statusWarning
+    readonly property color toolbarMenuDisabledTextColor: textMuted
+    readonly property color toolbarMenuHoverColor: surfaceLevel4
+    readonly property color toolbarMenuHoverTextColor: textOnAccent
+    readonly property color toolbarMenuTextColor: textSecondary
+    readonly property color toolbarMeterBackgroundColor: surfaceLevel0
+    readonly property color toolbarPopupBackgroundColor: surfaceLevel1
+    readonly property color toolbarPopupBorderColor: borderSubtle
     readonly property color toolbarRecordInitColor: "#d09300"
     readonly property color toolbarRecordOnColor: isClassic ? "#db0000" : "#a80000"
     readonly property color toolbarRecordingColor: "#db0000"
     readonly property color toolbarRecordingTextColor: "#ff7373"
-    readonly property color toolbarRootBackgroundColor: "#151517"
-    readonly property color toolbarStatusErrorColor: "#f856e7"
-    readonly property color toolbarStatusOkColor: "#54c76a"
-    readonly property color toolbarStatusWarnColor: "#d89124"
+    readonly property color toolbarRootBackgroundColor: surfaceLevel0
+    readonly property color toolbarStatusErrorColor: statusCritical
+    readonly property color toolbarStatusOkColor: statusSuccess
+    readonly property color toolbarStatusWarnColor: statusWarning
     readonly property color passthroughActiveColor: vinylStatusSpeedColor
     readonly property color vinylCueingActiveColor: "#888888"
     readonly property color vinylStatusSignalAndSpeedColor: "#f856e7"
     readonly property color vinylStatusSignalColor: isClassic ? "#659f08" : "#438225"
     readonly property color vinylStatusSpeedColor: "#d09300"
     readonly property color waveformBeatAxesColor: isPaleMoon ? "#999999" : "#ffffff"
-    readonly property color waveformCueColor: isPaleMoon ? "#ff7a01" : "#ff001c"
+    readonly property color waveformCueColor: waveformCue
     readonly property color waveformDefaultMarkColor: "#ff0000"
     readonly property color waveformDisabledMarkColor: "#ffffff"
     readonly property color waveformEndOfTrackWarningColor: "#ff8872"
@@ -329,12 +329,89 @@ QtObject {
     readonly property color waveformFilteredLowColor: "#2154d7"
     readonly property color waveformFilteredMidColor: "#97632d"
     readonly property color waveformIntroOutroColor: isPaleMoon ? "#2c5c9a" : "#0000ff"
-    readonly property color waveformLoopColor: isPaleMoon ? "#00b400" : "#00ff00"
+    readonly property color waveformLoopColor: waveformLoop
     readonly property color waveformMarkerTextColor: "#ffffff"
-    readonly property color waveformPlayPositionColor: isPaleMoon ? "#00c6ff" : "#00c8ff"
-    readonly property color waveformPrimaryBackgroundColor: "#0f0f0e"
-    readonly property color waveformSecondaryBackgroundColor: "#001b23"
+    readonly property color waveformPlayPositionColor: waveformPlayhead
+    readonly property color waveformPrimaryBackgroundColor: waveformBgPrimary
+    readonly property color waveformSecondaryBackgroundColor: waveformBgSecondary
     readonly property color white: "#D9D9D9"
+
+    // ============================================================
+    // DESIGN TOKEN SYSTEM (Graphite/Charcoal) - Phase 1
+    // These tokens extend the existing theme without breaking compatibility
+    // ============================================================
+
+    // Surface Levels (tonal depth hierarchy)
+    readonly property color surfaceLevel0: "#080808"        // Background (deepest)
+    readonly property color surfaceLevel1: "#0e0e0e"        // Main panels (deck, mixer)
+    readonly property color surfaceLevel2: "#121212"        // Elevated panels
+    readonly property color surfaceLevel3: "#1a1a1a"        // Interactive surfaces (buttons, controls)
+    readonly property color surfaceLevel4: "#222222"        // Hover/touch feedback
+    readonly property color surfaceLevel5: "#2a2a2a"        // Pressed/active state
+    readonly property color surfaceFocus: "#1e3a5f"         // Focus ring (accent-tinted)
+
+    // Semantic Status Colors
+    readonly property color statusCritical: "#db0000"       // Playing cue, warning, errors
+    readonly property color statusWarning: "#d89124"        // Sync issues, quantize off
+    readonly property color statusSuccess: "#54c76a"        // Connected, locked, ready
+    readonly property color statusInfo: "#3a60be"           // Info, accent (Classic)
+    readonly property color statusInfoAlt: "#b24c12"        // Info, accent (PaleMoon)
+
+    // Waveform-Specific (refined for contrast)
+    readonly property color waveformBgPrimary: "#0a0a0a"    // Deck 1/2 waveform background
+    readonly property color waveformBgSecondary: "#001218"  // Deck 3/4 waveform background
+    readonly property color waveformPlayhead: "#00c8ff"     // Play position (high visibility)
+    readonly property color waveformCue: "#ff001c"          // Cue markers
+    readonly property color waveformLoop: "#00e600"         // Loop regions
+    readonly property color waveformBeatgrid: "#ffffff33"   // Beatgrid lines (subtle)
+
+    // Text Hierarchy (readability optimized)
+    readonly property color textPrimary: "#e8e8e8"          // Titles, primary data (BPM, key)
+    readonly property color textSecondary: "#b0b0b0"        // Artist, secondary metadata
+    readonly property color textTertiary: "#888888"         // Labels, captions, units
+    readonly property color textMuted: "#555555"            // Disabled, placeholders, "No track"
+    readonly property color textOnAccent: "#ffffff"         // Text on accent backgrounds
+
+    // Border System (restrained)
+    readonly property color borderHairline: "#000000"       // 1px separators
+    readonly property color borderSubtle: "#1a1a1a"         // Panel edges
+    readonly property color borderEmphasis: "#2a2a2a"       // Active/focused panels
+    readonly property color borderFocus: "#3a60be"          // Focus outline (Classic)
+    readonly property color borderFocusAlt: "#b24c12"       // Focus outline (PaleMoon)
+
+    // Spacing Scale
+    readonly property int spacingXS: 2
+    readonly property int spacingS: 4
+    readonly property int spacingM: 8
+    readonly property int spacingL: 12
+    readonly property int spacingXL: 16
+    readonly property int spacingXXL: 24
+
+    // Border Radius
+    readonly property int radiusSmall: 2
+    readonly property int radiusMedium: 4
+    readonly property int radiusLarge: 8
+    readonly property int radiusXLarge: 12
+    readonly property int radiusRound: 999
+
+    // Control Heights (touch-friendly)
+    readonly property int controlHeightSmall: 24
+    readonly property int controlHeightMedium: 32
+    readonly property int controlHeightLarge: 44
+    readonly property int controlHeightXLarge: 56
+
+    // Typography Scale
+    readonly property string fontFamily: "Open Sans"
+    readonly property int fontSizeDisplay: 20      // Large numbers (BPM, time)
+    readonly property int fontSizeTitle: 16        // Track title
+    readonly property int fontSizeBody: 14         // Artist, duration
+    readonly property int fontSizeCaption: 11      // Labels, BPM label
+    readonly property int fontSizeTiny: 9          // Hotcue numbers, fine print
+
+    // Helper: returns accent color for current scheme
+    readonly property color schemeAccent: isClassic ? "#3a60be" : "#b24c12"
+    readonly property color schemeBorderFocus: isClassic ? "#3a60be" : "#b24c12"
+    readonly property color schemeActiveCue: isClassic ? "#db0000" : "#b24c12"
 
     function lateNightAsset(directory, fileName) {
         return Qt.resolvedUrl("../../LateNight/" + ColorScheme.name + "/" + directory + "/" + fileName);

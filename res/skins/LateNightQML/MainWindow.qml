@@ -19,9 +19,9 @@ Item {
 
     property alias editDeck: toolbar.editDeck
     property var focusedDeck: null
-    readonly property int fullDeckHeight: 206
+    readonly property int fullDeckHeight: 180
     property alias maximizeLibrary: toolbar.maximizeLibrary
-    readonly property int minimizedDeckHeight: 80
+    readonly property int minimizedDeckHeight: 72
     readonly property int numDecks: 4
     readonly property int numSamplers: 64
     readonly property bool show4decks: toolbar.show4decks

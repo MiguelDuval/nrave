@@ -8,7 +8,7 @@ Item {
     property url backgroundSource: LateNightTheme.lateNightSubRegionButton("square")
     property url iconSource: ""
     property string label: ""
-    property color labelColor: LateNightTheme.textColorMuted
+    property color labelColor: LateNightTheme.textTertiary
     property int labelPixelSize: 11
     property real contentOpacity: 0.82
 
@@ -16,12 +16,12 @@ Item {
     property string activeIconSuffix: ""
     property string pressedBackgroundSuffix: ""
     property string pressedIconSuffix: ""
-    property color activeColor: "transparent"
-    property color inactiveColor: LateNightTheme.deckButtonInactiveColor
+    property color activeColor: LateNightTheme.schemeActiveCue
+    property color inactiveColor: LateNightTheme.surfaceLevel3
     property bool inactiveFillEnabled: true
     property bool pressedActivatesFill: false
     property int fillMargin: 2
-    property real fillRadius: 1
+    property real fillRadius: LateNightTheme.radiusSmall
     property bool solidFillEnabled: false
     property bool useBorderImageBackground: false
     property int backgroundBorderTop: 0
@@ -73,8 +73,8 @@ Item {
     readonly property real iconAvailableWidth: Math.max(0, width - iconLeftPadding - iconRightPadding)
     readonly property real iconAvailableHeight: Math.max(0, height - iconTopPadding - iconBottomPadding)
 
-    implicitWidth: 26
-    implicitHeight: 26
+    implicitWidth: LateNightTheme.controlHeightMedium
+    implicitHeight: LateNightTheme.controlHeightMedium
 
     Rectangle {
         anchors.fill: parent
@@ -187,7 +187,7 @@ Item {
     Text {
         anchors.centerIn: parent
         text: root.label
-        font.family: "Open Sans"
+        font.family: LateNightTheme.fontFamily
         font.pixelSize: root.labelPixelSize
         font.bold: true
         color: root.labelColor

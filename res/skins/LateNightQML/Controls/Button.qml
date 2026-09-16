@@ -2,8 +2,10 @@ import "../../../qml" as Shared
 import "../LateNightTheme"
 
 Shared.Button {
-    activeColor: LateNightTheme.buttonActiveColor
+    activeColor: LateNightTheme.textOnAccent
+    activeBackgroundColor: LateNightTheme.schemeAccent
+    normalBackgroundColor: LateNightTheme.surfaceLevel3
     implicitHeight: LateNightTheme.toolbarButtonHeight
-    normalColor: LateNightTheme.buttonNormalColor
-    pressedColor: LateNightTheme.buttonPressedColor
+    normalColor: LateNightTheme.textSecondary
+    pressedColor: LateNightTheme.textOnAccent
 }

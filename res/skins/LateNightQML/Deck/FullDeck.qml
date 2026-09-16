@@ -8,7 +8,7 @@ import "../Waveforms"
 Controls.Panel {
     id: root
 
-    implicitHeight: root.minimized ? 80 : 206
+    implicitHeight: root.minimized ? 72 : 180
     implicitWidth: 620
 
     required property string group
@@ -141,26 +141,26 @@ Controls.Panel {
                 id: middleDeckRow
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                Layout.minimumHeight: root.minimized ? 68 : 122
-                Layout.preferredHeight: root.minimized ? 68 : 122
-                Layout.maximumHeight: root.minimized ? 68 : 122
-                spacing: 8
+                Layout.minimumHeight: root.minimized ? 60 : 106
+                Layout.preferredHeight: root.minimized ? 60 : 106
+                Layout.maximumHeight: root.minimized ? 60 : 106
+                spacing: 6
 
-                SpinnyCoverSlot { id: leftSpinnyBig; Layout.preferredHeight: 114; Layout.preferredWidth: 114; group: root.group; visible: root.showBigSpinnyOrCover && !root.minimized }
+                SpinnyCoverSlot { id: leftSpinnyBig; Layout.preferredHeight: 100; Layout.preferredWidth: 100; group: root.group; visible: root.showBigSpinnyOrCover && !root.minimized }
 
                 ColumnLayout {
                     id: titleOverviewColumn
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Layout.preferredHeight: root.minimized ? 68 : 122
+                    Layout.preferredHeight: root.minimized ? 60 : 106
                     spacing: 2
 
                     TitleTimeRows {
                         id: titleTimeRows
                         Layout.fillWidth: true
-                        Layout.minimumHeight: root.minimized ? 48 : 55
-                        Layout.preferredHeight: root.minimized ? 48 : 55
-                        Layout.maximumHeight: root.minimized ? 48 : 55
+                        Layout.minimumHeight: root.minimized ? 40 : 38
+                        Layout.preferredHeight: root.minimized ? 40 : 38
+                        Layout.maximumHeight: root.minimized ? 40 : 38
                         group: root.group
                         TapHandler { onDoubleTapped: root.toggleFocus() }
                     }
@@ -169,9 +169,9 @@ Controls.Panel {
                         id: overviewAndSpinnyRow
                         Layout.fillWidth: true
                         Layout.fillHeight: false
-                        Layout.minimumHeight: root.minimized ? 20 : 63
-                        Layout.preferredHeight: root.minimized ? 20 : 63
-                        Layout.maximumHeight: root.minimized ? 20 : 63
+                        Layout.minimumHeight: root.minimized ? 20 : 68
+                        Layout.preferredHeight: root.minimized ? 20 : 68
+                        Layout.maximumHeight: root.minimized ? 20 : 68
                         spacing: 1
 
                         // Explicit unique local component, first in the layout so it cannot be pushed off-screen.
@@ -188,7 +188,7 @@ Controls.Panel {
                             z: 20
                         }
 
-                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 63; Layout.preferredWidth: 63; group: root.group; visible: root.showSmallSpinnyOrCover }
+                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 60; Layout.preferredWidth: 60; group: root.group; visible: root.showSmallSpinnyOrCover }
                         OverviewRow { id: overviewRow; Layout.fillWidth: true; Layout.fillHeight: true; group: root.group }
                     }
                 }
@@ -197,7 +197,7 @@ Controls.Panel {
             TransportLoopBeatjumpPlaceholders {
                 id: transportRow
                 Layout.fillWidth: true; Layout.fillHeight: false
-                Layout.minimumHeight: 55; Layout.preferredHeight: 55; Layout.maximumHeight: 55
+                Layout.minimumHeight: 48; Layout.preferredHeight: 48; Layout.maximumHeight: 48
                 group: root.group
                 showHotcues: root.showHotcues
                 show8Hotcues: root.show8Hotcues

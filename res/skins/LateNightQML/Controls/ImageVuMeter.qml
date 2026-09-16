@@ -21,7 +21,7 @@ Item {
 
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
-        color: "#040404"
+        color: LateNightTheme.borderHairline
         height: parent.height
         visible: root.drawGroove
         width: 8

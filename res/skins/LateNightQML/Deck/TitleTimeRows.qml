@@ -21,7 +21,7 @@ Item {
     readonly property bool hasVisibleTrackColor: isLoaded && trackColor?.valid &&
             trackColorText !== "#ffffff" && trackColorText !== "#ffffffff"
 
-    implicitHeight: 55
+    implicitHeight: 38
 
     function formatDuration(value) {
         if (!Number.isFinite(value) || value <= 0) {
@@ -90,7 +90,7 @@ Item {
         // Row 1: Title and Elapsed/Remaining Time
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 25
+            Layout.preferredHeight: 20
             spacing: 0
 
             LateNightTrackPropertyText {
@@ -103,7 +103,7 @@ Item {
                 displayProperty: "titleInfo"
                 editProperty: "title"
                 editable: true
-                pixelSize: 18
+                pixelSize: 16
                 textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
             }
 
@@ -116,7 +116,7 @@ Item {
                 group: root.group
                 horizontalAlignment: Text.AlignRight
                 horizontalPadding: 6
-                pixelSize: 16
+                pixelSize: 14
                 showTrackPropertiesOnDoubleClick: false
                 textColor: root.isLoaded ? LateNightTheme.deckTimeTextColor : LateNightTheme.textColorMuted
                 track: root.currentTrack
@@ -147,7 +147,7 @@ Item {
         // Row 3: Artist and Duration
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 20
+            Layout.preferredHeight: 16
             spacing: 0
 
             LateNightTrackPropertyText {
@@ -172,7 +172,7 @@ Item {
                 text: root.isLoaded ? root.formatDuration(durationProxy.value) : ""
                 displayProperty: "durationTextSeconds"
                 editable: false
-                pixelSize: 14
+                pixelSize: 13
                 textColor: root.isLoaded ? LateNightTheme.deckTimeTextColor : LateNightTheme.textColorMuted
                 horizontalAlignment: Text.AlignRight
                 horizontalPadding: 6

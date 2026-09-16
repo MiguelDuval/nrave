@@ -10,11 +10,11 @@ Skin.ControlFader {
     property real handleHeight: 0
     property alias handleSource: handleImage.source
     property real handleWidth: 0
-    property color valueLineColor: LateNightTheme.mixerSliderBarColor
+    property color valueLineColor: LateNightTheme.schemeAccent
 
     bar.color: valueLineColor
     bar.enabled: true
-    bar.margin: 8
+    bar.margin: LateNightTheme.spacingS
     bar.width: 2
     implicitHeight: backgroundImage.implicitHeight + (backgroundMargin * 2)
     implicitWidth: backgroundImage.implicitWidth + (backgroundMargin * 2)
