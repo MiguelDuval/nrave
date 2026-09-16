@@ -83,4 +83,6 @@
     <uses-feature
         android:name="android.hardware.usb.host"
         android:required="true" />
+
+    <!-- Build trigger only: splash configuration above is unchanged. -->
 </manifest>
