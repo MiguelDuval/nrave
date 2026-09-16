@@ -2,7 +2,7 @@ name: Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, experimental/main-window-ui-redesign]
+    branches: [main]
 permissions:
   contents: write
 env:
