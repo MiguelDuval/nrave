@@ -8,6 +8,7 @@
 #include "defs_urls.h"
 #include "moc_qmlapplicationproxy.cpp"
 #include "preferences/configobject.h"
+#include "qml/qmlconfigproxy.h"
 #include "util/cmdlineargs.h"
 #include "util/experiment.h"
 #include "util/menubarhelper.h"
@@ -184,11 +185,23 @@ QString QmlApplicationProxy::menuShortcut(
 }
 
 void QmlApplicationProxy::reloadSkin() {
-    // Skin selection is changed directly from QML. Persist the in-memory
-    // preference before recreating the QML engine so an Android process restart
-    // cannot revert to the previous skin.
-    if (s_pConfig && !s_pConfig->save()) {
-        qWarning() << "Failed to persist QML skin selection";
+    // The skin selector mutates the UserSettings instance owned by the Config
+    // QML singleton. Persist that exact instance before recreating the engine.
+    // QmlApplicationProxy has a separate settings pointer used by other APIs;
+    // using it here can silently become a no-op when that pointer is not
+    // initialized by the current Android startup path.
+    const auto pConfig = QmlConfigProxy::get();
+    if (pConfig) {
+        const QString configuredSkin =
+                pConfig->getValueString(ConfigKey(QStringLiteral("[Config]"),
+                        QStringLiteral("ResizableSkin")));
+        qDebug() << "Persisting QML skin selection:" << configuredSkin
+                 << "settingsPath:" << pConfig->getSettingsPath();
+        if (!pConfig->save()) {
+            qWarning() << "Failed to persist QML skin selection" << configuredSkin;
+        }
+    } else {
+        qWarning() << "QML skin reload requested without a registered Config UserSettings";
     }
 
     if (s_reloadCallback) {
