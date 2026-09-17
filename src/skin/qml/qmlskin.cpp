@@ -125,9 +125,17 @@ bool QmlSkin::fitsScreenSize(const QScreen& screen) const {
     if (minPixelWidth <= 0 || minPixelHeight <= 0) {
         return true;
     }
+
+    // A skin minimum size describes a rectangle, not a fixed portrait/landscape
+    // orientation. Android may report the physical screen in portrait while the
+    // application itself is configured to run in landscape. Accept either
+    // orientation so Preferences does not report a false size warning.
     const QSize screenSize = screen.size();
-    return minPixelWidth <= screenSize.width() &&
-            minPixelHeight <= screenSize.height();
+    const bool fitsCurrentOrientation =
+            minPixelWidth <= screenSize.width() && minPixelHeight <= screenSize.height();
+    const bool fitsRotatedOrientation =
+            minPixelWidth <= screenSize.height() && minPixelHeight <= screenSize.width();
+    return fitsCurrentOrientation || fitsRotatedOrientation;
 }
 
 LaunchImage* QmlSkin::loadLaunchImage(QWidget*, UserSettingsPointer) const {
