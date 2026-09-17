@@ -9,6 +9,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QTextDocument>
+#include <memory>
 #include <utility>
 
 #include "control/controlproxy.h"
@@ -126,8 +127,17 @@ QmlApplication::QmlApplication(
 #if defined(Q_OS_ANDROID)
     if (canWriteToExternalStorage()) {
         const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
+        const QString externalSkinDir = QStringLiteral("/storage/emulated/0/Mixxx/skins");
+
+        // Keep the QML shell and optional QML skins in one ordinary filesystem
+        // resource tree. This gives relative imports inside LateNightQML exactly
+        // the same file-based semantics as desktop Mixxx.
         copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
+        copyAssetDir(QStringLiteral("assets:/skins"), externalSkinDir);
         m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
+
+        qDebug() << "Android QML resources materialized at"
+                 << externalQmlDir << "and" << externalSkinDir;
     }
 #endif
 
@@ -202,6 +212,7 @@ QmlApplication::QmlApplication(
 
         QPushButton* continueButton =
                 msgBox.addButton(tr("Ok"), QMessageBox::ActionRole);
+        Q_UNUSED(continueButton);
         msgBox.exec();
         m_pCoreServices.reset();
         exit(-1);
@@ -343,6 +354,7 @@ void QmlApplication::slotFrameSwapped() {
     }
     auto lastFrameDurationNs = m_frameTimer.elapsed().toIntegerNanos();
     auto t = std::chrono::steady_clock::now() - std::chrono::steady_clock::time_point{};
+    Q_UNUSED(t);
     APerformanceHint_reportActualWorkDuration(m_perfSession,
             lastFrameDurationNs);
     m_frameTimer.restart();
@@ -368,17 +380,14 @@ void QmlApplication::setupSpinnyCoverControls() {
 
     m_pShowSpinnyAndOrCover = std::make_unique<ControlPushButton>(
             ConfigKey("[Skin]", "show_spinny_or_cover"));
-    m_pShowSpinnyAndOrCover->setButtonMode(mixxx::control::ButtonMode::Toggle);
     m_pShowSpinnyAndOrCover->setReadOnly();
 
     m_pShowSmallSpinnyCover = std::make_unique<ControlPushButton>(
             ConfigKey("[Skin]", "show_small_spinny_or_cover"));
-    m_pShowSmallSpinnyCover->setButtonMode(mixxx::control::ButtonMode::Toggle);
     m_pShowSmallSpinnyCover->setReadOnly();
 
     m_pShowBigSpinnyCover = std::make_unique<ControlPushButton>(
             ConfigKey("[Skin]", "show_big_spinny_or_cover"));
-    m_pShowBigSpinnyCover->setButtonMode(mixxx::control::ButtonMode::Toggle);
     m_pShowBigSpinnyCover->setReadOnly();
 
     m_pShowSpinny->connectValueChanged(this, &QmlApplication::updateSpinnyCoverControls);
