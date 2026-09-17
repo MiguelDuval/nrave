@@ -44,6 +44,9 @@ Q_IMPORT_QML_PLUGIN(Mixxx_ControlsPlugin)
 
 namespace {
 const QString kMainQmlFileName = QStringLiteral("qml/main.qml");
+const QString kResizableSkinKey = QStringLiteral("ResizableSkin");
+const QString kAndroidDefaultSkin = QStringLiteral("AndroidDefault");
+const QString kLateNightSkin = QStringLiteral("LateNightQML");
 
 QString normalizedColorScheme(const QString& colorScheme) {
     if (colorScheme.compare(QStringLiteral("Classic"), Qt::CaseInsensitive) == 0) {
@@ -94,6 +97,16 @@ void syncAssetDir(const QString& src, const QString& dst) {
     }
     copyAssetDir(src, dst);
 }
+
+QString selectAndroidMainQmlFile(const QString& qmlRoot,
+        const QString& skinsRoot,
+        const QString& configuredSkin) {
+    if (configuredSkin.compare(kAndroidDefaultSkin, Qt::CaseInsensitive) == 0) {
+        return qmlRoot + QStringLiteral("/main.qml");
+    }
+
+    return skinsRoot + QStringLiteral("/") + kLateNightSkin + QStringLiteral("/main.qml");
+}
 #endif
 } // namespace
 
@@ -121,16 +134,24 @@ QmlApplication::QmlApplication(
 #if defined(Q_OS_ANDROID)
     // QML skins are part of the APK. Materialize a clean, app-private copy
     // instead of depending on MANAGE_EXTERNAL_STORAGE or stale shared files.
-    // This guarantees that main.qml and skins/LateNightQML form one coherent
-    // file-based import tree on every launch and every APK upgrade.
+    // This guarantees that all QML files for the selected skin come from one
+    // coherent APK/runtime tree on every launch and every APK upgrade.
     const QString qmlRoot =
             QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/qml");
     const QString skinsRoot =
             QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/skins");
     syncAssetDir(QStringLiteral("assets:/qml"), qmlRoot);
     syncAssetDir(QStringLiteral("assets:/skins"), skinsRoot);
-    m_mainFilePath = qmlRoot + QStringLiteral("/main.qml");
-    qInfo() << "QmlApplication: using private Android QML tree" << qmlRoot;
+
+    const QString configuredSkin =
+            m_pCoreServices->getSettings()->getValue(
+                    ConfigKey(QStringLiteral("[Config]"), kResizableSkinKey),
+                    QString());
+    if (mainQmlFilePath.isEmpty()) {
+        m_mainFilePath = selectAndroidMainQmlFile(qmlRoot, skinsRoot, configuredSkin);
+    }
+    qInfo() << "QmlApplication: configured Android QML skin:" << configuredSkin
+            << "entrypoint:" << m_mainFilePath;
 #endif
 
     const QString colorScheme = m_pCoreServices->getSettings()->getValueString(
@@ -259,6 +280,19 @@ QmlApplication::QmlApplication(
     QmlRecordingProxy::s_pRecordingManager = m_pCoreServices->getRecordingManager();
     QmlApplicationProxy::registerReloadCallback([this]() {
         QTimer::singleShot(0, this, [this]() {
+#if defined(Q_OS_ANDROID)
+            const QString qmlRoot =
+                    QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/qml");
+            const QString skinsRoot =
+                    QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/skins");
+            const QString configuredSkin =
+                    m_pCoreServices->getSettings()->getValue(
+                            ConfigKey(QStringLiteral("[Config]"), kResizableSkinKey),
+                            QString());
+            m_mainFilePath = selectAndroidMainQmlFile(qmlRoot, skinsRoot, configuredSkin);
+            qInfo() << "QmlApplication: reloading Android QML skin:" << configuredSkin
+                    << "entrypoint:" << m_mainFilePath;
+#endif
             loadQml(m_mainFilePath);
         });
     });
@@ -329,6 +363,7 @@ void QmlApplication::slotFrameSwapped() {
     }
     auto lastFrameDurationNs = m_frameTimer.elapsed().toIntegerNanos();
     auto t = std::chrono::steady_clock::now() - std::chrono::steady_clock::time_point{};
+    Q_UNUSED(t);
     APerformanceHint_reportActualWorkDuration(m_perfSession,
             lastFrameDurationNs);
     m_frameTimer.restart();
