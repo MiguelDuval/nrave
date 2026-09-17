@@ -57,6 +57,17 @@ QList<SkinPointer> SkinLoader::getSkinsFromDir(const QDir& dir) const {
             VERIFY_OR_DEBUG_ASSERT(pSkin->isValid()) {
                 continue;
             }
+
+#ifdef Q_OS_ANDROID
+#ifdef MIXXX_USE_QML
+            // Android runs through the QML application shell. Legacy QWidget
+            // skins are therefore not valid Android skin choices.
+            if (pSkin->type() != SkinType::QML) {
+                continue;
+            }
+#endif
+#endif
+
             skins.append(pSkin);
         }
     }
@@ -107,6 +118,13 @@ SkinPointer SkinLoader::getSkin(const QString& skinName) const {
                 VERIFY_OR_DEBUG_ASSERT(pSkin->isValid()) {
                     continue;
                 }
+#ifdef Q_OS_ANDROID
+#ifdef MIXXX_USE_QML
+                if (pSkin->type() != SkinType::QML) {
+                    continue;
+                }
+#endif
+#endif
                 return pSkin;
             }
         }
@@ -159,7 +177,11 @@ SkinPointer SkinLoader::getConfiguredSkin() const {
 }
 
 QString SkinLoader::getDefaultSkinName() const {
+#ifdef Q_OS_ANDROID
+    return "AndroidDefault";
+#else
     return "LateNight";
+#endif
 }
 
 QWidget* SkinLoader::loadConfiguredSkin(QWidget* pParent,
@@ -235,7 +257,11 @@ LaunchImage* SkinLoader::loadLaunchImage(QWidget* pParent) const {
 
 QString SkinLoader::pickResizableSkin(const QString& oldSkin) const {
     if (oldSkin.contains("latenight", Qt::CaseInsensitive)) {
+#ifdef Q_OS_ANDROID
+        return "AndroidDefault";
+#else
         return "LateNight";
+#endif
     }
     if (oldSkin.contains("deere", Qt::CaseInsensitive)) {
         return "Deere";
@@ -253,8 +279,8 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
     }
 
 #ifdef MIXXX_USE_QML
-    // QML skins are regular selectable skins in this fork. Their own QML
-    // ApplicationWindow is launched by QmlApplication when selected.
+    // QML skins are content providers. They expose MainWindow.qml, which is
+    // inserted into the application's existing QML ApplicationWindow.
     pSkin = qml::QmlSkin::fromDirectory(dir);
     if (pSkin && pSkin->isValid()) {
         return pSkin;
