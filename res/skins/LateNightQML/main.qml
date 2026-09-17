@@ -9,6 +9,7 @@ ApplicationWindow {
 
     property int displayedProgress: 0
     property bool mainWindowLoadError: false
+    property string mainWindowLoadErrorDetails: ""
 
     color: startupScreen.backgroundColor
     height: 1008
@@ -33,10 +34,34 @@ ApplicationWindow {
             displayedProgress = Math.max(displayedProgress, 65 + Math.round(mainWindowLoader.progress * 34));
     }
 
+    function collectMainWindowLoadError() {
+        var component = Qt.createComponent(Qt.resolvedUrl("MainWindow.qml"), Component.PreferSynchronous);
+        if (component.status === Component.Error) {
+            root.mainWindowLoadErrorDetails = component.errorString();
+            console.error("LateNightQML MainWindow component error:", root.mainWindowLoadErrorDetails);
+            return;
+        }
+
+        if (component.status === Component.Ready) {
+            var object = component.createObject(root, { "applicationWindow": root });
+            if (!object) {
+                root.mainWindowLoadErrorDetails = component.errorString();
+                console.error("LateNightQML MainWindow instantiation error:", root.mainWindowLoadErrorDetails);
+            } else {
+                object.destroy();
+                root.mainWindowLoadErrorDetails = "Loader failed, but direct component creation succeeded. This indicates an asynchronous Loader/runtime-order issue.";
+            }
+            return;
+        }
+
+        root.mainWindowLoadErrorDetails = "MainWindow component status: " + component.status;
+    }
+
     function handleMainWindowLoaderStatus() {
         root.updateProgress();
         if (mainWindowLoader.status === Loader.Error) {
             root.mainWindowLoadError = true;
+            root.collectMainWindowLoadError();
             console.error("Failed to load the LateNightQML main window:", mainWindowLoader.source);
         }
     }
@@ -95,7 +120,8 @@ ApplicationWindow {
 
         Column {
             anchors.centerIn: parent
-            spacing: 12
+            width: Math.min(parent.width - 80, 1500)
+            spacing: 14
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -105,10 +131,14 @@ ApplicationWindow {
             }
 
             Text {
-                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width
                 color: "#b8bbc4"
                 font.pixelSize: 14
-                text: "MainWindow.qml could not be instantiated."
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                text: root.mainWindowLoadErrorDetails !== ""
+                        ? root.mainWindowLoadErrorDetails
+                        : "MainWindow.qml could not be instantiated."
             }
         }
     }
