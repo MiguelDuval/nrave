@@ -61,9 +61,15 @@ ApplicationWindow {
         active: Mixxx.Core.ready
         anchors.fill: parent
         asynchronous: true
+        onActiveChanged: {
+            if (active) {
+                setSource(Qt.resolvedUrl("MainWindow.qml"), {
+                    "applicationWindow": root
+                });
+            }
+        }
         onProgressChanged: root.updateProgress()
         onStatusChanged: root.handleMainWindowLoaderStatus()
-        source: Qt.resolvedUrl("MainWindow.qml")
     }
 
     StartupScreen {
