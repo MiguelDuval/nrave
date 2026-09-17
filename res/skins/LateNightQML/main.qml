@@ -8,6 +8,7 @@ ApplicationWindow {
     id: root
 
     property int displayedProgress: 0
+    property bool mainWindowLoadError: false
 
     color: startupScreen.backgroundColor
     height: 1008
@@ -35,8 +36,8 @@ ApplicationWindow {
     function handleMainWindowLoaderStatus() {
         root.updateProgress();
         if (mainWindowLoader.status === Loader.Error) {
+            root.mainWindowLoadError = true;
             console.error("Failed to load the LateNightQML main window");
-            Qt.quit();
         }
     }
 
@@ -75,7 +76,7 @@ ApplicationWindow {
         id: startupScreen
 
         anchors.fill: parent
-        opacity: mainWindowLoader.status === Loader.Ready ? 0 : 1
+        opacity: mainWindowLoader.status === Loader.Ready || root.mainWindowLoadError ? 0 : 1
         progress: root.displayedProgress
         visible: opacity > 0
 
@@ -83,6 +84,31 @@ ApplicationWindow {
             NumberAnimation {
                 duration: 200
                 easing.type: Easing.OutQuad
+            }
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        color: "#101114"
+        visible: root.mainWindowLoadError
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 12
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "white"
+                font.pixelSize: 22
+                text: "LateNight QML failed to load"
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#b8bbc4"
+                font.pixelSize: 14
+                text: "MainWindow.qml could not be instantiated."
             }
         }
     }
