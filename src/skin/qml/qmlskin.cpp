@@ -8,7 +8,7 @@
 namespace {
 
 const QString kSkinManifestFileName(QStringLiteral("skin.ini"));
-const QString kMainQmlFileName(QStringLiteral("main.qml"));
+const QString kMainWindowQmlFileName(QStringLiteral("MainWindow.qml"));
 const QString kSkinGroup(QStringLiteral("Skin"));
 const QString kNameKey(QStringLiteral("name"));
 const QString kDescriptionKey(QStringLiteral("description"));
@@ -23,7 +23,7 @@ namespace qml {
 
 // static
 SkinPointer QmlSkin::fromDirectory(const QDir& dir) {
-    if (dir.exists(kSkinManifestFileName) && dir.exists(kMainQmlFileName)) {
+    if (dir.exists(kSkinManifestFileName) && dir.exists(kMainWindowQmlFileName)) {
         return std::make_shared<QmlSkin>(QFileInfo(dir.absolutePath()));
     }
     return nullptr;
@@ -138,11 +138,13 @@ QWidget* QmlSkin::loadSkin(QWidget*,
         UserSettingsPointer,
         QSet<ControlObject*>*,
         mixxx::CoreServices*) const {
+    // QML skins are content providers. The Android application shell loads
+    // this MainWindow.qml inside its own ApplicationWindow.
     return nullptr;
 }
 
 QString QmlSkin::mainQmlFilePath() const {
-    return m_path.absoluteFilePath() + QStringLiteral("/") + kMainQmlFileName;
+    return m_path.absoluteFilePath() + QStringLiteral("/") + kMainWindowQmlFileName;
 }
 
 QFileInfo QmlSkin::skinIniFile() const {
