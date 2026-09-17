@@ -169,12 +169,14 @@ Item {
         }
 
         // Per-deck BeatGrid visibility toggle.
-        LateNightControlButton {
+        LateNightIconButton {
+            id: beatgridVisibilityButton
             Layout.preferredWidth: 68
             Layout.preferredHeight: 22
             backgroundSource: LateNightTheme.lateNightSubRegionButton("medium")
             iconSource: LateNightTheme.assetDeckBeatgridButton
-            toggleable: true
+            activeState: checked
+            pressedState: beatgridTapHandler.pressed
             activeBackgroundSuffix: "active"
             pressedBackgroundSuffix: "active"
             activeOpacity: 1.0
@@ -189,13 +191,17 @@ Item {
                 return p ? p.showBeatgridControlsLocal : false;
             }
 
-            onClicked: {
-                var fullDeck = parent;
-                while (fullDeck && fullDeck.showBeatgridControlsLocal === undefined) {
-                    fullDeck = fullDeck.parent;
-                }
-                if (fullDeck) {
-                    fullDeck.showBeatgridControlsLocal = !fullDeck.showBeatgridControlsLocal;
+            TapHandler {
+                id: beatgridTapHandler
+                acceptedButtons: Qt.LeftButton
+                onTapped: {
+                    var fullDeck = parent;
+                    while (fullDeck && fullDeck.showBeatgridControlsLocal === undefined) {
+                        fullDeck = fullDeck.parent;
+                    }
+                    if (fullDeck) {
+                        fullDeck.showBeatgridControlsLocal = !fullDeck.showBeatgridControlsLocal;
+                    }
                 }
             }
         }
