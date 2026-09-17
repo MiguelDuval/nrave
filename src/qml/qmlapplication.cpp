@@ -30,13 +30,13 @@
 #include "waveform/visualsmanager.h"
 #include "waveform/waveformwidgetfactory.h"
 #if defined(Q_OS_ANDROID)
+#include <android/api-level.h>
 #include <android/log.h>
 #include <android/performance_hint.h>
 
 #include <QDir>
 #include <QFile>
 #include <QJniObject>
-#include <QStandardPaths>
 #endif
 
 Q_IMPORT_QML_PLUGIN(MixxxPlugin)
@@ -64,6 +64,14 @@ const QStringList kSkipQmlDirs = {
         QStringLiteral("Mixxx"),
 };
 
+bool canWriteToExternalStorage() {
+    if (android_get_device_api_level() >= 30) {
+        return QJniObject::callStaticMethod<jboolean>(
+                "android/os/Environment", "isExternalStorageManager");
+    }
+    return true;
+}
+
 void copyAssetDir(const QString& src, const QString& dst) {
     QDir().mkpath(dst);
 
@@ -72,10 +80,9 @@ void copyAssetDir(const QString& src, const QString& dst) {
     for (const QString& file : files) {
         QFile srcFile(srcDir.absoluteFilePath(file));
         QFile dstFile(dst + '/' + file);
-        if (!srcFile.open(QIODevice::ReadOnly) || !dstFile.open(QIODevice::WriteOnly)) {
-            continue;
+        if (srcFile.open(QIODevice::ReadOnly) && dstFile.open(QIODevice::WriteOnly)) {
+            dstFile.write(srcFile.readAll());
         }
-        dstFile.write(srcFile.readAll());
     }
 
     const QStringList dirs = srcDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -85,14 +92,6 @@ void copyAssetDir(const QString& src, const QString& dst) {
         }
         copyAssetDir(src + '/' + dir, dst + '/' + dir);
     }
-}
-
-void syncAssetDir(const QString& src, const QString& dst) {
-    QDir destination(dst);
-    if (destination.exists()) {
-        destination.removeRecursively();
-    }
-    copyAssetDir(src, dst);
 }
 #endif
 } // namespace
@@ -119,18 +118,13 @@ QmlApplication::QmlApplication(
     QQuickStyle::setStyle("Basic");
 
 #if defined(Q_OS_ANDROID)
-    // QML skins are part of the APK. Materialize a clean, app-private copy
-    // instead of depending on MANAGE_EXTERNAL_STORAGE or stale shared files.
-    // This guarantees that main.qml and skins/LateNightQML form one coherent
-    // file-based import tree on every launch and every APK upgrade.
-    const QString qmlRoot =
-            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/qml");
-    const QString skinsRoot =
-            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/skins");
-    syncAssetDir(QStringLiteral("assets:/qml"), qmlRoot);
-    syncAssetDir(QStringLiteral("assets:/skins"), skinsRoot);
-    m_mainFilePath = qmlRoot + QStringLiteral("/main.qml");
-    qInfo() << "QmlApplication: using private Android QML tree" << qmlRoot;
+    if (canWriteToExternalStorage()) {
+        const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
+        copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
+        copyAssetDir(QStringLiteral("assets:/skins"),
+                QStringLiteral("/storage/emulated/0/Mixxx/skins"));
+        m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
+    }
 #endif
 
     const QString colorScheme = m_pCoreServices->getSettings()->getValueString(
