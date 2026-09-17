@@ -35,9 +35,10 @@ ApplicationWindow {
         if (selectedSkin === "" || selectedSkin === "AndroidDefault") {
             return Qt.resolvedUrl("MainWindow.qml");
         }
-        if (Qt.platform.os === "android") {
-            return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
-        }
+        // Skin content is a sibling of the QML shell directory on Android
+        // (whether both are read from assets:/ or copied to external storage).
+        // Keeping this relative avoids mixing a local-file shell with an
+        // Android-specific assets: URL for the dynamically loaded skin.
         return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
     }
 
