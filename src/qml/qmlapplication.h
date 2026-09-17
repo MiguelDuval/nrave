@@ -63,6 +63,7 @@ class QmlApplication : public QObject {
     std::unique_ptr<ControlPushButton> m_pWaveformOverviewType;
 
     QString m_mainFilePath;
+    QString m_selectedSkinName;
 
     std::unique_ptr<QQmlApplicationEngine> m_pAppEngine;
     bool m_loadSucceeded;
