@@ -127,13 +127,6 @@ QmlApplication::QmlApplication(
     if (canWriteToExternalStorage()) {
         const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
         copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
-        // Keep the shell and its skin content in the same local filesystem tree.
-        // This avoids relying on QQml Loader resolving a second QML subtree via
-        // the Android-specific assets: URL scheme. When external copying is not
-        // available, main.qml remains under assets:/qml and the same relative
-        // ../skins URL resolves to assets:/skins.
-        copyAssetDir(QStringLiteral("assets:/skins"),
-                QStringLiteral("/storage/emulated/0/Mixxx/skins"));
         m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
     }
 #endif

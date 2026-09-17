@@ -35,13 +35,7 @@ ApplicationWindow {
         if (selectedSkin === "" || selectedSkin === "AndroidDefault") {
             return Qt.resolvedUrl("MainWindow.qml");
         }
-
-        // The application shell can be loaded either directly from the APK
-        // (assets:/qml/main.qml) or from the writable Android QML mirror used
-        // by QmlApplication. Resolve skin content relative to the actual shell
-        // location instead of assuming that every Android URL is filesystem-like.
-        const shellUrl = Qt.resolvedUrl("main.qml").toString();
-        if (shellUrl.startsWith("assets:/")) {
+        if (Qt.platform.os === "android") {
             return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
         }
         return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
