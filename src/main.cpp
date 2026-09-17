@@ -66,14 +66,14 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 #ifdef MIXXX_USE_QML
     QString mainQmlFilePath;
     bool loadQml = args.isQml();
-    if (!loadQml && args.getDeveloper()) {
-        mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
-        const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
-        if (pSkin && pSkin->type() == mixxx::skin::SkinType::QML) {
-            loadQml = true;
-            mainQmlFilePath = pSkin->mainQmlFilePath();
-        }
+
+    mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
+    const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
+    if (pSkin && pSkin->type() == mixxx::skin::SkinType::QML) {
+        loadQml = true;
+        mainQmlFilePath = pSkin->mainQmlFilePath();
     }
+
     if (loadQml) {
         // This is a workaround to support Qt 6.4.2, currently shipped on
         // Ubuntu 24.04 See
@@ -298,6 +298,10 @@ int main(int argc, char * argv[]) {
     app.setNotifyWarningThreshold(notifywarningThreshold);
 
 #ifdef Q_OS_MACOS
+    // Disable the "reopen window" functionality on macOS (see #12511)
+    QApplication::setQuitOnLastWindowClosed(false);
+#endif
+
     // TODO: At this point it is too late to provide the same settings path to all components
     // and too early to log errors and give users advises in their system language.
     // Calling this from main.cpp before the QApplication is initialized may cause a crash

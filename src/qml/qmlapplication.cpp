@@ -1,4 +1,4 @@
-#include "qml/qmlapplication.h"
+#include "qmlapplication.h"
 
 #include <QCoreApplication>
 #include <QEventLoop>
@@ -23,7 +23,6 @@
 #include "qml/qmlcoreservices.h"
 #include "qml/qmldlgpreferencesproxy.h"
 #include "qml/qmlrecordingproxy.h"
-#include "skin/skinloader.h"
 #include "soundio/soundmanager.h"
 #include "util/versionstore.h"
 #include "waveform/guitick.h"
@@ -45,7 +44,6 @@ Q_IMPORT_QML_PLUGIN(Mixxx_ControlsPlugin)
 
 namespace {
 const QString kMainQmlFileName = QStringLiteral("qml/main.qml");
-const ConfigKey kResizableSkinKey(QStringLiteral("[Config]"), QStringLiteral("ResizableSkin"));
 
 QString normalizedColorScheme(const QString& colorScheme) {
     if (colorScheme.compare(QStringLiteral("Classic"), Qt::CaseInsensitive) == 0) {
@@ -132,27 +130,6 @@ QmlApplication::QmlApplication(
         m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
     }
 #endif
-
-    // QML skin mode uses the normal QML entrypoint as the Android/Desktop
-    // default. When [Config],ResizableSkin names a real QML skin directory,
-    // load that skin's own main.qml as the application root instead. This keeps
-    // the existing QML skin contract intact and avoids nesting an
-    // ApplicationWindow inside the Android shell.
-    const QString configuredSkinName =
-            m_pCoreServices->getSettings()->getValueString(kResizableSkinKey);
-    if (!configuredSkinName.isEmpty()) {
-        mixxx::skin::SkinLoader skinLoader(m_pCoreServices->getSettings());
-        const auto pConfiguredSkin = skinLoader.getSkin(configuredSkinName);
-        if (pConfiguredSkin && pConfiguredSkin->isValid() &&
-                pConfiguredSkin->type() == mixxx::skin::SkinType::QML) {
-            const QString skinMainQml = pConfiguredSkin->mainQmlFilePath();
-            if (!skinMainQml.isEmpty()) {
-                qInfo() << "QmlApplication: loading configured QML skin"
-                        << pConfiguredSkin->name() << "from" << skinMainQml;
-                m_mainFilePath = skinMainQml;
-            }
-        }
-    }
 
     const QString colorScheme = m_pCoreServices->getSettings()->getValueString(
             ConfigKey("[Config]", "Scheme"));
@@ -366,7 +343,6 @@ void QmlApplication::slotFrameSwapped() {
     }
     auto lastFrameDurationNs = m_frameTimer.elapsed().toIntegerNanos();
     auto t = std::chrono::steady_clock::now() - std::chrono::steady_clock::time_point{};
-    Q_UNUSED(t);
     APerformanceHint_reportActualWorkDuration(m_perfSession,
             lastFrameDurationNs);
     m_frameTimer.restart();
@@ -379,6 +355,7 @@ QmlApplication::~QmlApplication() {
     QmlRecordingProxy::s_pRecordingManager.reset();
     QmlDlgPreferencesProxy::s_pInstance.reset();
     m_visualsManager.reset();
+    m_pAppEngine.reset();
     m_pCoreServices.reset();
 }
 

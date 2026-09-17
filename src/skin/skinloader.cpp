@@ -151,10 +151,10 @@ SkinPointer SkinLoader::getConfiguredSkin() const {
     DEBUG_ASSERT(!defaultSkinName.isEmpty());
     pSkin = getSkin(defaultSkinName);
     VERIFY_OR_DEBUG_ASSERT(pSkin && pSkin->isValid()) {
-        qWarning() << "Can't find default skin" << defaultSkinName;
+        qWarning() << "Can't find default skin " << defaultSkinName;
         return nullptr;
     }
-    qInfo() << "Found default skin" << defaultSkinName;
+    qInfo() << "Found default skin " << defaultSkinName;
     return pSkin;
 }
 
@@ -214,7 +214,7 @@ QWidget* SkinLoader::loadConfiguredSkin(QWidget* pParent,
     VERIFY_OR_DEBUG_ASSERT(pLoadedSkin != nullptr) {
         qCritical() << "No skin can be loaded, please check your installation.";
     }
-    qInfo() << "Loaded skin " << pSkin->name() << " from " << pSkin->path().filePath();
+    qInfo() << "Loaded skin" << pSkin->name() << "from" << pSkin->path().filePath();
     return pLoadedSkin;
 }
 
@@ -253,15 +253,11 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
     }
 
 #ifdef MIXXX_USE_QML
-    // QML skins are valid application skins in QML application mode. In legacy
-    // mode they remain developer-only, matching the existing experimental
-    // feature boundary.
-    if (CmdlineArgs::Instance().getDeveloper() ||
-            CmdlineArgs::Instance().isQml()) {
-        pSkin = qml::QmlSkin::fromDirectory(dir);
-        if (pSkin && pSkin->isValid()) {
-            return pSkin;
-        }
+    // QML skins are regular selectable skins in this fork. Their own QML
+    // ApplicationWindow is launched by QmlApplication when selected.
+    pSkin = qml::QmlSkin::fromDirectory(dir);
+    if (pSkin && pSkin->isValid()) {
+        return pSkin;
     }
 #endif
 
@@ -269,22 +265,6 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
 }
 
 bool SkinLoader::isDeveloperOnlyQmlSkin([[maybe_unused]] const QString& skinName) const {
-#ifdef MIXXX_USE_QML
-    if (CmdlineArgs::Instance().getDeveloper() ||
-            CmdlineArgs::Instance().isQml()) {
-        return false;
-    }
-    const QList<QDir> skinSearchPaths = getSkinSearchPaths();
-    for (QDir dir : skinSearchPaths) {
-        if (!dir.cd(skinName)) {
-            continue;
-        }
-        SkinPointer pSkin = QmlSkin::fromDirectory(dir);
-        if (pSkin && pSkin->isValid()) {
-            return true;
-        }
-    }
-#endif
     return false;
 }
 
@@ -319,7 +299,8 @@ void SkinLoader::setupSpinnyCoverControls() {
     m_pShowCover->connectValueChanged(this, &SkinLoader::updateSpinnyCoverControls);
     connect(m_pSelectBigSpinnyCover.get(),
             &ControlObject::valueChanged,
-            this, &SkinLoader::updateSpinnyCoverControls);
+            this,
+            &SkinLoader::updateSpinnyCoverControls);
 
     m_spinnyCoverControlsCreated = true;
     updateSpinnyCoverControls();
