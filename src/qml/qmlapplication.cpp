@@ -5,6 +5,7 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QMetaEnum>
+#include <QQmlContext>
 #include <QQmlEngineExtensionPlugin>
 #include <QQuickStyle>
 #include <QQuickWindow>
@@ -116,6 +117,8 @@ QmlApplication::QmlApplication(
           m_mainFilePath(mainQmlFilePath.isEmpty()
                           ? m_pCoreServices->getSettings()->getResourcePath() + kMainQmlFileName
                           : mainQmlFilePath),
+          m_selectedSkinName(m_pCoreServices->getSettings()->getValueString(
+                  ConfigKey("[Config]", "ResizableSkin"))),
           m_pAppEngine(nullptr),
           m_loadSucceeded(false),
 #if defined(Q_OS_ANDROID)
@@ -125,7 +128,10 @@ QmlApplication::QmlApplication(
     QQuickStyle::setStyle("Basic");
 
 #if defined(Q_OS_ANDROID)
-    if (canWriteToExternalStorage()) {
+    // Keep an explicitly supplied QML shell path authoritative. The legacy
+    // external-storage materialization remains only for callers that do not
+    // provide a path, avoiding an accidental override of app-private storage.
+    if (mainQmlFilePath.isEmpty() && canWriteToExternalStorage()) {
         const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
         const QString externalSkinDir = QStringLiteral("/storage/emulated/0/Mixxx/skins");
 
@@ -140,6 +146,9 @@ QmlApplication::QmlApplication(
                  << externalQmlDir << "and" << externalSkinDir;
     }
 #endif
+
+    qInfo() << "QmlApplication selected skin:" << m_selectedSkinName;
+    qInfo() << "QmlApplication main QML path:" << m_mainFilePath;
 
     const QString colorScheme = m_pCoreServices->getSettings()->getValueString(
             ConfigKey("[Config]", "Scheme"));
@@ -176,15 +185,6 @@ QmlApplication::QmlApplication(
     QString configVersion = m_pCoreServices->getSettings()->getValue(
             ConfigKey("[Config]", "Version"), "");
 
-    // The risk check guards against Mixxx 3.0 potentially running different
-    // database upgrade paths that could corrupt 2.x profiles.
-    //
-    // When a QML skin is auto-detected from preferences (--developer, no
-    // --new-ui), the underlying binary and DB schema are identical to a
-    // normal 2.x launch — there is no data corruption risk. Skip the gate.
-    //
-    // When explicitly launched with --new-ui, the full 3.0 application path
-    // is taken and the gate remains in effect as designed.
     const bool viaNewUiFlag = CmdlineArgs::Instance().isQml();
 
     if (configVersion == VersionStore::FUTURE_UNSTABLE) {
@@ -232,9 +232,6 @@ QmlApplication::QmlApplication(
     // FIXME: DlgPreferences has some initialization logic that must be executed
     // before the GUI is shown, at least for the effects system.
     std::shared_ptr<QDialog> pDlgPreferences = m_pCoreServices->makeDlgPreferences();
-    // Without this, QApplication will quit when the last QWidget QWindow is
-    // closed because it does not take into account the window created by
-    // the QQmlApplicationEngine.
     pDlgPreferences->setAttribute(Qt::WA_QuitOnClose, false);
 
     auto showNoInputConfiguredWarning = [pDlgPreferences](
@@ -277,8 +274,6 @@ QmlApplication::QmlApplication(
                            "hardware preferences first."));
             });
 
-    // Since DlgPreferences is only meant to be used in the main QML engine, it
-    // follows a strict singleton pattern design
     QmlDlgPreferencesProxy::s_pInstance =
             std::make_unique<QmlDlgPreferencesProxy>(pDlgPreferences, this);
     QmlRecordingProxy::s_pRecordingManager = m_pCoreServices->getRecordingManager();
@@ -363,7 +358,6 @@ void QmlApplication::slotFrameSwapped() {
 
 QmlApplication::~QmlApplication() {
     QmlApplicationProxy::registerReloadCallback({});
-    // Delete all the QML singletons in order to prevent leak detection in CoreService
     QmlRecordingProxy::s_pRecordingManager.reset();
     QmlDlgPreferencesProxy::s_pInstance.reset();
     m_visualsManager.reset();
@@ -414,14 +408,17 @@ void QmlApplication::updateSpinnyCoverControls() {
 }
 
 bool QmlApplication::loadQml(const QString& path) {
-    // QQmlApplicationEngine::load creates a new window but also leaves the old one,
-    // so it is necessary to destroy the old QQmlApplicationEngine and create a new one.
     m_pAppEngine = std::make_unique<QQmlApplicationEngine>();
     m_pAppEngine->setUiLanguage(QLocale().name());
 
     m_autoReload.clear();
     m_pAppEngine->addUrlInterceptor(&m_autoReload);
     m_pAppEngine->addImportPath(QStringLiteral(":/mixxx.org/imports"));
+    m_pAppEngine->rootContext()->setContextProperty(
+            QStringLiteral("NraveSelectedSkin"), m_selectedSkinName);
+
+    qInfo() << "QML context property NraveSelectedSkin =" << m_selectedSkinName;
+    qInfo() << "Loading QML shell from" << path;
 
     registerImageProvider();
 
