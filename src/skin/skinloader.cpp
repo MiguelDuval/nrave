@@ -214,7 +214,7 @@ QWidget* SkinLoader::loadConfiguredSkin(QWidget* pParent,
     VERIFY_OR_DEBUG_ASSERT(pLoadedSkin != nullptr) {
         qCritical() << "No skin can be loaded, please check your installation.";
     }
-    qInfo() << "Loaded skin" << pSkin->name() << "from" << pSkin->path().filePath();
+    qInfo() << "Loaded skin " << pSkin->name() << " from " << pSkin->path().filePath();
     return pLoadedSkin;
 }
 
@@ -253,10 +253,11 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
     }
 
 #ifdef MIXXX_USE_QML
-    // This getDeveloper() check is technically redundant because the callers
-    // (getSystemSkins, getSkin) already check it before scanning QML paths.
-    // Kept here for defense-in-depth in case future callers forget the guard.
-    if (CmdlineArgs::Instance().getDeveloper()) {
+    // QML skins are valid application skins in QML application mode. In legacy
+    // mode they remain developer-only, matching the existing experimental
+    // feature boundary.
+    if (CmdlineArgs::Instance().getDeveloper() ||
+            CmdlineArgs::Instance().isQml()) {
         pSkin = qml::QmlSkin::fromDirectory(dir);
         if (pSkin && pSkin->isValid()) {
             return pSkin;
@@ -269,7 +270,8 @@ SkinPointer SkinLoader::skinFromDirectory(const QDir& dir) const {
 
 bool SkinLoader::isDeveloperOnlyQmlSkin([[maybe_unused]] const QString& skinName) const {
 #ifdef MIXXX_USE_QML
-    if (CmdlineArgs::Instance().getDeveloper()) {
+    if (CmdlineArgs::Instance().getDeveloper() ||
+            CmdlineArgs::Instance().isQml()) {
         return false;
     }
     const QList<QDir> skinSearchPaths = getSkinSearchPaths();
@@ -317,8 +319,7 @@ void SkinLoader::setupSpinnyCoverControls() {
     m_pShowCover->connectValueChanged(this, &SkinLoader::updateSpinnyCoverControls);
     connect(m_pSelectBigSpinnyCover.get(),
             &ControlObject::valueChanged,
-            this,
-            &SkinLoader::updateSpinnyCoverControls);
+            this, &SkinLoader::updateSpinnyCoverControls);
 
     m_spinnyCoverControlsCreated = true;
     updateSpinnyCoverControls();
