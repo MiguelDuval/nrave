@@ -4,7 +4,7 @@ import "../Controls" as Controls
 import "../Deck" as DeckControls
 import "../LateNightTheme"
 import "../../../qml" as Shared
-import "../../../qml/Mixxx/Controls" as MixxxControls
+import Mixxx.Controls 1.0 as MixxxControls
 import Mixxx 1.0 as Mixxx
 import QtQuick
 import QtQuick.Layouts
