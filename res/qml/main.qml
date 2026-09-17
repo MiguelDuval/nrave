@@ -12,6 +12,8 @@ ApplicationWindow {
     readonly property int designWidth: 1792
     readonly property int designHeight: 1008
     property var bitGridOverlay: bitgridOverlay.item
+    property bool selectedSkinUsingAssetFallback: false
+    property string selectedSkinLoadError: ""
 
     color: Theme.backgroundColor
     height: isMobile ? Screen.height : designHeight
@@ -30,20 +32,27 @@ ApplicationWindow {
                 : Window.Windowed;
     }
 
-    function selectedMainWindowUrl() {
+    function selectedMainWindowLocalUrl() {
         const selectedSkin = Mixxx.Config.configSkin;
         if (selectedSkin === "" || selectedSkin === "AndroidDefault") {
             return Qt.resolvedUrl("MainWindow.qml");
         }
-        if (Qt.platform.os === "android") {
-            return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
-        }
         return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
     }
 
+    function selectedMainWindowAssetUrl() {
+        const selectedSkin = Mixxx.Config.configSkin;
+        return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
+    }
+
     function loadSelectedMainWindow() {
-        const sourceUrl = root.selectedMainWindowUrl();
-        console.info("Loading QML skin content:", Mixxx.Config.configSkin || "AndroidDefault", sourceUrl);
+        root.selectedSkinUsingAssetFallback = false;
+        root.selectedSkinLoadError = "";
+        const sourceUrl = root.selectedMainWindowLocalUrl();
+        console.info(
+                "Loading QML skin content from local resource tree:",
+                Mixxx.Config.configSkin || "AndroidDefault",
+                sourceUrl);
         content.setSource(sourceUrl, { "applicationWindow": root });
     }
 
@@ -67,9 +76,39 @@ ApplicationWindow {
             }
         }
         onStatusChanged: {
-            if (status === Loader.Error) {
-                console.error("Failed to load the selected Mixxx main window:", source)
-                Qt.quit()
+            if (status !== Loader.Error) {
+                return;
+            }
+
+            const selectedSkin = Mixxx.Config.configSkin;
+            if (Qt.platform.os === "android" &&
+                    selectedSkin !== "" &&
+                    selectedSkin !== "AndroidDefault" &&
+                    !root.selectedSkinUsingAssetFallback) {
+                root.selectedSkinUsingAssetFallback = true;
+                const assetUrl = root.selectedMainWindowAssetUrl();
+                console.warn(
+                        "Local QML skin load failed, retrying from Android assets:",
+                        selectedSkin,
+                        assetUrl);
+                content.setSource(assetUrl, { "applicationWindow": root });
+                return;
+            }
+
+            root.selectedSkinLoadError = selectedSkin || "AndroidDefault";
+            console.error(
+                    "Failed to load the selected Mixxx main window:",
+                    source,
+                    "skin:",
+                    root.selectedSkinLoadError);
+
+            // Do not terminate the Android process on a QML skin load error.
+            // Keep the application shell alive so a bad optional skin cannot
+            // masquerade as an application crash.
+            if (selectedSkin !== "" && selectedSkin !== "AndroidDefault") {
+                root.selectedSkinUsingAssetFallback = true;
+                content.setSource(Qt.resolvedUrl("MainWindow.qml"),
+                        { "applicationWindow": root });
             }
         }
     }
