@@ -126,16 +126,36 @@ bool QmlSkin::fitsScreenSize(const QScreen& screen) const {
         return true;
     }
 
-    // A skin minimum size describes a rectangle, not a fixed portrait/landscape
-    // orientation. Android may report the physical screen in portrait while the
-    // application itself is configured to run in landscape. Accept either
-    // orientation so Preferences does not report a false size warning.
-    const QSize screenSize = screen.size();
-    const bool fitsCurrentOrientation =
-            minPixelWidth <= screenSize.width() && minPixelHeight <= screenSize.height();
-    const bool fitsRotatedOrientation =
-            minPixelWidth <= screenSize.height() && minPixelHeight <= screenSize.width();
-    return fitsCurrentOrientation || fitsRotatedOrientation;
+    const QSize logicalScreenSize = screen.size();
+    const auto fits = [minPixelWidth, minPixelHeight](const QSize& size) {
+        const bool currentOrientation =
+                minPixelWidth <= size.width() && minPixelHeight <= size.height();
+        const bool rotatedOrientation =
+                minPixelWidth <= size.height() && minPixelHeight <= size.width();
+        return currentOrientation || rotatedOrientation;
+    };
+
+#if defined(Q_OS_ANDROID)
+    // Android/Qt screen geometry is expressed in device-independent pixels.
+    // The skin manifest field is explicitly named *_pixel_* and existing
+    // desktop skins use their raster/design resolution, so also evaluate the
+    // corresponding physical-pixel resolution on high-DPI Android displays.
+    const qreal dpr = screen.devicePixelRatio();
+    const QSize physicalScreenSize(
+            qRound(logicalScreenSize.width() * dpr),
+            qRound(logicalScreenSize.height() * dpr));
+    qDebug() << "QmlSkin::fitsScreenSize"
+             << "skin minimum" << QSize(minPixelWidth, minPixelHeight)
+             << "logical screen" << logicalScreenSize
+             << "devicePixelRatio" << dpr
+             << "physical screen" << physicalScreenSize;
+
+    if (fits(physicalScreenSize)) {
+        return true;
+    }
+#endif
+
+    return fits(logicalScreenSize);
 }
 
 LaunchImage* QmlSkin::loadLaunchImage(QWidget*, UserSettingsPointer) const {
