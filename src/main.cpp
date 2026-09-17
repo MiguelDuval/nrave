@@ -66,12 +66,27 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 #ifdef MIXXX_USE_QML
     QString mainQmlFilePath;
     bool loadQml = args.isQml();
+    const QString configuredSkinName = pCoreServices->getSettings()->getValueString(
+            ConfigKey("[Config]", "ResizableSkin"));
 
-    mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
-    const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
-    if (pSkin && pSkin->type() == mixxx::skin::SkinType::QML) {
+#if defined(Q_OS_ANDROID)
+    // Android uses the QML UI as its built-in default, but does not need the
+    // --new-ui command-line mode. Keeping CmdlineArgs::isQml() false allows
+    // the normal Preferences Interface page (including skin selection) to
+    // remain available.
+    if (!loadQml &&
+            (configuredSkinName.isEmpty() || configuredSkinName == QStringLiteral("AndroidDefault"))) {
         loadQml = true;
-        mainQmlFilePath = pSkin->mainQmlFilePath();
+    }
+#endif
+
+    if (!configuredSkinName.isEmpty() && configuredSkinName != QStringLiteral("AndroidDefault")) {
+        mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
+        const mixxx::skin::SkinPointer pSkin = skinLoader.getSkin(configuredSkinName);
+        if (pSkin && pSkin->type() == mixxx::skin::SkinType::QML) {
+            loadQml = true;
+            mainQmlFilePath = pSkin->mainQmlFilePath();
+        }
     }
 
     if (loadQml) {
