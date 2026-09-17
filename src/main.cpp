@@ -68,6 +68,17 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
         qCritical() << "No valid Android QML skin is available";
         return kFatalErrorOnStartupExitCode;
     }
+
+    // SkinLoader is the authoritative resolver for the configured Android QML skin.
+    // Keep the resolved value in the shared UserSettings object so the QML shell
+    // consumes the same skin name instead of reinterpreting the raw preference.
+    const ConfigKey resizableSkinKey(
+            QStringLiteral("[Config]"), QStringLiteral("ResizableSkin"));
+    const QString resolvedSkinName = pSkin->name();
+    if (pCoreServices->getSettings()->getValueString(resizableSkinKey) != resolvedSkinName) {
+        qInfo() << "Normalized Android QML skin selection to" << resolvedSkinName;
+        pCoreServices->getSettings()->setValue(resizableSkinKey, resolvedSkinName);
+    }
 #endif
 
     if (loadQml) {
