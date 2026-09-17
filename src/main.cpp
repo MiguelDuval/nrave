@@ -251,11 +251,6 @@ int main(int argc, char * argv[]) {
     QApplication::setQuitOnLastWindowClosed(false);
 #endif
 
-    if (!args.getSettingsPathSet()) {
-        CmdlineArgs::Instance().setSettingsPath(Sandbox::migrateOldSettings());
-    }
-#endif
-
 #ifdef __APPLE__
     QDir dir(QApplication::applicationDirPath());
     if (dir.path().contains(".app/")) {
@@ -270,7 +265,7 @@ int main(int argc, char * argv[]) {
 
     int exitCode = runMixxx(&app, args);
 
-    qDebug() << "Mixxx shutdown complete with code" << exitCode;
+    qDebug() << "Mixxx shutdown complete with code " << exitCode;
 
     mixxx::Logging::shutdown();
 
