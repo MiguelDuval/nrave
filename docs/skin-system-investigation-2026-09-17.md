@@ -1,3 +1,5 @@
+> **AI-assisted record:** This document was generated with AI assistance from the repository investigation performed on 2026-09-17. It records verified repository evidence and observed runtime failures for human review.
+
 # Android QML skin system — investigation record (2026-09-17)
 
 This document preserves the findings from the September 2026 investigation so future UI work can reuse the evidence instead of repeating runtime debugging.
@@ -180,3 +182,5 @@ First establish a stable, independently tested contract:
 `Preferences -> persisted skin ID -> Android-safe skin materialization -> skin entrypoint -> Android application shell`
 
 Then redesign the visual contents behind that contract.
+
+> **AI-assisted record:** This document was generated with AI assistance from the repository investigation performed on 2026-09-17. It records verified repository evidence and observed runtime failures for human review.
