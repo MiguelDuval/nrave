@@ -37,7 +37,7 @@ ApplicationWindow {
         root.updateProgress();
         if (mainWindowLoader.status === Loader.Error) {
             root.mainWindowLoadError = true;
-            console.error("Failed to load the LateNightQML main window");
+            console.error("Failed to load the LateNightQML main window:", mainWindowLoader.source);
         }
     }
 
@@ -63,13 +63,7 @@ ApplicationWindow {
         asynchronous: true
         onProgressChanged: root.updateProgress()
         onStatusChanged: root.handleMainWindowLoaderStatus()
-
-        sourceComponent: Component {
-            MainWindow {
-                applicationWindow: root
-                anchors.fill: parent
-            }
-        }
+        source: Qt.resolvedUrl("MainWindow.qml")
     }
 
     StartupScreen {
