@@ -11,6 +11,8 @@ Item {
     property color labelColor: LateNightTheme.textTertiary
     property int labelPixelSize: 11
     property real contentOpacity: 0.82
+    property real activeOpacity: contentOpacity
+    property real inactiveOpacity: contentOpacity
 
     property string activeBackgroundSuffix: ""
     property string activeIconSuffix: ""
@@ -42,6 +44,8 @@ Item {
     property int iconTopPadding: 0
     property int iconBottomPadding: 0
     property bool rasterizeIconAtPaintedSize: false
+
+    readonly property real effectiveContentOpacity: root.activeState ? root.activeOpacity : root.inactiveOpacity
 
     readonly property url effectiveBackgroundSource: {
         var src = backgroundSource.toString();
@@ -140,7 +144,7 @@ Item {
                 ? Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
                 : Qt.size(-1, -1)
         fillMode: root.stretchIcon ? Image.Stretch : Image.PreserveAspectFit
-        opacity: root.contentOpacity
+        opacity: root.effectiveContentOpacity
         visible: root.effectiveIconSource.toString().length > 0
     }
 
@@ -167,7 +171,7 @@ Item {
             height: root.height
             source: root.latchOverlayBackgroundSource
             fillMode: Image.Stretch
-            opacity: root.contentOpacity
+            opacity: root.effectiveContentOpacity
         }
 
         Image {
@@ -180,7 +184,7 @@ Item {
                     ? Qt.size(Math.ceil(width * Screen.devicePixelRatio), Math.ceil(height * Screen.devicePixelRatio))
                     : Qt.size(-1, -1)
             fillMode: root.stretchIcon ? Image.Stretch : Image.PreserveAspectFit
-            opacity: root.contentOpacity
+            opacity: root.effectiveContentOpacity
             visible: root.latchOverlayIconSource.toString().length > 0
         }
     }
