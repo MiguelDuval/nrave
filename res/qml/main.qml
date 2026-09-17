@@ -39,15 +39,15 @@ ApplicationWindow {
             return;
         }
 
-        // Keep the skin document lazy. QmlApplication owns the single
-        // application entry point (this file); the selected skin is a child
-        // component loaded only after Core is ready. On Android, packaged skins
-        // are addressable through the Android assets filesystem.
+        // QmlApplication owns the single application entry point (this file).
+        // The selected skin is a child component of that ApplicationWindow.
+        // Resolve the selected skin relative to the entrypoint itself so the
+        // same file-based QML tree is used on Android and desktop. On Android,
+        // QmlApplication materializes qml/ and skins/ together before loading
+        // this document, so no assets:/ URL or separate QML entrypoint is needed.
         const sourceUrl = root.useLateNightQmlSkin
-                ? (root.isMobile
-                        ? "assets:/skins/LateNightQML/MainWindow.qml"
-                        : "qrc:/skins/LateNightQML/MainWindow.qml")
-                : "MainWindow.qml";
+                ? Qt.resolvedUrl("../skins/LateNightQML/MainWindow.qml")
+                : Qt.resolvedUrl("MainWindow.qml");
         console.debug("Loading configured main window:", sourceUrl,
                 "configSkin:", Mixxx.Config.configSkin);
         content.setSource(sourceUrl, { "applicationWindow": root });
