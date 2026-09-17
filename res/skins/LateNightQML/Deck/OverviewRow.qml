@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Mixxx 1.0 as Mixxx
+import Mixxx.Controls 1.0 as MixxxControls
 import "../LateNightTheme"
-import "../../../qml/Mixxx/Controls" as MixxxControls
 
 Item {
     id: root
