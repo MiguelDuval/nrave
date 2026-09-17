@@ -168,34 +168,39 @@ Item {
             Layout.preferredWidth: 4
         }
 
-        // Per-deck BeatGrid visibility toggle.
-        LateNightControlButton {
+        // Per-deck BeatGrid visibility toggle is purely skin-local UI state.
+        // It must not use LateNightControlButton, whose contract requires a
+        // real Mixxx control group/key and exposes primaryPressed rather than clicked.
+        LateNightIconButton {
+            id: beatgridVisibilityButton
+
             Layout.preferredWidth: 68
             Layout.preferredHeight: 26
-            backgroundSource: LateNightTheme.lateNightSubRegionButton("medium")
             iconSource: LateNightTheme.assetDeckBeatgridButton
-            toggleable: true
             activeBackgroundSuffix: "active"
             pressedBackgroundSuffix: "active"
             activeOpacity: 1.0
-            inactiveOpacity: 0.82
+            contentOpacity: 0.82
             activeColor: LateNightTheme.activePlayCueColor
 
-            property bool checked: {
-                var p = parent;
-                while (p && p.showBeatgridControlsLocal === undefined) {
-                    p = p.parent;
-                }
-                return p ? p.showBeatgridControlsLocal : false;
-            }
-
-            onClicked: {
+            activeState: {
                 var fullDeck = parent;
                 while (fullDeck && fullDeck.showBeatgridControlsLocal === undefined) {
                     fullDeck = fullDeck.parent;
                 }
-                if (fullDeck) {
-                    fullDeck.showBeatgridControlsLocal = !fullDeck.showBeatgridControlsLocal;
+                return fullDeck ? fullDeck.showBeatgridControlsLocal : false;
+            }
+
+            TapHandler {
+                acceptedButtons: Qt.LeftButton
+                onTapped: {
+                    var fullDeck = beatgridVisibilityButton.parent;
+                    while (fullDeck && fullDeck.showBeatgridControlsLocal === undefined) {
+                        fullDeck = fullDeck.parent;
+                    }
+                    if (fullDeck) {
+                        fullDeck.showBeatgridControlsLocal = !fullDeck.showBeatgridControlsLocal;
+                    }
                 }
             }
         }
