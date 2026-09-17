@@ -35,10 +35,15 @@ ApplicationWindow {
         if (selectedSkin === "" || selectedSkin === "AndroidDefault") {
             return Qt.resolvedUrl("MainWindow.qml");
         }
-        // Skin content is a sibling of the QML shell directory on Android
-        // (whether both are read from assets:/ or copied to external storage).
-        // Keeping this relative avoids mixing a local-file shell with an
-        // Android-specific assets: URL for the dynamically loaded skin.
+
+        // The application shell can be loaded either directly from the APK
+        // (assets:/qml/main.qml) or from the writable Android QML mirror used
+        // by QmlApplication. Resolve skin content relative to the actual shell
+        // location instead of assuming that every Android URL is filesystem-like.
+        const shellUrl = Qt.resolvedUrl("main.qml").toString();
+        if (shellUrl.startsWith("assets:/")) {
+            return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
+        }
         return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
     }
 
