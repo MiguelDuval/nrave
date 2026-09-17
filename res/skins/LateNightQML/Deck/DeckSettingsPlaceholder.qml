@@ -15,7 +15,7 @@ Item {
     readonly property color starsColor: isDeck12 ? LateNightTheme.starsColor12 : LateNightTheme.starsColor34
     readonly property string activeSuffix: isDeck12 ? "active_12" : "active_34"
 
-    implicitWidth: 84
+    implicitWidth: 76
     implicitHeight: 63
 
     Mixxx.ControlProxy {
@@ -153,19 +153,18 @@ Item {
 
             // Quantize toggle
             LateNightControlButton {
-                Layout.preferredWidth: 24
+                Layout.preferredWidth: 21
                 Layout.preferredHeight: 18
                 backgroundSource: LateNightTheme.lateNightButton("btn__.svg")
-                iconSource: ""
+                iconSource: LateNightTheme.assetDeckQuantizeButton
+                activeIconSuffix: root.activeSuffix
+                stretchIcon: true
                 inactiveFillEnabled: false
                 group: root.group
                 key: "quantize"
                 toggleable: true
                 activeOpacity: 1.0
                 inactiveOpacity: 0.72
-                label: "Q"
-                labelColor: LateNightTheme.primaryDeckTextColor
-                labelPixelSize: 9
             }
 
             // Curpos button
@@ -233,19 +232,18 @@ Item {
 
             // Keylock toggle
             LateNightControlButton {
-                Layout.preferredWidth: 24
+                Layout.preferredWidth: 21
                 Layout.preferredHeight: 18
                 backgroundSource: LateNightTheme.lateNightButton("btn__.svg")
-                iconSource: ""
+                iconSource: LateNightTheme.assetDeckKeylockButton
+                activeIconSuffix: root.activeSuffix
+                stretchIcon: true
                 inactiveFillEnabled: false
                 group: root.group
                 key: "keylock"
                 toggleable: true
                 activeOpacity: 1.0
                 inactiveOpacity: 0.72
-                label: "KLO"
-                labelColor: LateNightTheme.primaryDeckTextColor
-                labelPixelSize: 9
             }
         }
 
