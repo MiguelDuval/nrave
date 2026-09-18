@@ -279,6 +279,9 @@ Item {
                     icon.source: "images/gear.svg"
                     icon.width: 18
                     implicitWidth: 76
+                    Accessible.id: "nrave_settings_button"
+                    Accessible.name: "Settings"
+                    Accessible.role: Accessible.Button
 
                     onClicked: {
                         if (!settingsPopup.opened) {
