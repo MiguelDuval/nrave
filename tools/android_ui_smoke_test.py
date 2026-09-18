@@ -303,7 +303,11 @@ def main() -> int:
 
     print("=== SAVE LATENIGHT SELECTION ===", flush=True)
     click_value("Settings", exact=True)
-    wait_for_value("Skin: Late Night QML", timeout=15)
+    wait_for_value("Skin: Android Default", timeout=15)
+    click_value("Skin: Android Default", exact=True)
+    wait_for_value("Late Night QML", timeout=10)
+    click_value("Late Night QML", exact=True)
+    wait_for_value("Skin: Late Night QML", timeout=10)
     click_value("Save", exact=True)
     time.sleep(2)
     # Save keeps the Settings popup open; this asserts the action completed.
