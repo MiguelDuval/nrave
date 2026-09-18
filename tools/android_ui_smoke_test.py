@@ -345,6 +345,16 @@ def wait_for_process(timeout: float = 60) -> None:
 
 
 def prepare_android_runtime() -> None:
+    # Lock the runtime emulator to landscape before starting Qt. The APK
+    # declares sensorLandscape; on the API-35 CI image an unlocked sensor
+    # transition can leave Qt rendering correctly while Android has no input
+    # channel for the activity. A deterministic landscape display avoids that
+    # race and makes adb input delivery testable.
+    run_shell("settings", "put", "system", "accelerometer_rotation", "0", timeout=10, check=False)
+    run_shell("settings", "put", "system", "user_rotation", "1", timeout=10, check=False)
+    run_shell("wm", "set-user-rotation", "lock", "1", timeout=10, check=False)
+    time.sleep(2)
+
     # The clean API-35 emulator can show Android's immersive-mode confirmation
     # and the MANAGE_EXTERNAL_STORAGE special-access screen before the app UI.
     # Those are test-environment state, not NRave UI under test.
