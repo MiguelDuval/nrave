@@ -389,6 +389,14 @@ def wait_for_main_window(timeout: float = 90.0) -> None:
     assert_nrave_foreground()
 
 
+def safe_find_nodes(value: str, *, exact: bool = False) -> list[ET.Element]:
+    try:
+        return find_nodes(value, exact=exact)
+    except UiTestError:
+        # UIAutomator can briefly have no dump while Android is finishing boot.
+        return []
+
+
 def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
     deadline = time.time() + timeout
     anr_waits = 0
@@ -398,8 +406,8 @@ def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
         # Android can show a native ANR dialog for Pixel Launcher while the
         # emulator is settling. Never mistake that system dialog for a NRave
         # screen change; choose Wait and re-check the real foreground window.
-        anr = find_nodes("isn't responding")
-        wait_nodes = find_nodes("Wait", exact=True)
+        anr = safe_find_nodes("isn't responding")
+        wait_nodes = safe_find_nodes("Wait", exact=True)
         if anr and wait_nodes:
             click_node(wait_nodes[0])
             anr_waits += 1
@@ -409,14 +417,14 @@ def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
                 raise UiTestError("Android system ANR dialog persisted after three Wait attempts")
             continue
 
-        got_it = find_nodes("Got it", exact=True)
+        got_it = safe_find_nodes("Got it", exact=True)
         if got_it:
             click_node(got_it[0])
             time.sleep(1)
             handled = True
 
-        all_files = find_nodes("All files access", exact=True)
-        allow_all = find_nodes("Allow access to manage all files", exact=True)
+        all_files = safe_find_nodes("All files access", exact=True)
+        allow_all = safe_find_nodes("Allow access to manage all files", exact=True)
         if all_files or allow_all:
             if allow_all:
                 click_node(allow_all[0])
