@@ -358,18 +358,35 @@ def prepare_android_runtime() -> None:
     print(f"=== STORAGE ACCESS === {storage_state}", flush=True)
 
 
+def window_dump() -> str:
+    return run_shell("dumpsys", "window", "windows", timeout=15, check=False)
+
+
 def current_focus() -> str:
-    output = run_shell("dumpsys", "window", "windows", timeout=15, check=False)
+    output = window_dump()
     for line in output.splitlines():
         if "mCurrentFocus=" in line or "mFocusedApp=" in line:
             return line.strip()
     return output[-1000:]
 
 
+def splash_present() -> bool:
+    return "Splash Screen org.mixxx" in window_dump()
+
+
 def assert_nrave_foreground() -> None:
     focus = current_focus()
     if "org.mixxx" not in focus:
         raise UiTestError(f"NRave is not the foreground app: {focus}")
+
+
+def wait_for_main_window(timeout: float = 90.0) -> None:
+    def ready() -> bool:
+        dismiss_android_system_overlays(timeout=2)
+        return "org.mixxx" in current_focus() and not splash_present()
+
+    wait_until(ready, "NRave MainWindow (splash screen gone)", timeout=timeout, interval=2)
+    assert_nrave_foreground()
 
 
 def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
@@ -428,12 +445,7 @@ def launch() -> None:
     wait_for_process()
     time.sleep(3)
     dismiss_android_system_overlays(timeout=20)
-    wait_until(
-        lambda: ("org.mixxx" in current_focus()) or (dismiss_android_system_overlays(timeout=3) is None and "org.mixxx" in current_focus()),
-        "NRave foreground window",
-        timeout=30,
-        interval=1,
-    )
+    wait_for_main_window(timeout=90)
     time.sleep(2)
 
 
