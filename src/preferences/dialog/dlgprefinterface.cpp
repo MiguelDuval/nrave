@@ -596,6 +596,15 @@ void DlgPrefInterface::slotApply() {
                 notifyExperimentalQmlSkinRestartNecessary();
                 m_skinNameOnUpdate = m_pSkin->name();
                 m_colorSchemeOnUpdate = m_colorScheme;
+#if defined(Q_OS_ANDROID)
+                // Android can terminate the process without a normal Qt
+                // shutdown. Persist the canonical QML skin selection now so
+                // the next launch resolves the same skin.
+                if (!m_pConfig->save()) {
+                    qWarning() << "Failed to persist Android QML skin selection:"
+                               << m_pSkin->name();
+                }
+#endif
                 return;
             } else {
                 if (mixxx::qml::QmlConfigProxyBase::s_pInstance) {
@@ -616,7 +625,6 @@ void DlgPrefInterface::slotApply() {
             m_colorSchemeOnUpdate = m_colorScheme;
         }
     }
-}
 
 void DlgPrefInterface::loadTooltipPreferenceFromConfig() {
     const auto tooltipMode = m_pConfig->getValue<mixxx::preferences::Tooltips>(
