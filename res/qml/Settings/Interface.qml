@@ -46,9 +46,15 @@ Category {
         rampingSensitivityInput.value = Mixxx.Config.controlRateRampSensitivity;
         decksTab.dirty = false;
     }
+    readonly property var androidSkinIds: ["AndroidDefault", "LateNightQML"]
+    readonly property var androidSkinLabels: ["Android Default", "Late Night QML"]
+
     function loadInterface() {
         // Interface tab
-        // skinInput.value =
+        skinInput.model = root.androidSkinLabels;
+        const configuredSkin = Mixxx.Config.configSkin;
+        const configuredSkinIndex = root.androidSkinIds.indexOf(configuredSkin);
+        skinInput.currentIndex = configuredSkinIndex >= 0 ? configuredSkinIndex : 0;
         // colorInput.value =
         // layoutInput.value =
         tooltipsInput.selected = tooltipsInput.options[Mixxx.Config.libraryTooltips];
@@ -114,7 +120,7 @@ Category {
     }
     function saveInterface() {
         // Interface tab
-        // skinInput.value =
+        Mixxx.Config.configSkin = root.androidSkinIds[Math.max(0, skinInput.currentIndex)];
         // colorInput.value =
         // layoutInput.value =
         Mixxx.Config.libraryTooltips = tooltipsInput.options.indexOf(tooltipsInput.selected);
