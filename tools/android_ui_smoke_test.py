@@ -317,6 +317,35 @@ def assert_enabled(value: str, expected: bool) -> ET.Element:
     return node
 
 
+def open_settings_with_cold_start_retry() -> None:
+    # A clean API-35 emulator can spend the first launch initializing Mixxx
+    # storage/audio/controller state. Give the first launch a full attempt, then
+    # allow one deterministic force-stop/relaunch before declaring the APK UI
+    # unreachable. This still fails hard if MainWindow never appears.
+    for attempt in (1, 2):
+        print(f"=== OPEN SETTINGS ATTEMPT {attempt} ===", flush=True)
+        settings_nodes = find_nodes("Settings", exact=True)
+        if settings_nodes:
+            click_node(settings_nodes[0])
+        else:
+            click_settings_button()
+
+        try:
+            wait_for_any_value(("Settings", "← Back to NRave"), timeout=30)
+            screenshot(f"02-settings-attempt-{attempt}.png")
+            return
+        except UiTestError:
+            if attempt == 2:
+                raise UiTestError(
+                    "NRave MainWindow did not become reachable after two launches; "
+                    "the app remained outside the expected Settings UI"
+                )
+            print("=== COLD START RETRY ===", flush=True)
+            run_shell("am", "force-stop", "org.mixxx", check=False)
+            time.sleep(2)
+            launch()
+
+
 def main() -> int:
     if not APK.exists():
         raise UiTestError(f"APK not found: {APK}")
@@ -335,13 +364,7 @@ def main() -> int:
     if "Loading resolved QML skin entrypoint" in log and "AndroidDefault" not in log:
         raise UiTestError("Default skin loader did not report AndroidDefault")
 
-    print("=== OPEN SETTINGS ===", flush=True)
-    settings_nodes = find_nodes("Settings", exact=True)
-    if settings_nodes:
-        click_node(settings_nodes[0])
-    else:
-        click_settings_button()
-    wait_for_any_value(("Settings", "← Back to NRave"), timeout=20)
+    open_settings_with_cold_start_retry()
     screenshot("02-settings.png")
 
     print("=== OPEN INTERFACE SETTINGS ===", flush=True)
