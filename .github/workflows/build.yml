@@ -163,6 +163,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Download APK
         uses: actions/download-artifact@v8
         with:
