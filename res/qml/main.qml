@@ -75,11 +75,15 @@ ApplicationWindow {
         id: content
         anchors.fill: parent
         active: Mixxx.Core.ready
-        property ApplicationWindow applicationWindow: root
         asynchronous: true
         onActiveChanged: {
             if (active) {
                 root.loadSelectedMainWindow();
+            }
+        }
+        onLoaded: {
+            if (item && item.hasOwnProperty("applicationWindow")) {
+                item.applicationWindow = root;
             }
         }
         onStatusChanged: {
