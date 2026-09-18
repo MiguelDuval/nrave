@@ -122,6 +122,9 @@ Item {
         visible: root.panelOpen
         z: 2
         clip: true
+        Accessible.id: "nrave_beatgrid_panel"
+        Accessible.name: "BeatGrid panel deck " + root.activeDeck
+        Accessible.role: Accessible.Pane
 
         Column {
             anchors.fill: parent
@@ -136,6 +139,9 @@ Item {
                     font.bold: true; font.family: Theme.fontFamily; font.pixelSize: 18
                     verticalAlignment: Text.AlignVCenter
                     text: "BEATGRID " + root.activeDeck
+                    Accessible.id: "nrave_beatgrid_title"
+                    Accessible.name: text
+                    Accessible.role: Accessible.StaticText
                 }
                 Skin.Button { width: 48; height: 36; text: "×"; onClicked: root.close() }
             }
@@ -147,12 +153,30 @@ Item {
                     Column {
                         width: parent.width / 2 - 8; spacing: 2
                         Text { color: Theme.lightGray3; font.family: Theme.fontFamily; font.pixelSize: 11; text: "BPM" }
-                        Text { color: Theme.lightGray1; font.bold: true; font.family: Theme.fontFamily; font.pixelSize: 20; text: root.bpmText(root.deck.bpm) }
+                        Text {
+                            color: Theme.lightGray1
+                            font.bold: true
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 20
+                            text: root.bpmText(root.deck.bpm)
+                            Accessible.id: "nrave_beatgrid_bpm"
+                            Accessible.name: "BPM " + text
+                            Accessible.role: Accessible.StaticText
+                        }
                     }
                     Column {
                         width: parent.width / 2 - 8; spacing: 2
                         Text { color: Theme.lightGray3; font.family: Theme.fontFamily; font.pixelSize: 11; text: "PHASE" }
-                        Text { color: Theme.lightGray1; font.bold: true; font.family: Theme.fontFamily; font.pixelSize: 20; text: root.phaseText(root.deck.phase) }
+                        Text {
+                            color: Theme.lightGray1
+                            font.bold: true
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 20
+                            text: root.phaseText(root.deck.phase)
+                            Accessible.id: "nrave_beatgrid_phase"
+                            Accessible.name: "PHASE " + text
+                            Accessible.role: Accessible.StaticText
+                        }
                     }
                 }
             }
@@ -210,6 +234,9 @@ Item {
                     text: !root.deck.loaded ? "No track loaded" :
                           root.deck.lock.value > 0.5 ? "BeatGrid locked" :
                           root.controlsInitialized ? "Ready" : "Engine unavailable"
+                    Accessible.id: "nrave_beatgrid_status"
+                    Accessible.name: text
+                    Accessible.role: Accessible.StaticText
                 }
             }
         }
