@@ -349,6 +349,12 @@ def prepare_android_runtime() -> None:
         timeout=10,
         check=False,
     )
+    # The Google APIs image can start Pixel Launcher even though this test is
+    # full-screen NRave-only. Stop launchers so their startup/ANR cannot block
+    # the application's input window.
+    for launcher in ("com.google.android.apps.nexuslauncher", "com.android.launcher3"):
+        run_shell("am", "force-stop", launcher, timeout=10, check=False)
+
     storage_state = run_shell(
         "appops",
         "get",
@@ -383,27 +389,12 @@ def assert_nrave_foreground() -> None:
 
 
 def main_ui_visible() -> bool:
-    # QML content is not exposed to UIAutomator in this Android runtime. The
-    # Android splash can therefore disappear while NRave is still showing its
-    # own QML splash. Android Default has a non-empty Library panel in the
-    # upper-left; the splash is a uniform background there.
-    try:
-        from io import BytesIO
-        from PIL import Image
-    except ImportError:
-        return False
-
-    data = subprocess.check_output([ADB, "exec-out", "screencap", "-p"], timeout=30)
-    image = Image.open(BytesIO(data)).convert("RGB")
-    width, height = image.size
-    crop = image.crop((0, 0, min(700, width), min(500, height)))
-    background = image.getpixel((0, 0))
-    samples = list(crop.getdata())[::8]
-    different = sum(
-        1 for rgb in samples
-        if sum(abs(a - b) for a, b in zip(rgb, background)) > 30
-    )
-    return different > 1000
+    # Do not use repeated screencap polling here. On the ARM64-through-ARM
+    # translation runtime, frequent full-resolution captures can starve the
+    # emulator and trigger a Pixel Launcher/system ANR while NRave is already
+    # rendering correctly. Foreground-window state is the stable readiness
+    # signal; screenshots are captured only at explicit checkpoints.
+    return "org.mixxx" in current_focus() and not splash_present()
 
 
 def wait_for_main_window(timeout: float = 120.0) -> None:
@@ -485,6 +476,9 @@ def launch() -> None:
         "1",
         timeout=30,
     )
+    # Keep the launcher out of the foreground/input path on the runtime image.
+    for launcher in ("com.google.android.apps.nexuslauncher", "com.android.launcher3"):
+        run_shell("am", "force-stop", launcher, timeout=10, check=False)
     wait_for_process()
     time.sleep(3)
     # Android 35 may surface the immersive-mode confirmation after the app
