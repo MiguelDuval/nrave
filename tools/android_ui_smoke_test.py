@@ -192,14 +192,29 @@ def physical_screen_size() -> tuple[int, int]:
 
 
 def click_settings_button() -> None:
-    # MainWindow.qml places the Settings button as the last 76x36 control in
-    # the top toolbar. Qt Quick is not exposed as a rich UIAutomator hierarchy
-    # in this Android runtime, so use the declared geometry rather than an
-    # arbitrary percentage of the screen.
+    # The Settings control is an icon-only gear. Qt Quick accessibility is not
+    # guaranteed to appear in Android UIAutomator, so use semantic lookup first
+    # and the exact toolbar geometry as the deterministic fallback.
+    for value in ("nrave_settings_button", "Settings"):
+        nodes = find_nodes(value, exact=True)
+        if nodes:
+            node = nodes[0]
+            if node.attrib.get("enabled", "true").casefold() != "false":
+                click_node(node)
+                return
+
     width, _ = physical_screen_size()
     x = width - 38
     y = 18
     run_shell("input", "tap", str(x), str(y), timeout=10)
+
+
+def reopen_settings() -> None:
+    # Settings is an icon-only gear, therefore never depend on visible button
+    # text for reopening it.
+    before = screen_hash()
+    click_settings_button()
+    wait_for_screen_change(before, timeout=8)
 
 
 def screen_hash() -> str:
@@ -495,7 +510,7 @@ def main() -> int:
     wait_until(lambda: not find_nodes("BEATGRID 2", exact=True), "BitGrid panel close", timeout=10)
 
     print("=== SAVE LATENIGHT SELECTION ===", flush=True)
-    click_value("Settings", exact=True)
+    reopen_settings()
     wait_for_value("Skin: Android Default", timeout=15)
     click_value("Skin: Android Default", exact=True)
     wait_for_value("Late Night QML", timeout=10)
