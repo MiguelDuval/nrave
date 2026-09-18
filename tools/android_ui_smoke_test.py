@@ -368,6 +368,10 @@ def prepare_android_runtime() -> None:
     run_shell("settings", "put", "system", "accelerometer_rotation", "0", timeout=10, check=False)
     run_shell("settings", "put", "system", "user_rotation", "1", timeout=10, check=False)
     run_shell("wm", "set-user-rotation", "lock", "1", timeout=10, check=False)
+    # Give the desktop-style QML skin enough logical width/height to expose
+    # its full deck toolbars on the CI emulator. The physical display stays
+    # unchanged; only Android's dp mapping is adjusted for this black-box run.
+    run_shell("wm", "density", "160", timeout=10, check=False)
     time.sleep(2)
 
     # The clean API-35 emulator can show Android's immersive-mode confirmation
