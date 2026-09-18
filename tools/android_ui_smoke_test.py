@@ -191,10 +191,27 @@ def physical_screen_size() -> tuple[int, int]:
     return int(match.group(1)), int(match.group(2))
 
 
+def app_window_bounds() -> tuple[int, int, int, int] | None:
+    output = run_shell("dumpsys", "window", "windows", timeout=15, check=False)
+    # Android's window dump normally exposes the application frame as
+    # mFrame=Rect(left,top - right,bottom). The physical display can be much
+    # wider than the Qt window on this emulator, so screen width is not a safe
+    # Settings-button coordinate.
+    for line in output.splitlines():
+        if "org.mixxx/org.mixxx.MainActivity" not in line:
+            continue
+        match = re.search(
+            r"mFrame=Rect\((-?\d+),(-?\d+) - (-?\d+),(-?\d+)\)",
+            line,
+        )
+        if match:
+            return tuple(map(int, match.groups()))
+    return None
+
+
 def click_settings_button() -> None:
     # The Settings control is an icon-only gear. Qt Quick accessibility is not
-    # guaranteed to appear in Android UIAutomator, so use semantic lookup first
-    # and the exact toolbar geometry as the deterministic fallback.
+    # guaranteed to appear in Android UIAutomator, so use semantic lookup first.
     for value in ("nrave_settings_button", "Settings"):
         nodes = find_nodes(value, exact=True)
         if nodes:
@@ -203,10 +220,15 @@ def click_settings_button() -> None:
                 click_node(node)
                 return
 
+    frame = app_window_bounds()
+    if frame:
+        left, top, right, _ = frame
+        run_shell("input", "tap", str(right - 38), str(top + 18), timeout=10)
+        return
+
+    # Last-resort fallback for unusual Android window dumps.
     width, _ = physical_screen_size()
-    x = width - 38
-    y = 18
-    run_shell("input", "tap", str(x), str(y), timeout=10)
+    run_shell("input", "tap", str(width - 38), "18", timeout=10)
 
 
 def reopen_settings() -> None:
