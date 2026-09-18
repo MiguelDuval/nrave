@@ -11,7 +11,7 @@ import "Theme"
 Item {
     id: root
 
-    required property ApplicationWindow applicationWindow
+    property ApplicationWindow applicationWindow: null
     property alias menuBar: nativeApplicationMenuLoader.item
 
     property alias editDeck: editDeckButton.checked
