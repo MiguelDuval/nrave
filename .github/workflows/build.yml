@@ -160,7 +160,7 @@ jobs:
 
   android-runtime-smoke:
     needs: android-apk
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - name: Download APK
@@ -169,31 +169,77 @@ jobs:
           name: nrave-runtime-apk
           path: runtime-apk
 
-      - name: Enable KVM
+      - name: Prepare runtime diagnostics
+        shell: bash
+        run: |
+          set -u
+          mkdir -p nrave-ui-test-diagnostics
+          {
+            echo "=== HOST ==="
+            date -u
+            uname -a
+            uname -m
+            echo
+            echo "=== RUNNER ENV ==="
+            echo "RUNNER_ARCH=${RUNNER_ARCH:-}"
+            echo "RUNNER_OS=${RUNNER_OS:-}"
+            echo
+            echo "=== KVM DEVICE ==="
+            ls -l /dev/kvm 2>&1 || true
+            stat /dev/kvm 2>&1 || true
+            echo
+            echo "=== KVM MODULES ==="
+            lsmod 2>&1 | grep -E '^kvm(_amd|_intel)?\\b' || true
+          } | tee nrave-ui-test-diagnostics/host-preflight.txt
+
+      - name: Verify x86_64 KVM runtime
         shell: bash
         run: |
           set -euo pipefail
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+          test "$(uname -m)" = "x86_64"
+          test "${RUNNER_ARCH:-}" = "X64"
+          test -e /dev/kvm
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
           ls -l /dev/kvm
+
+      - name: Verify runtime APK ABI
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="runtime-apk/android-build-release-signed.apk"
+          test -f "$APK"
+          echo "APK: $APK"
+          unzip -Z1 "$APK" | grep -E '^lib/arm64-v8a/.*\\.so$' | head -20
+          unzip -Z1 "$APK" | grep -q '^lib/arm64-v8a/.*\\.so$'
 
       - name: Run NRave UI test on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
           api-level: 35
           target: google_apis
-          arch: arm64-v8a
-          cores: 3
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 4
           ram-size: 4096M
           heap-size: 512M
           emulator-boot-timeout: 600
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -no-snapshot-save
           disable-animations: true
           script: |
             set -euo pipefail
             adb wait-for-device
+            {
+              echo "=== EMULATOR ABI ==="
+              adb shell getprop ro.product.cpu.abilist
+              echo
+              echo "=== ANDROID RELEASE ==="
+              adb shell getprop ro.build.version.release
+              adb shell getprop ro.build.version.sdk
+            } | tee nrave-ui-test-diagnostics/emulator-preflight.txt
             python3 tools/android_ui_smoke_test.py
+
       - name: Upload emulator diagnostics
         if: always()
         uses: actions/upload-artifact@v7
