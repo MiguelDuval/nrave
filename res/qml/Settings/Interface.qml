@@ -51,10 +51,12 @@ Category {
 
     function loadInterface() {
         // Interface tab
-        skinInput.model = root.androidSkinLabels;
-        const configuredSkin = Mixxx.Config.configSkin;
-        const configuredSkinIndex = root.androidSkinIds.indexOf(configuredSkin);
-        skinInput.currentIndex = configuredSkinIndex >= 0 ? configuredSkinIndex : 0;
+        if (Qt.platform.os === "android") {
+            skinInput.model = root.androidSkinLabels;
+            const configuredSkin = Mixxx.Config.configSkin;
+            const configuredSkinIndex = root.androidSkinIds.indexOf(configuredSkin);
+            skinInput.currentIndex = configuredSkinIndex >= 0 ? configuredSkinIndex : 0;
+        }
         // colorInput.value =
         // layoutInput.value =
         tooltipsInput.selected = tooltipsInput.options[Mixxx.Config.libraryTooltips];
@@ -120,7 +122,9 @@ Category {
     }
     function saveInterface() {
         // Interface tab
-        Mixxx.Config.configSkin = root.androidSkinIds[Math.max(0, skinInput.currentIndex)];
+        if (Qt.platform.os === "android") {
+            Mixxx.Config.configSkin = root.androidSkinIds[Math.max(0, skinInput.currentIndex)];
+        }
         // colorInput.value =
         // layoutInput.value =
         Mixxx.Config.libraryTooltips = tooltipsInput.options.indexOf(tooltipsInput.selected);
