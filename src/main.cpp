@@ -171,6 +171,16 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     // only the MainWindow content inside res/qml/main.qml.
     loadQml = true;
 
+    // Materialize the APK's QML shell and skins before SkinLoader resolves the
+    // configured skin. SkinLoader needs an ordinary filesystem tree so QML skin
+    // manifests and MainWindow.qml are validated from the same runtime root
+    // that QmlApplication will use.
+    const QString androidMainQmlPath = materializeAndroidQmlResources();
+    if (androidMainQmlPath.isEmpty()) {
+        qCritical() << "Cannot start Android QML application without a materialized QML shell";
+        return kFatalErrorOnStartupExitCode;
+    }
+
     mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
     const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
     if (!pSkin || pSkin->type() != mixxx::skin::SkinType::QML) {
@@ -187,12 +197,6 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     if (pCoreServices->getSettings()->getValueString(resizableSkinKey) != resolvedSkinName) {
         qInfo() << "Normalized Android QML skin selection to" << resolvedSkinName;
         pCoreServices->getSettings()->setValue(resizableSkinKey, resolvedSkinName);
-    }
-
-    const QString androidMainQmlPath = materializeAndroidQmlResources();
-    if (androidMainQmlPath.isEmpty()) {
-        qCritical() << "Cannot start Android QML application without a materialized QML shell";
-        return kFatalErrorOnStartupExitCode;
     }
 #endif
 
