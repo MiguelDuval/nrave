@@ -72,6 +72,11 @@ Item {
         enabled: quantizeControl.initialized
         highlight: quantizeControl.initialized && quantizeControl.value > 0.5
         text: "Q"
+        Accessible.id: root.beatGridDeckNumber === 1 ? "nrave_deck1_quantize" : "nrave_deck2_quantize"
+        Accessible.name: (root.beatGridDeckNumber === 1 ? "Deck 1" : "Deck 2") + " Quantize " + (quantizeControl.value > 0.5 ? "ON" : "OFF")
+        Accessible.role: Accessible.Button
+        Accessible.checkable: true
+        Accessible.checked: quantizeControl.value > 0.5
 
         onClicked: {
             quantizeControl.value = quantizeControl.value > 0.5 ? 0 : 1;
@@ -87,6 +92,9 @@ Item {
         width: 60
         text: "BEATGRID"
         visible: root.beatGridDeckNumber > 0
+        Accessible.id: root.beatGridDeckNumber === 1 ? "nrave_deck1_beatgrid" : "nrave_deck2_beatgrid"
+        Accessible.name: (root.beatGridDeckNumber === 1 ? "Deck 1" : "Deck 2") + " BeatGrid"
+        Accessible.role: Accessible.Button
 
         onClicked: {
             if (root.beatGridOverlay && root.beatGridDeckNumber > 0) {
