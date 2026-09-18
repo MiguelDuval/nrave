@@ -59,7 +59,7 @@ ApplicationWindow {
                 "Loading resolved QML skin entrypoint:",
                 root.selectedSkinName(),
                 sourceUrl);
-        content.source = sourceUrl;
+        content.setSource(sourceUrl, { "applicationWindow": root });
     }
 
     Connections {
@@ -79,11 +79,6 @@ ApplicationWindow {
         onActiveChanged: {
             if (active) {
                 root.loadSelectedMainWindow();
-            }
-        }
-        onLoaded: {
-            if (item && item.hasOwnProperty("applicationWindow")) {
-                item.applicationWindow = root;
             }
         }
         onStatusChanged: {
