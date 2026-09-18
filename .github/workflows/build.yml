@@ -214,8 +214,9 @@ jobs:
           APK="runtime-apk/android-build-release-signed.apk"
           test -f "$APK"
           echo "APK: $APK"
-          unzip -Z1 "$APK" | grep -F 'lib/arm64-v8a/' | head -20
-          unzip -Z1 "$APK" | grep -Fq 'lib/arm64-v8a/'
+          unzip -Z1 "$APK" > nrave-ui-test-diagnostics/apk-files.txt
+          grep -F 'lib/arm64-v8a/' nrave-ui-test-diagnostics/apk-files.txt | sed -n '1,20p'
+          grep -Fq 'lib/arm64-v8a/' nrave-ui-test-diagnostics/apk-files.txt
 
       - name: Run NRave UI test on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
