@@ -129,6 +129,12 @@ Controls.Panel {
                         font.family: "Open Sans"; font.pixelSize: 9; font.bold: true
                         horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     }
+                    Accessible.id: root.group === "[Channel1]" ? "nrave_latenight_deck1_beatgrid_toggle" : "nrave_latenight_deck2_beatgrid_toggle"
+                    Accessible.name: (root.group === "[Channel1]" ? "Deck 1" : "Deck 2") + " BeatGrid Editor " + (root.showBeatgridControls ? "ON" : "OFF")
+                    Accessible.role: Accessible.CheckBox
+                    Accessible.checkable: true
+                    Accessible.checked: root.showBeatgridControls
+                    Accessible.onToggleAction: root.showBeatgridControlsLocal = !root.showBeatgridControlsLocal
                     TapHandler { acceptedButtons: Qt.LeftButton; onTapped: root.showBeatgridControlsLocal = !root.showBeatgridControlsLocal }
                 }
 
