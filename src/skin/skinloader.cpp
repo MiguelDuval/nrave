@@ -136,6 +136,18 @@ SkinPointer SkinLoader::getSkin(const QString& skinName) const {
 SkinPointer SkinLoader::getConfiguredSkin() const {
     QString configSkin = m_pConfig->getValueString(ConfigKey("[Config]", "ResizableSkin"));
 
+#ifdef Q_OS_ANDROID
+#ifdef MIXXX_USE_QML
+    // Android has two supported QML skin identities. The old legacy LateNight
+    // identifier must not fall through to AndroidDefault after a restart.
+    if (configSkin.compare(QStringLiteral("LateNight"), Qt::CaseInsensitive) == 0) {
+        qInfo() << "Migrating legacy Android skin identifier LateNight to LateNightQML";
+        configSkin = QStringLiteral("LateNightQML");
+        m_pConfig->setValue(ConfigKey("[Config]", "ResizableSkin"), configSkin);
+    }
+#endif
+#endif
+
     // If we don't have a skin defined, we might be migrating from 1.11 and
     // should pick the closest-possible skin.
     if (configSkin.isEmpty()) {
