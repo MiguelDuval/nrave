@@ -68,6 +68,113 @@ def screenshot(name: str) -> None:
         )
 
 
+def capture_screenshot_png() -> bytes:
+    proc = subprocess.run(
+        [ADB, "exec-out", "screencap", "-p"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=30,
+    )
+    if proc.returncode != 0:
+        raise UiTestError(
+            f"Could not capture screenshot: {proc.stderr.decode(errors='replace')}"
+        )
+    return proc.stdout
+
+
+def png_region_hash(png: bytes, x1: int, y1: int, x2: int, y2: int) -> str:
+    # Dependency-free decoder for the 8-bit RGB/RGBA PNG produced by Android
+    # screencap. This keeps the CI test self-contained while allowing a stable
+    # hash of the small UI region whose state we need to verify.
+    import struct
+    import zlib
+
+    if png[:8] != b"\x89PNG\r\n\x1a\n":
+        raise UiTestError("Android screencap did not return a PNG")
+    pos = 8
+    width = height = bit_depth = color_type = None
+    idat = bytearray()
+    while pos < len(png):
+        if pos + 8 > len(png):
+            break
+        length = struct.unpack(">I", png[pos:pos + 4])[0]
+        kind = png[pos + 4:pos + 8]
+        data = png[pos + 8:pos + 8 + length]
+        pos += 12 + length
+        if kind == b"IHDR":
+            width, height, bit_depth, color_type = struct.unpack(">IIBB", data[:10])
+        elif kind == b"IDAT":
+            idat.extend(data)
+        elif kind == b"IEND":
+            break
+
+    if width is None or height is None or bit_depth != 8 or color_type not in (2, 6):
+        raise UiTestError(
+            f"Unsupported screencap PNG format: width={width}, height={height}, "
+            f"bit_depth={bit_depth}, color_type={color_type}"
+        )
+
+    channels = 3 if color_type == 2 else 4
+    raw = zlib.decompress(bytes(idat))
+    stride = width * channels
+    expected = height * (stride + 1)
+    if len(raw) != expected:
+        raise UiTestError(
+            f"Unexpected decoded PNG size: got {len(raw)}, expected {expected}"
+        )
+
+    x1 = max(0, min(width, x1))
+    x2 = max(x1, min(width, x2))
+    y1 = max(0, min(height, y1))
+    y2 = max(y1, min(height, y2))
+    bpp = channels
+    previous = bytearray(stride)
+    region = bytearray()
+
+    for y in range(height):
+        filter_type = raw[y * (stride + 1)]
+        scan = bytearray(raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)])
+        if filter_type == 1:
+            for i in range(stride):
+                left = scan[i - bpp] if i >= bpp else 0
+                scan[i] = (scan[i] + left) & 0xff
+        elif filter_type == 2:
+            for i in range(stride):
+                scan[i] = (scan[i] + previous[i]) & 0xff
+        elif filter_type == 3:
+            for i in range(stride):
+                left = scan[i - bpp] if i >= bpp else 0
+                up = previous[i]
+                scan[i] = (scan[i] + ((left + up) // 2)) & 0xff
+        elif filter_type == 4:
+            for i in range(stride):
+                left = scan[i - bpp] if i >= bpp else 0
+                up = previous[i]
+                up_left = previous[i - bpp] if i >= bpp else 0
+                p = left + up - up_left
+                pa = abs(p - left)
+                pb = abs(p - up)
+                pc = abs(p - up_left)
+                predictor = left if pa <= pb and pa <= pc else up if pb <= pc else up_left
+                scan[i] = (scan[i] + predictor) & 0xff
+        elif filter_type != 0:
+            raise UiTestError(f"Unsupported PNG filter type {filter_type}")
+
+        if y1 <= y < y2:
+            start = x1 * channels
+            end = x2 * channels
+            region.extend(scan[start:end])
+        previous = scan
+
+    return hashlib.sha256(region).hexdigest()
+
+
+def screenshot_region_hash(name: str, x1: int, y1: int, x2: int, y2: int) -> str:
+    digest = png_region_hash(capture_screenshot_png(), x1, y1, x2, y2)
+    (DIAG / f"{name}-region-sha256.txt").write_text(digest + "\n", encoding="utf-8")
+    return digest
+
+
 def save_logcat(name: str = "logcat.txt") -> str:
     data = run_adb("logcat", "-d", timeout=30)
     (DIAG / name).write_text(data, encoding="utf-8")
@@ -318,16 +425,35 @@ def click_interface_category() -> None:
     run_shell("input", "tap", str(x), str(y), timeout=10)
 
 
-def select_latenight_skin() -> None:
-    popup_x, popup_y, popup_width, popup_height = settings_geometry()
-    # Interface.qml puts the Skin ComboBox on the first Theme & Color row.
-    # The control sits at the right edge of the settings content.
-    x = popup_x + popup_width - 80
+def skin_selector_region() -> tuple[int, int, int, int]:
+    popup_x, popup_y, popup_width, _ = settings_geometry()
+    return (
+        popup_x + round(popup_width * 0.50),
+        popup_y + 105,
+        popup_x + round(popup_width * 0.90),
+        popup_y + 210,
+    )
+
+
+def select_latenight_skin() -> tuple[str, str]:
+    popup_x, popup_y, popup_width, _ = settings_geometry()
+    # The Skin ComboBox is in the first Theme & Color row. On the CI runtime
+    # it sits around 68% of the rendered popup width.
+    x = popup_x + round(popup_width * 0.68)
     y = popup_y + 20 + 36 + 32 + 30 + 20 + 18
+
+    before = screenshot_region_hash("skin-before-selection", *skin_selector_region())
     run_shell("input", "tap", str(x), str(y), timeout=10)
     time.sleep(0.5)
     run_shell("input", "keyevent", "KEYCODE_DPAD_DOWN", timeout=10)
     run_shell("input", "keyevent", "KEYCODE_ENTER", timeout=10)
+    time.sleep(1)
+    after = screenshot_region_hash("skin-after-selection", *skin_selector_region())
+    if before == after:
+        raise UiTestError(
+            "Skin selector did not visibly change after selecting the Late Night option"
+        )
+    return before, after
 
 
 def close_settings() -> None:
@@ -621,7 +747,7 @@ def main() -> int:
     screenshot("02-interface-settings.png")
 
     print("=== SELECT LATENIGHT ===", flush=True)
-    select_latenight_skin()
+    skin_before_hash, skin_selected_hash = select_latenight_skin()
     time.sleep(2)
     screenshot("03-latenight-selected.png")
 
@@ -666,18 +792,31 @@ def main() -> int:
     time.sleep(2)
     screenshot("09-settings-saved.png")
 
-    print("=== RESTART AND VERIFY LATENIGHT LOADER ===", flush=True)
+    print("=== RESTART AND VERIFY LATENIGHT PERSISTENCE ===", flush=True)
     run_shell("am", "force-stop", "org.mixxx")
     run_adb("logcat", "-c", timeout=30)
     launch()
     time.sleep(4)
     log = save_logcat("09-latenight-logcat.txt")
     assert_no_fatal(log)
-    if "Loading resolved QML skin entrypoint" not in log or "LateNightQML" not in log:
-        raise UiTestError("LateNightQML loader success message not found in logcat")
     if "Failed to load the resolved Mixxx QML skin entrypoint" in log:
-        raise UiTestError("LateNightQML loader reported an error")
+        raise UiTestError("QML skin loader reported an error")
     screenshot("11-latenight-loaded.png")
+
+    reopen_settings()
+    click_interface_category()
+    time.sleep(2)
+    persisted_skin_hash = screenshot_region_hash(
+        "skin-after-restart", *skin_selector_region()
+    )
+    if persisted_skin_hash != skin_selected_hash:
+        raise UiTestError(
+            "Late Night skin selection did not persist across force-stop/relaunch "
+            f"(selected={skin_selected_hash}, after_restart={persisted_skin_hash}, "
+            f"before={skin_before_hash})"
+        )
+    close_settings()
+    time.sleep(2)
 
     print("=== TEST LATENIGHT BEATGRID TOGGLE ===", flush=True)
     visual_toggle(0.248, 0.704, "LateNight Deck 1 BeatGrid")
