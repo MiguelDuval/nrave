@@ -425,6 +425,97 @@ def click_interface_category() -> None:
     run_shell("input", "tap", str(x), str(y), timeout=10)
 
 
+def skin_text_region() -> tuple[int, int, int, int]:
+    # Tight crop around the visible Skin value. A thresholded text signature is
+    # much more stable than a full-color screenshot across Qt repaints.
+    return (1650, 415, 2050, 490)
+
+
+def skin_text_signature(name: str) -> bytes:
+    import struct
+    import zlib
+
+    png = capture_screenshot_png()
+    if png[:8] != b"\x89PNG\r\n\x1a\n":
+        raise UiTestError("Android screencap did not return a PNG")
+
+    pos = 8
+    width = height = bit_depth = color_type = None
+    idat = bytearray()
+    while pos < len(png):
+        if pos + 8 > len(png):
+            break
+        length = struct.unpack(">I", png[pos:pos + 4])[0]
+        kind = png[pos + 4:pos + 8]
+        data = png[pos + 8:pos + 8 + length]
+        pos += 12 + length
+        if kind == b"IHDR":
+            width, height, bit_depth, color_type = struct.unpack(">IIBB", data[:10])
+        elif kind == b"IDAT":
+            idat.extend(data)
+        elif kind == b"IEND":
+            break
+
+    if width is None or height is None or bit_depth != 8 or color_type not in (2, 6):
+        raise UiTestError("Unsupported Android screencap PNG format")
+
+    channels = 3 if color_type == 2 else 4
+    raw = zlib.decompress(bytes(idat))
+    stride = width * channels
+    x1, y1, x2, y2 = skin_text_region()
+    x1, x2 = max(0, x1), min(width, x2)
+    y1, y2 = max(0, y1), min(height, y2)
+    previous = bytearray(stride)
+    pixels = []
+    for y in range(height):
+        filter_type = raw[y * (stride + 1)]
+        scan = bytearray(raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)])
+        if filter_type == 1:
+            for i in range(stride):
+                left = scan[i - channels] if i >= channels else 0
+                scan[i] = (scan[i] + left) & 0xff
+        elif filter_type == 2:
+            for i in range(stride):
+                scan[i] = (scan[i] + previous[i]) & 0xff
+        elif filter_type == 3:
+            for i in range(stride):
+                left = scan[i - channels] if i >= channels else 0
+                scan[i] = (scan[i] + ((left + previous[i]) // 2)) & 0xff
+        elif filter_type == 4:
+            for i in range(stride):
+                left = scan[i - channels] if i >= channels else 0
+                up = previous[i]
+                up_left = previous[i - channels] if i >= channels else 0
+                p = left + up - up_left
+                pa, pb, pc = abs(p - left), abs(p - up), abs(p - up_left)
+                predictor = left if pa <= pb and pa <= pc else up if pb <= pc else up_left
+                scan[i] = (scan[i] + predictor) & 0xff
+        elif filter_type != 0:
+            raise UiTestError(f"Unsupported PNG filter type {filter_type}")
+
+        if y1 <= y < y2:
+            row = bytearray()
+            for x in range(x1, x2):
+                off = x * channels
+                if channels == 4:
+                    value = (299 * scan[off] + 587 * scan[off + 1] + 114 * scan[off + 2]) // 1000
+                else:
+                    value = (299 * scan[off] + 587 * scan[off + 1] + 114 * scan[off + 2]) // 1000
+                row.append(255 if value > 120 else 0)
+            pixels.extend(row)
+        previous = scan
+
+    signature = bytes(pixels)
+    (DIAG / f"{name}-skin-text-signature.bin").write_bytes(signature)
+    return signature
+
+
+def skin_signature_difference(a: bytes, b: bytes) -> float:
+    if len(a) != len(b):
+        raise UiTestError("Skin text signatures have different sizes")
+    return sum(x != y for x, y in zip(a, b)) / max(1, len(a))
+
+
 def skin_selector_region() -> tuple[int, int, int, int]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
     return (
@@ -435,33 +526,37 @@ def skin_selector_region() -> tuple[int, int, int, int]:
     )
 
 
-def select_latenight_skin() -> tuple[str, str]:
+def select_latenight_skin() -> tuple[bytes, bytes]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
     x = popup_x + round(popup_width * 0.68)
-    y = popup_y + 20 + 36 + 32 + 30 + 20 + 18
+    y = popup_y + 36 + 32 + 30 + 20 + 18 + 26
+    before = skin_text_signature("skin-before-selection")
 
-    before = screenshot_region_hash("skin-before-selection", *skin_selector_region())
-
-    # Skin is a Qt Quick Controls ComboBox with a touch popup. Android DPAD
-    # events do not reliably move its highlightedIndex on this runtime, so use
-    # the same touch path a user uses: open the combo, then tap the second row.
-    run_shell("input", "tap", str(x), str(y), timeout=10)
-    time.sleep(0.7)
-    screenshot("skin-popup-open.png")
-
-    # ComboBox.qml positions the Popup immediately below the control. There are
-    # two items on Android (Android Default, Late Night QML); the second row is
-    # one delegate-height below the popup's first row. The CI density is fixed
-    # at 160, so a 32dp row is 32 physical px.
-    run_shell("input", "tap", str(x), str(y + 64), timeout=10)
-    time.sleep(1.2)
-
-    after = screenshot_region_hash("skin-after-selection", *skin_selector_region())
-    if before == after:
-        raise UiTestError(
-            "Skin selector did not visibly change after tapping Late Night QML"
+    # Try the actual touch-popup path at the measured Skin control position.
+    # Different Qt font metrics can move the delegate rows by a few pixels, so
+    # retry with nearby second-row centers if the first tap did not change the
+    # rendered value.
+    tried_offsets = (96, 112, 80, 64)
+    for attempt, offset in enumerate(tried_offsets, start=1):
+        run_shell("input", "tap", str(x), str(y), timeout=10)
+        time.sleep(0.5)
+        screenshot(f"skin-popup-open-{attempt}.png")
+        run_shell("input", "tap", str(x), str(y + offset), timeout=10)
+        time.sleep(1.0)
+        after = skin_text_signature(f"skin-after-selection-{attempt}")
+        difference = skin_signature_difference(before, after)
+        print(
+            f"=== SKIN SELECTION ATTEMPT {attempt}: offset={offset}, "
+            f"text-difference={difference:.4f} ===",
+            flush=True,
         )
-    return before, after
+        if difference > 0.015:
+            return before, after
+
+    raise UiTestError(
+        "Skin selector did not change to a different rendered value after "
+        f"trying second-row offsets {tried_offsets}"
+    )
 
 
 def close_settings() -> None:
@@ -755,7 +850,7 @@ def main() -> int:
     screenshot("02-interface-settings.png")
 
     print("=== SELECT LATENIGHT ===", flush=True)
-    skin_before_hash, skin_selected_hash = select_latenight_skin()
+    skin_before_signature, skin_selected_signature = select_latenight_skin()
     time.sleep(2)
     screenshot("03-latenight-selected.png")
 
@@ -814,14 +909,23 @@ def main() -> int:
     reopen_settings()
     click_interface_category()
     time.sleep(2)
-    persisted_skin_hash = screenshot_region_hash(
-        "skin-after-restart", *skin_selector_region()
+    persisted_skin_signature = skin_text_signature("skin-after-restart")
+    to_selected = skin_signature_difference(
+        persisted_skin_signature, skin_selected_signature
     )
-    if persisted_skin_hash != skin_selected_hash:
+    to_android_default = skin_signature_difference(
+        persisted_skin_signature, skin_before_signature
+    )
+    print(
+        f"=== SKIN PERSISTENCE: to-selected={to_selected:.4f}, "
+        f"to-default={to_android_default:.4f} ===",
+        flush=True,
+    )
+    if to_selected >= to_android_default or to_android_default < 0.015:
         raise UiTestError(
             "Late Night skin selection did not persist across force-stop/relaunch "
-            f"(selected={skin_selected_hash}, after_restart={persisted_skin_hash}, "
-            f"before={skin_before_hash})"
+            f"(distance-to-selected={to_selected:.4f}, "
+            f"distance-to-default={to_android_default:.4f})"
         )
     close_settings()
     time.sleep(2)
