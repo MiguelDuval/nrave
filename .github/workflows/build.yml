@@ -192,7 +192,7 @@ jobs:
             stat /dev/kvm 2>&1 || true
             echo
             echo "=== KVM MODULES ==="
-            lsmod 2>&1 | grep -E '^kvm(_amd|_intel)?\\b' || true
+            lsmod 2>&1 | grep -E '^kvm(_amd|_intel)?$' || true
           } | tee nrave-ui-test-diagnostics/host-preflight.txt
 
       - name: Verify x86_64 KVM runtime
@@ -214,8 +214,8 @@ jobs:
           APK="runtime-apk/android-build-release-signed.apk"
           test -f "$APK"
           echo "APK: $APK"
-          unzip -Z1 "$APK" | grep -E '^lib/arm64-v8a/.*\\.so$' | head -20
-          unzip -Z1 "$APK" | grep -q '^lib/arm64-v8a/.*\\.so$'
+          unzip -Z1 "$APK" | grep -F 'lib/arm64-v8a/' | head -20
+          unzip -Z1 "$APK" | grep -Fq 'lib/arm64-v8a/'
 
       - name: Run NRave UI test on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2.38.0
