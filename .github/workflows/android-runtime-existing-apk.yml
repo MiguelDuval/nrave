@@ -4,13 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       apk_run_id:
-        description: "GitHub Actions run ID containing nrave-runtime-apk. Leave empty to use the latest successful Android APK run on this branch."
+        description: "GitHub Actions run ID containing nrave-runtime-apk. Leave empty to use the newest unexpired APK artifact on this branch."
         required: false
         type: string
   push:
     branches: [stage3-skin-loader-contract]
     paths:
       - tools/android_ui_smoke_test.py
+      - .github/workflows/android-runtime-existing-apk.yml
 
 permissions:
   actions: read
@@ -40,10 +41,206 @@ jobs:
           if [ -n "${INPUT_RUN_ID:-}" ]; then
             run_id="$INPUT_RUN_ID"
           else
-            run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "Android APK" --branch "$GITHUB_REF_NAME" --status success --limit 1 --json databaseId --jq '.[0].databaseId')"
+            run_id=""
+            mapfile -t candidate_runs < <(
+              gh api                 "/repos/$GITHUB_REPOSITORY/actions/workflows/build.yml/runs?branch=$GITHUB_REF_NAME&per_page=30"                 --jq '.workflow_runs | .[] | .id'
+            )
+            for candidate in "${candidate_runs[@]}"; do
+              artifact_id="$(
+                gh api                   "/repos/$GITHUB_REPOSITORY/actions/runs/$candidate/artifacts?per_page=100"                   --jq '.artifacts[]? | select(.name=="nrave-runtime-apk" and .expired==false) | .id'                   | head -n 1
+              )"
+              if printf '%s' "$artifact_id" | grep -Eq '^[0-9]+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+  android-runtime-existing-apk:
+    needs: resolve-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download existing runtime APK
+        uses: actions/download-artifact@v8
+        with:
+          name: nrave-runtime-apk
+          path: runtime-apk
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve-apk.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Prepare runtime diagnostics
+        shell: bash
+        run: |
+          set -u
+          mkdir -p nrave-ui-test-diagnostics
+          {
+            echo "=== TEST RUN ==="
+            date -u
+            echo "TEST_RUN_ID=${GITHUB_RUN_ID}"
+            echo "APK_SOURCE_RUN_ID=${{ needs.resolve-apk.outputs.run_id }}"
+            echo
+            echo "=== HOST ==="
+            uname -a
+            uname -m
+            echo "RUNNER_ARCH=${RUNNER_ARCH:-}"
+            echo
+            echo "=== KVM ==="
+            ls -l /dev/kvm 2>&1 || true
+          } | tee nrave-ui-test-diagnostics/host-preflight.txt
+
+      - name: Verify x86_64 KVM runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "x86_64"
+          test "${RUNNER_ARCH:-}" = "X64"
+          test -e /dev/kvm
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="runtime-apk/android-build-release-signed.apk"
+          test -f "$APK"
+          sha256sum "$APK" | tee nrave-ui-test-diagnostics/apk-sha256.txt
+          unzip -Z1 "$APK" > nrave-ui-test-diagnostics/apk-files.txt
+          grep -Fq 'lib/arm64-v8a/' nrave-ui-test-diagnostics/apk-files.txt
+
+      - name: Run NRave UI test on existing APK
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -no-snapshot-save
+          disable-animations: true
+          script: |
+            set -eu
+            adb wait-for-device
+            echo "=== EMULATOR ABI ===" | tee nrave-ui-test-diagnostics/emulator-preflight.txt
+            adb shell getprop ro.product.cpu.abilist | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            echo "=== ANDROID RELEASE ===" | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            adb shell getprop ro.build.version.release | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            adb shell getprop ro.build.version.sdk | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            python3 tools/android_ui_smoke_test.py
+
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nrave-android-existing-apk-diagnostics
+          path: nrave-ui-test-diagnostics
+          archive: true
+          if-no-files-found: warn
+          retention-days: 14
+; then
+                run_id="$candidate"
+                break
+              fi
+            done
           fi
-          if ! printf '%s' "$run_id" | grep -Eq '^[0-9]+$'; then
-            echo "Could not resolve a valid APK workflow run ID: $run_id" >&2
+          if ! printf '%s' "$run_id" | grep -Eq '^[0-9]+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+  android-runtime-existing-apk:
+    needs: resolve-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download existing runtime APK
+        uses: actions/download-artifact@v8
+        with:
+          name: nrave-runtime-apk
+          path: runtime-apk
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve-apk.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Prepare runtime diagnostics
+        shell: bash
+        run: |
+          set -u
+          mkdir -p nrave-ui-test-diagnostics
+          {
+            echo "=== TEST RUN ==="
+            date -u
+            echo "TEST_RUN_ID=${GITHUB_RUN_ID}"
+            echo "APK_SOURCE_RUN_ID=${{ needs.resolve-apk.outputs.run_id }}"
+            echo
+            echo "=== HOST ==="
+            uname -a
+            uname -m
+            echo "RUNNER_ARCH=${RUNNER_ARCH:-}"
+            echo
+            echo "=== KVM ==="
+            ls -l /dev/kvm 2>&1 || true
+          } | tee nrave-ui-test-diagnostics/host-preflight.txt
+
+      - name: Verify x86_64 KVM runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "x86_64"
+          test "${RUNNER_ARCH:-}" = "X64"
+          test -e /dev/kvm
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="runtime-apk/android-build-release-signed.apk"
+          test -f "$APK"
+          sha256sum "$APK" | tee nrave-ui-test-diagnostics/apk-sha256.txt
+          unzip -Z1 "$APK" > nrave-ui-test-diagnostics/apk-files.txt
+          grep -Fq 'lib/arm64-v8a/' nrave-ui-test-diagnostics/apk-files.txt
+
+      - name: Run NRave UI test on existing APK
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -no-snapshot-save
+          disable-animations: true
+          script: |
+            set -eu
+            adb wait-for-device
+            echo "=== EMULATOR ABI ===" | tee nrave-ui-test-diagnostics/emulator-preflight.txt
+            adb shell getprop ro.product.cpu.abilist | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            echo "=== ANDROID RELEASE ===" | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            adb shell getprop ro.build.version.release | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            adb shell getprop ro.build.version.sdk | tee -a nrave-ui-test-diagnostics/emulator-preflight.txt
+            python3 tools/android_ui_smoke_test.py
+
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nrave-android-existing-apk-diagnostics
+          path: nrave-ui-test-diagnostics
+          archive: true
+          if-no-files-found: warn
+          retention-days: 14
+; then
+            echo "Could not resolve a run containing an unexpired nrave-runtime-apk artifact on $GITHUB_REF_NAME" >&2
             exit 1
           fi
           echo "Using APK artifact from Android APK run: $run_id"
