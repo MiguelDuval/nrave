@@ -625,6 +625,7 @@ void DlgPrefInterface::slotApply() {
             m_colorSchemeOnUpdate = m_colorScheme;
         }
     }
+}
 
 void DlgPrefInterface::loadTooltipPreferenceFromConfig() {
     const auto tooltipMode = m_pConfig->getValue<mixxx::preferences::Tooltips>(
