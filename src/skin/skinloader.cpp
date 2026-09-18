@@ -270,7 +270,7 @@ LaunchImage* SkinLoader::loadLaunchImage(QWidget* pParent) const {
 QString SkinLoader::pickResizableSkin(const QString& oldSkin) const {
     if (oldSkin.contains("latenight", Qt::CaseInsensitive)) {
 #ifdef Q_OS_ANDROID
-        return "AndroidDefault";
+        return "LateNightQML";
 #else
         return "LateNight";
 #endif
