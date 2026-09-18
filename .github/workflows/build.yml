@@ -146,3 +146,98 @@ jobs:
           archive: false
           if-no-files-found: error
           retention-days: 30
+      - name: Upload APK for runtime smoke test
+        uses: actions/upload-artifact@v7
+        with:
+          name: nrave-runtime-apk
+          path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
+          archive: true
+          if-no-files-found: error
+          retention-days: 7
+
+  android-runtime-smoke:
+    needs: android-apk
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v8
+        with:
+          name: nrave-runtime-apk
+          path: runtime-apk
+
+      - name: Enable KVM
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+
+      - name: Run NRave on Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: arm64-v8a
+          cores: 3
+          ram-size: 4096M
+          heap-size: 512M
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          disable-animations: true
+          script: |
+            set -u
+            APK="$GITHUB_WORKSPACE/runtime-apk/android-build-release-signed.apk"
+            ADB="$ANDROID_HOME/platform-tools/adb"
+
+            echo "=== ADB DEVICES ==="
+            "$ADB" devices
+
+            echo "=== INSTALL APK ==="
+            "$ADB" wait-for-device
+            "$ADB" install -r "$APK"
+
+            echo "=== RESET LOGCAT ==="
+            "$ADB" logcat -c
+
+            echo "=== LAUNCH NRave ==="
+            "$ADB" shell am force-stop org.mixxx || true
+            "$ADB" shell monkey -p org.mixxx -c android.intent.category.LAUNCHER 1
+
+            echo "=== WAIT FOR APP ==="
+            sleep 20
+
+            echo "=== CAPTURE SCREENSHOT ==="
+            "$ADB" exec-out screencap -p > "$GITHUB_WORKSPACE/nrave-android-smoke.png"
+
+            echo "=== CAPTURE LOGCAT ==="
+            "$ADB" logcat -d > "$GITHUB_WORKSPACE/nrave-android-smoke.log"
+
+            echo "=== PROCESS CHECK ==="
+            PID="$("$ADB" shell pidof org.mixxx | tr -d '\r')"
+            if [[ -z "$PID" ]]; then
+              echo "ERROR: org.mixxx process is not running after launch"
+              exit 1
+            fi
+            echo "NRave process is running with PID: $PID"
+
+            echo "=== CRASH CHECK ==="
+            if grep -E -i "FATAL EXCEPTION|AndroidRuntime: FATAL|Fatal signal [0-9]+|SIGSEGV" "$GITHUB_WORKSPACE/nrave-android-smoke.log"; then
+              echo "ERROR: fatal Android crash signature detected in logcat"
+              exit 1
+            fi
+
+            echo "=== SMOKE TEST PASSED ==="
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nrave-android-runtime-diagnostics
+          path: |
+            nrave-android-smoke.png
+            nrave-android-smoke.log
+          archive: true
+          if-no-files-found: warn
+          retention-days: 14
