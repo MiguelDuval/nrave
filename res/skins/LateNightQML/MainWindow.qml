@@ -17,6 +17,9 @@ Item {
     // The application shell injects itself before this skin component is
     // completed. Nested shell-owned QML components rely on this contract.
     required property ApplicationWindow applicationWindow
+    Accessible.id: "nrave_latenight_skin_root"
+    Accessible.name: "LateNight QML Skin"
+    Accessible.role: Accessible.Pane
     property alias menuBar: nativeApplicationMenuLoader.item
 
     property alias editDeck: toolbar.editDeck
