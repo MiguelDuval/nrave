@@ -380,12 +380,45 @@ def assert_nrave_foreground() -> None:
         raise UiTestError(f"NRave is not the foreground app: {focus}")
 
 
-def wait_for_main_window(timeout: float = 90.0) -> None:
+def main_ui_visible() -> bool:
+    # QML content is not exposed to UIAutomator in this Android runtime. The
+    # Android splash can therefore disappear while NRave is still showing its
+    # own QML splash. Android Default has a non-empty Library panel in the
+    # upper-left; the splash is a uniform background there.
+    try:
+        from io import BytesIO
+        from PIL import Image
+    except ImportError:
+        return False
+
+    data = subprocess.check_output([ADB, "exec-out", "screencap", "-p"], timeout=30)
+    image = Image.open(BytesIO(data)).convert("RGB")
+    width, height = image.size
+    crop = image.crop((0, 0, min(700, width), min(500, height)))
+    background = image.getpixel((0, 0))
+    samples = list(crop.getdata())[::8]
+    different = sum(
+        1 for rgb in samples
+        if sum(abs(a - b) for a, b in zip(rgb, background)) > 30
+    )
+    return different > 1000
+
+
+def wait_for_main_window(timeout: float = 120.0) -> None:
     def ready() -> bool:
         dismiss_android_system_overlays(timeout=2)
-        return "org.mixxx" in current_focus() and not splash_present()
+        return (
+            "org.mixxx" in current_focus()
+            and not splash_present()
+            and main_ui_visible()
+        )
 
-    wait_until(ready, "NRave MainWindow (splash screen gone)", timeout=timeout, interval=2)
+    wait_until(
+        ready,
+        "NRave MainWindow content (not Android/Qt splash)",
+        timeout=timeout,
+        interval=2,
+    )
     assert_nrave_foreground()
 
 
