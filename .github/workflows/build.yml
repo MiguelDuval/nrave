@@ -5,6 +5,9 @@ on:
     branches: [main, stage3-skin-loader-contract]
 permissions:
   contents: write
+concurrency:
+  group: nrave-android-ui-\${{ github.ref }}
+  cancel-in-progress: true
 env:
   DEBIAN_FRONTEND: noninteractive
 jobs:
