@@ -32,26 +32,32 @@ ApplicationWindow {
                 : Window.Windowed;
     }
 
-    function selectedMainWindowLocalUrl() {
-        const selectedSkin = Mixxx.Config.configSkin;
+    function selectedSkinName() {
+        return NraveSelectedSkin !== "" ? NraveSelectedSkin
+                                       : (Mixxx.Config.configSkin || "AndroidDefault");
+    }
+
+    function selectedMainWindowUrl() {
+        const selectedSkin = root.selectedSkinName();
         if (selectedSkin === "" || selectedSkin === "AndroidDefault") {
             return Qt.resolvedUrl("MainWindow.qml");
         }
-        return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
-    }
 
-    function selectedMainWindowAssetUrl() {
-        const selectedSkin = Mixxx.Config.configSkin;
-        return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
+        if (Qt.platform.os === "android" &&
+                NraveSelectedSkinMainWindowUrl !== "") {
+            return NraveSelectedSkinMainWindowUrl;
+        }
+
+        return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
     }
 
     function loadSelectedMainWindow() {
         root.selectedSkinUsingAssetFallback = false;
         root.selectedSkinLoadError = "";
-        const sourceUrl = root.selectedMainWindowLocalUrl();
+        const sourceUrl = root.selectedMainWindowUrl();
         console.info(
-                "Loading QML skin content from local resource tree:",
-                Mixxx.Config.configSkin || "AndroidDefault",
+                "Loading resolved QML skin entrypoint:",
+                root.selectedSkinName(),
                 sourceUrl);
         content.setSource(sourceUrl, { "applicationWindow": root });
     }
@@ -80,36 +86,18 @@ ApplicationWindow {
                 return;
             }
 
-            const selectedSkin = Mixxx.Config.configSkin;
-            if (Qt.platform.os === "android" &&
-                    selectedSkin !== "" &&
-                    selectedSkin !== "AndroidDefault" &&
-                    !root.selectedSkinUsingAssetFallback) {
-                root.selectedSkinUsingAssetFallback = true;
-                const assetUrl = root.selectedMainWindowAssetUrl();
-                console.warn(
-                        "Local QML skin load failed, retrying from Android assets:",
-                        selectedSkin,
-                        assetUrl);
-                content.setSource(assetUrl, { "applicationWindow": root });
-                return;
-            }
-
-            root.selectedSkinLoadError = selectedSkin || "AndroidDefault";
+            const selectedSkin = root.selectedSkinName();
+            root.selectedSkinLoadError = selectedSkin + " @ " + source;
             console.error(
-                    "Failed to load the selected Mixxx main window:",
+                    "Failed to load the resolved Mixxx QML skin entrypoint:",
                     source,
                     "skin:",
-                    root.selectedSkinLoadError);
+                    selectedSkin);
 
-            // Do not terminate the Android process on a QML skin load error.
-            // Keep the application shell alive so a bad optional skin cannot
-            // masquerade as an application crash.
-            if (selectedSkin !== "" && selectedSkin !== "AndroidDefault") {
-                root.selectedSkinUsingAssetFallback = true;
-                content.setSource(Qt.resolvedUrl("MainWindow.qml"),
-                        { "applicationWindow": root });
-            }
+            // Do not silently replace an explicitly selected QML skin with
+            // AndroidDefault. The resolved skin entrypoint is authoritative;
+            // keeping the error visible prevents a loader failure from being
+            // mistaken for a preference or persistence problem.
         }
     }
 
@@ -129,6 +117,30 @@ ApplicationWindow {
         asynchronous: false
         z: 100000
         source: "BitGridOverlay.qml"
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        color: "#b00020"
+        opacity: content.status === Loader.Error ? 0.96 : 0
+        visible: opacity > 0
+        z: 200000
+
+        Text {
+            anchors.centerIn: parent
+            anchors.margins: 24
+            color: "white"
+            font.bold: true
+            horizontalAlignment: Text.AlignHCenter
+            text: "QML skin failed to load\\n\\n" + root.selectedSkinLoadError
+            verticalAlignment: Text.AlignVCenter
+            wrapMode: Text.Wrap
+            width: Math.min(parent.width - 48, 900)
+        }
+
+        Behavior on opacity {
+            NumberAnimation { duration: 100 }
+        }
     }
 
     Rectangle {
