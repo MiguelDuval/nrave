@@ -1,6 +1,7 @@
 #include "qml/qmlconfigproxy.h"
 
 #include <Qt>
+#include <QtDebug>
 
 #include "library/basetracktablemodel.h"
 #include "library/library.h"
@@ -421,11 +422,34 @@ PROPERTY_IMPL(kConfigGroup,
         QString,
         configScheme,
         QStringLiteral("PaleMoon"));
-PROPERTY_IMPL(kConfigGroup,
-        kResizableSkinKey,
-        QString,
-        configSkin,
-        QString());
+
+QString QmlConfigProxy::configSkin() const {
+    return m_pConfig->getValue(
+            ConfigKey(kConfigGroup, kResizableSkinKey),
+            QString());
+}
+
+void QmlConfigProxy::set_configSkin(const QString& value) {
+#if defined(Q_OS_ANDROID)
+    // Keep the Android skin choice durable immediately. Android may terminate
+    // the process without a normal Qt shutdown, so relying only on
+    // CoreServices::finalize() can lose a just-saved skin selection.
+    const QString canonicalValue =
+            value.isEmpty() ? QStringLiteral("AndroidDefault") : value;
+    m_pConfig->setValue(ConfigKey(kConfigGroup, kResizableSkinKey), canonicalValue);
+    emit configSkinChanged();
+    if (!m_pConfig->save()) {
+        qWarning() << "Failed to persist Android QML skin selection:" << canonicalValue;
+    }
+#else
+    setConfigValueAndNotify<QString>(
+            kConfigGroup,
+            kResizableSkinKey,
+            value,
+            QString(),
+            &QmlConfigProxy::configSkinChanged);
+#endif
+}
 PROPERTY_IMPL(kBpmGroup,
         kSyncLockAlgorithmKey,
         EngineSync::SyncLockAlgorithm,
