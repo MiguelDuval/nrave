@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QEventLoop>
+#include <QFileInfo>
 #include <QLocale>
 #include <QMessageBox>
 #include <QMetaEnum>
@@ -10,6 +11,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QTextDocument>
+#include <QUrl>
 #include <memory>
 #include <utility>
 
@@ -414,10 +416,32 @@ bool QmlApplication::loadQml(const QString& path) {
     m_autoReload.clear();
     m_pAppEngine->addUrlInterceptor(&m_autoReload);
     m_pAppEngine->addImportPath(QStringLiteral(":/mixxx.org/imports"));
+    QString selectedSkinMainWindowUrl;
+#if defined(Q_OS_ANDROID)
+    if (!m_selectedSkinName.isEmpty() &&
+            m_selectedSkinName != QStringLiteral("AndroidDefault")) {
+        const QFileInfo mainFileInfo(path);
+        const QString skinMainWindowPath = QDir(mainFileInfo.absolutePath()).filePath(
+                QStringLiteral("../skins/%1/MainWindow.qml").arg(m_selectedSkinName));
+        const QFileInfo skinMainWindowFile(QDir::cleanPath(skinMainWindowPath));
+        if (skinMainWindowFile.exists()) {
+            selectedSkinMainWindowUrl = QUrl::fromLocalFile(
+                    skinMainWindowFile.absoluteFilePath()).toString();
+        } else {
+            qCritical() << "Resolved Android QML skin entrypoint does not exist:"
+                        << skinMainWindowFile.absoluteFilePath();
+        }
+    }
+#endif
+
     m_pAppEngine->rootContext()->setContextProperty(
             QStringLiteral("NraveSelectedSkin"), m_selectedSkinName);
+    m_pAppEngine->rootContext()->setContextProperty(
+            QStringLiteral("NraveSelectedSkinMainWindowUrl"), selectedSkinMainWindowUrl);
 
     qInfo() << "QML context property NraveSelectedSkin =" << m_selectedSkinName;
+    qInfo() << "QML context property NraveSelectedSkinMainWindowUrl ="
+            << selectedSkinMainWindowUrl;
     qInfo() << "Loading QML shell from" << path;
 
     registerImageProvider();
