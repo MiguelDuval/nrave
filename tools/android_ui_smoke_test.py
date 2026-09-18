@@ -181,6 +181,35 @@ def click_value(value: str, *, exact: bool = False, occurrence: int = 0) -> ET.E
     return node
 
 
+def physical_screen_size() -> tuple[int, int]:
+    output = run_shell("wm", "size", timeout=10)
+    match = re.search(r"(\d+)x(\d+)", output)
+    if not match:
+        raise UiTestError(f"Could not determine physical screen size: {output!r}")
+    return int(match.group(1)), int(match.group(2))
+
+
+def click_settings_button() -> None:
+    # QML's icon-only Settings button is not exposed as a UIAutomator node on
+    # the Android runtime used by this test. The button is the fixed 76x36
+    # logical-pixel control at the far right of MainWindow's top toolbar.
+    width, height = physical_screen_size()
+    x = round(width * 0.907)
+    y = max(40, round(height * 0.047))
+    run_shell("input", "tap", str(x), str(y), timeout=10)
+
+
+def wait_for_any_value(values: tuple[str, ...], timeout: float = 30) -> str:
+    def predicate():
+        for value in values:
+            if find_nodes(value, exact=True):
+                return value
+        return None
+
+    result = wait_until(predicate, f"one of {values!r}", timeout=timeout)
+    return str(result)
+
+
 def wait_for_value(value: str, timeout: float = 30, exact: bool = False) -> ET.Element:
     return wait_until(
         lambda: (find_nodes(value, exact=exact) or [None])[0],
@@ -243,13 +272,20 @@ def main() -> int:
         raise UiTestError("Default skin loader did not report AndroidDefault")
 
     print("=== OPEN SETTINGS ===", flush=True)
-    click_value("Settings", exact=True)
-    wait_for_value("Settings", timeout=20, exact=True)
-    wait_for_value("Skin:", timeout=20)
+    settings_nodes = find_nodes("Settings", exact=True)
+    if settings_nodes:
+        click_node(settings_nodes[0])
+    else:
+        click_settings_button()
+    wait_for_any_value(("Settings", "← Back to NRave"), timeout=20)
     screenshot("02-settings.png")
 
-    print("=== VERIFY SKIN SELECTOR AND SELECT LATENIGHT ===", flush=True)
+    print("=== OPEN INTERFACE SETTINGS ===", flush=True)
+    click_value("Interface", exact=True)
     wait_for_value("Skin: Android Default", timeout=20)
+    screenshot("02-interface-settings.png")
+
+    print("=== SELECT LATENIGHT ===", flush=True)
     click_value("Skin: Android Default", exact=True)
     wait_for_value("Late Night QML", timeout=10)
     click_value("Late Night QML", exact=True)
