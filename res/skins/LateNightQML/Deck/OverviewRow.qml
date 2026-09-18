@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 import Mixxx 1.0 as Mixxx
 import "../LateNightTheme"
-import "../../../qml/Mixxx/Controls" as MixxxControls
+import Mixxx.Controls 1.0 as MixxxControls
 
 Item {
     id: root
