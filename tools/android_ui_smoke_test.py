@@ -529,14 +529,16 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 def select_latenight_skin() -> tuple[bytes, bytes]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
     x = popup_x + round(popup_width * 0.68)
-    y = popup_y + 36 + 32 + 30 + 20 + 18 + 26
+    # Measured from the actual 3120x1440 Settings frame: the Skin value is
+    # centered around y=442 on this runtime.
+    y = popup_y + 142
     before = skin_text_signature("skin-before-selection")
 
     # Try the actual touch-popup path at the measured Skin control position.
     # Different Qt font metrics can move the delegate rows by a few pixels, so
     # retry with nearby second-row centers if the first tap did not change the
     # rendered value.
-    tried_offsets = (96, 112, 80, 64)
+    tried_offsets = (88, 104, 72)
     for attempt, offset in enumerate(tried_offsets, start=1):
         run_shell("input", "tap", str(x), str(y), timeout=10)
         time.sleep(0.5)
