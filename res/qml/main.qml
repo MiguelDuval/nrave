@@ -59,7 +59,7 @@ ApplicationWindow {
                 "Loading resolved QML skin entrypoint:",
                 root.selectedSkinName(),
                 sourceUrl);
-        content.setSource(sourceUrl, { "applicationWindow": root });
+        content.source = sourceUrl;
     }
 
     Connections {
@@ -75,6 +75,7 @@ ApplicationWindow {
         id: content
         anchors.fill: parent
         active: Mixxx.Core.ready
+        property ApplicationWindow applicationWindow: root
         asynchronous: true
         onActiveChanged: {
             if (active) {
