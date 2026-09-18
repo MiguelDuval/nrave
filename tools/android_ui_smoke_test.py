@@ -205,7 +205,22 @@ def physical_screen_size() -> tuple[int, int]:
     match = re.search(r"(\d+)x(\d+)", output)
     if not match:
         raise UiTestError(f"Could not determine physical screen size: {output!r}")
-    return int(match.group(1)), int(match.group(2))
+    width, height = int(match.group(1)), int(match.group(2))
+
+    # wm size reports the panel's native orientation. adb input/screencap use
+    # the current rotated display coordinates. The runtime is deliberately
+    # locked to landscape, so rotation 1/3 means the usable input dimensions
+    # are swapped.
+    rotation_output = run_shell(
+        "settings", "get", "system", "user_rotation", timeout=10, check=False
+    ).strip()
+    try:
+        rotation = int(rotation_output)
+    except ValueError:
+        rotation = 0
+    if rotation % 2:
+        return height, width
+    return width, height
 
 
 def app_window_bounds() -> tuple[int, int, int, int] | None:
