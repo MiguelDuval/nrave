@@ -639,17 +639,23 @@ def main() -> int:
     # BEATGRID is the next toolbar control on Deck 1, approximately 24.8%/70.4%.
     visual_tap_fraction(0.248, 0.704, "Deck 1 BeatGrid open")
     screenshot("05-bitgrid-deck1.png")
-    run_shell("input", "keyevent", "4", timeout=10)
-    time.sleep(2)
-    wait_for_process(timeout=20)
+    assert_no_fatal(save_logcat("05-bitgrid-open-logcat.txt"))
+
+    # BitGridOverlay is a full-screen Qt overlay with its own close path.
+    # Do NOT send Android BACK here: BACK closes MainActivity rather than the
+    # overlay and, on this APK/runtime combination, tears down Qt rendering
+    # while the overlay is active. Tap the overlay outside its centered panel.
+    visual_tap_fraction(0.02, 0.02, "Deck 1 BeatGrid overlay close")
     screenshot("06-bitgrid-deck1-closed.png")
+    assert_no_fatal(save_logcat("06-bitgrid-closed-logcat.txt"))
 
     print("=== TEST BITGRID DECK 1 REOPEN/CLOSE ===", flush=True)
     visual_tap_fraction(0.248, 0.704, "Deck 1 BeatGrid reopen")
     screenshot("07-bitgrid-deck1-reopened.png")
-    run_shell("input", "keyevent", "4", timeout=10)
-    time.sleep(2)
-    wait_for_process(timeout=20)
+    assert_no_fatal(save_logcat("07-bitgrid-reopened-logcat.txt"))
+    visual_tap_fraction(0.02, 0.02, "Deck 1 BeatGrid overlay close second")
+    screenshot("08-bitgrid-deck1-closed-again.png")
+    assert_no_fatal(save_logcat("08-bitgrid-closed-again-logcat.txt"))
 
     print("=== SAVE LATENIGHT SELECTION ===", flush=True)
     # QML Settings controls are not exported to Android UIAutomator. The
@@ -658,7 +664,7 @@ def main() -> int:
     reopen_settings()
     save_settings()
     time.sleep(2)
-    screenshot("08-settings-saved.png")
+    screenshot("09-settings-saved.png")
 
     print("=== RESTART AND VERIFY LATENIGHT LOADER ===", flush=True)
     run_shell("am", "force-stop", "org.mixxx")
@@ -671,14 +677,14 @@ def main() -> int:
         raise UiTestError("LateNightQML loader success message not found in logcat")
     if "Failed to load the resolved Mixxx QML skin entrypoint" in log:
         raise UiTestError("LateNightQML loader reported an error")
-    screenshot("10-latenight-loaded.png")
+    screenshot("11-latenight-loaded.png")
 
     print("=== TEST LATENIGHT BEATGRID TOGGLE ===", flush=True)
     visual_toggle(0.248, 0.704, "LateNight Deck 1 BeatGrid")
-    screenshot("11-latenight-beatgrid.png")
+    screenshot("12-latenight-beatgrid.png")
 
     print("=== FINAL CRASH CHECK ===", flush=True)
-    final_log = save_logcat("09-final-logcat.txt")
+    final_log = save_logcat("10-final-logcat.txt")
     assert_no_fatal(final_log)
 
     print("=== ANDROID UI SMOKE TEST PASSED ===", flush=True)
