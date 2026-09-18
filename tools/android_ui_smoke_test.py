@@ -1,3 +1,4 @@
+# Runtime-test iteration: reuse the existing APK artifact.
 #!/usr/bin/env python3
 """Black-box Android UI smoke test for NRave.
 
