@@ -315,8 +315,6 @@ def main() -> int:
     print("=== CLOSE BITGRID ===", flush=True)
     click_value("×", exact=True)
     wait_until(lambda: not find_nodes("BEATGRID 2", exact=True), "BitGrid panel close", timeout=10)
-    click_value("×", exact=True)
-    wait_until(lambda: not find_nodes("BEATGRID 1", exact=True), "BeatGrid panel close", timeout=10)
 
     print("=== SAVE LATENIGHT SELECTION ===", flush=True)
     click_value("Settings", exact=True)
