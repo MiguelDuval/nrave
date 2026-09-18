@@ -232,7 +232,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -no-snapshot-save
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
             adb wait-for-device
             {
               echo "=== EMULATOR ABI ==="
