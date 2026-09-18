@@ -295,9 +295,26 @@ def main() -> int:
     wait_for_value("BeatGrid locked", timeout=10, exact=True)
     click_value("UNLOCK GRID", exact=True)
     wait_for_value("LOCK GRID", timeout=10, exact=True)
-    screenshot("05-bitgrid.png")
+    screenshot("05-bitgrid-deck1.png")
+
+    print("=== TEST BITGRID DECK 2 INDEPENDENCE ===", flush=True)
+    click_value("Deck 1 BeatGrid", exact=True)
+    wait_for_value("BEATGRID 1", timeout=10, exact=True)
+    click_value("×", exact=True)
+    wait_until(lambda: not find_nodes("BEATGRID 1", exact=True), "Deck 1 panel close", timeout=10)
+    click_value("Deck 2 BeatGrid", exact=True)
+    wait_for_value("BEATGRID 2", timeout=15, exact=True)
+    wait_for_value("LOCK GRID", timeout=10, exact=True)
+    click_value("LOCK GRID", exact=True)
+    wait_for_value("UNLOCK GRID", timeout=10, exact=True)
+    wait_for_value("BeatGrid locked", timeout=10, exact=True)
+    click_value("UNLOCK GRID", exact=True)
+    wait_for_value("LOCK GRID", timeout=10, exact=True)
+    screenshot("06-bitgrid-deck2.png")
 
     print("=== CLOSE BITGRID ===", flush=True)
+    click_value("×", exact=True)
+    wait_until(lambda: not find_nodes("BEATGRID 2", exact=True), "BitGrid panel close", timeout=10)
     click_value("×", exact=True)
     wait_until(lambda: not find_nodes("BEATGRID 1", exact=True), "BeatGrid panel close", timeout=10)
 
@@ -312,7 +329,7 @@ def main() -> int:
     time.sleep(2)
     # Save keeps the Settings popup open; this asserts the action completed.
     wait_for_value("Settings", timeout=10, exact=True)
-    screenshot("06-settings-saved.png")
+    screenshot("07-settings-saved.png")
 
     print("=== RESTART AND VERIFY LATENIGHT LOADER ===", flush=True)
     run_shell("am", "force-stop", "org.mixxx")
@@ -326,7 +343,7 @@ def main() -> int:
     if "Failed to load the resolved Mixxx QML skin entrypoint" in log:
         raise UiTestError("LateNightQML loader reported an error")
     wait_for_value("LateNight QML Skin", timeout=30)
-    screenshot("07-latenight-loaded.png")
+    screenshot("08-latenight-loaded.png")
 
     print("=== TEST LATENIGHT BEATGRID TOGGLE ===", flush=True)
     wait_for_value("Deck 1 BeatGrid Editor ON", timeout=20)
@@ -334,7 +351,7 @@ def main() -> int:
     wait_for_value("Deck 1 BeatGrid Editor OFF", timeout=10)
     click_value("Deck 1 BeatGrid Editor OFF", exact=True)
     wait_for_value("Deck 1 BeatGrid Editor ON", timeout=10)
-    screenshot("08-latenight-beatgrid.png")
+    screenshot("09-latenight-beatgrid.png")
 
     print("=== FINAL CRASH CHECK ===", flush=True)
     final_log = save_logcat("09-final-logcat.txt")
