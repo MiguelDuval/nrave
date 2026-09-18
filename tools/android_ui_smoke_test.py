@@ -336,10 +336,39 @@ def prepare_android_runtime() -> None:
     print(f"=== STORAGE ACCESS === {storage_state}", flush=True)
 
 
+def current_focus() -> str:
+    output = run_shell("dumpsys", "window", "windows", timeout=15, check=False)
+    for line in output.splitlines():
+        if "mCurrentFocus=" in line or "mFocusedApp=" in line:
+            return line.strip()
+    return output[-1000:]
+
+
+def assert_nrave_foreground() -> None:
+    focus = current_focus()
+    if "org.mixxx" not in focus:
+        raise UiTestError(f"NRave is not the foreground app: {focus}")
+
+
 def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
     deadline = time.time() + timeout
+    anr_waits = 0
     while time.time() < deadline:
         handled = False
+
+        # Android can show a native ANR dialog for Pixel Launcher while the
+        # emulator is settling. Never mistake that system dialog for a NRave
+        # screen change; choose Wait and re-check the real foreground window.
+        anr = find_nodes("isn't responding")
+        wait_nodes = find_nodes("Wait", exact=True)
+        if anr and wait_nodes:
+            click_node(wait_nodes[0])
+            anr_waits += 1
+            time.sleep(2)
+            handled = True
+            if anr_waits >= 3:
+                raise UiTestError("Android system ANR dialog persisted after three Wait attempts")
+            continue
 
         got_it = find_nodes("Got it", exact=True)
         if got_it:
@@ -359,8 +388,8 @@ def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
 
         if not handled:
             return
-    # Do not fail here; the normal app assertions below will report the
-    # remaining foreground UI with diagnostics if a system page persists.
+    # Do not fail here; assert_nrave_foreground() below reports the remaining
+    # foreground UI with diagnostics if a system page persists.
 
 
 def launch() -> None:
@@ -376,7 +405,13 @@ def launch() -> None:
     )
     wait_for_process()
     time.sleep(3)
-    dismiss_android_system_overlays()
+    dismiss_android_system_overlays(timeout=20)
+    wait_until(
+        lambda: ("org.mixxx" in current_focus()) or (dismiss_android_system_overlays(timeout=3) is None and "org.mixxx" in current_focus()),
+        "NRave foreground window",
+        timeout=30,
+        interval=1,
+    )
     time.sleep(2)
 
 
@@ -403,6 +438,7 @@ def open_settings_with_cold_start_retry() -> None:
         click_settings_button()
         try:
             wait_for_screen_change(baseline, timeout=8)
+            assert_nrave_foreground()
             screenshot(f"02-settings-attempt-{attempt}.png")
             return
         except UiTestError:
