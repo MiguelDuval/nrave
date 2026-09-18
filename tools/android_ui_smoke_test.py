@@ -227,6 +227,66 @@ def wait_for_process(timeout: float = 60) -> None:
     )
 
 
+def prepare_android_runtime() -> None:
+    # The clean API-35 emulator can show Android's immersive-mode confirmation
+    # and the MANAGE_EXTERNAL_STORAGE special-access screen before the app UI.
+    # Those are test-environment state, not NRave UI under test.
+    run_shell(
+        "settings",
+        "put",
+        "secure",
+        "immersive_mode_confirmations",
+        "confirmed",
+        timeout=10,
+        check=False,
+    )
+    run_shell(
+        "appops",
+        "set",
+        "org.mixxx",
+        "MANAGE_EXTERNAL_STORAGE",
+        "allow",
+        timeout=10,
+        check=False,
+    )
+    storage_state = run_shell(
+        "appops",
+        "get",
+        "org.mixxx",
+        "MANAGE_EXTERNAL_STORAGE",
+        timeout=10,
+        check=False,
+    ).strip()
+    print(f"=== STORAGE ACCESS === {storage_state}", flush=True)
+
+
+def dismiss_android_system_overlays(timeout: float = 15.0) -> None:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        handled = False
+
+        got_it = find_nodes("Got it", exact=True)
+        if got_it:
+            click_node(got_it[0])
+            time.sleep(1)
+            handled = True
+
+        all_files = find_nodes("All files access", exact=True)
+        allow_all = find_nodes("Allow access to manage all files", exact=True)
+        if all_files or allow_all:
+            if allow_all:
+                click_node(allow_all[0])
+                time.sleep(1)
+            run_shell("input", "keyevent", "4", timeout=10, check=False)
+            time.sleep(1)
+            handled = True
+
+        if not handled:
+            return
+    # Do not fail here; the normal app assertions below will report the
+    # remaining foreground UI with diagnostics if a system page persists.
+
+
 def launch() -> None:
     run_shell("am", "force-stop", "org.mixxx", check=False)
     run_shell(
@@ -239,7 +299,9 @@ def launch() -> None:
         timeout=30,
     )
     wait_for_process()
-    time.sleep(8)
+    time.sleep(3)
+    dismiss_android_system_overlays()
+    time.sleep(2)
 
 
 def assert_enabled(value: str, expected: bool) -> ET.Element:
@@ -263,6 +325,7 @@ def main() -> int:
     run_adb("install", "-r", str(APK), timeout=180)
     run_shell("pm", "clear", "org.mixxx", timeout=30)
     run_adb("logcat", "-c", timeout=30)
+    prepare_android_runtime()
 
     print("=== LAUNCH ANDROID DEFAULT ===", flush=True)
     launch()
