@@ -14,10 +14,9 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    // The Android shell injects the owning ApplicationWindow through Loader's
-    // matching property. Keep this non-required so local-file loading does not
-    // depend on Loader.setSource() initial-property semantics.
-    property ApplicationWindow applicationWindow
+    // The application shell injects itself before this skin component is
+    // completed. Nested shell-owned QML components rely on this contract.
+    required property ApplicationWindow applicationWindow
     property alias menuBar: nativeApplicationMenuLoader.item
 
     property alias editDeck: toolbar.editDeck
