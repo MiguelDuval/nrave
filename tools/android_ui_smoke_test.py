@@ -437,21 +437,29 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 
 def select_latenight_skin() -> tuple[str, str]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
-    # The Skin ComboBox is in the first Theme & Color row. On the CI runtime
-    # it sits around 68% of the rendered popup width.
     x = popup_x + round(popup_width * 0.68)
     y = popup_y + 20 + 36 + 32 + 30 + 20 + 18
 
     before = screenshot_region_hash("skin-before-selection", *skin_selector_region())
+
+    # Skin is a Qt Quick Controls ComboBox with a touch popup. Android DPAD
+    # events do not reliably move its highlightedIndex on this runtime, so use
+    # the same touch path a user uses: open the combo, then tap the second row.
     run_shell("input", "tap", str(x), str(y), timeout=10)
-    time.sleep(0.5)
-    run_shell("input", "keyevent", "KEYCODE_DPAD_DOWN", timeout=10)
-    run_shell("input", "keyevent", "KEYCODE_ENTER", timeout=10)
-    time.sleep(1)
+    time.sleep(0.7)
+    screenshot("skin-popup-open.png")
+
+    # ComboBox.qml positions the Popup immediately below the control. There are
+    # two items on Android (Android Default, Late Night QML); the second row is
+    # one delegate-height below the popup's first row. The CI density is fixed
+    # at 160, so a 32dp row is 32 physical px.
+    run_shell("input", "tap", str(x), str(y + 64), timeout=10)
+    time.sleep(1.2)
+
     after = screenshot_region_hash("skin-after-selection", *skin_selector_region())
     if before == after:
         raise UiTestError(
-            "Skin selector did not visibly change after selecting the Late Night option"
+            "Skin selector did not visibly change after tapping Late Night QML"
         )
     return before, after
 
