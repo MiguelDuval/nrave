@@ -455,8 +455,7 @@ void DlgPrefInterface::notifyRebootNecessary() {
 void DlgPrefInterface::notifyExperimentalQmlSkinRestartNecessary() {
     QMessageBox::information(this,
             tr("Information"),
-            tr("NRave must be restarted with the --developer command line option "
-               "to use the experimental LateNight QML skin."));
+            tr("NRave must be restarted before the selected QML skin will be used."));
 }
 
 void DlgPrefInterface::slotSetScheme(int) {
