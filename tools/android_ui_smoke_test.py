@@ -631,41 +631,31 @@ def main() -> int:
     run_shell("input", "keyevent", "4", timeout=10)
     wait_for_screen_change(before_close, timeout=8)
 
-    print("=== CLOSE BITGRID ===", flush=True)
     print("=== SAVE LATENIGHT SELECTION ===", flush=True)
+    # QML Settings controls are not exported to Android UIAutomator. The
+    # LateNight selection is already active; reopen Settings and use the
+    # known Save geometry, then verify persistence through the real loader log.
     reopen_settings()
-    wait_for_value("Skin: Android Default", timeout=15)
-    click_value("Skin: Android Default", exact=True)
-    wait_for_value("Late Night QML", timeout=10)
-    click_value("Late Night QML", exact=True)
-    wait_for_value("Skin: Late Night QML", timeout=10)
-    click_value("Save", exact=True)
+    save_settings()
     time.sleep(2)
-    # Save keeps the Settings popup open; this asserts the action completed.
-    wait_for_value("Settings", timeout=10, exact=True)
-    screenshot("07-settings-saved.png")
+    screenshot("08-settings-saved.png")
 
     print("=== RESTART AND VERIFY LATENIGHT LOADER ===", flush=True)
     run_shell("am", "force-stop", "org.mixxx")
     run_adb("logcat", "-c", timeout=30)
     launch()
     time.sleep(4)
-    log = save_logcat("07-latenight-logcat.txt")
+    log = save_logcat("09-latenight-logcat.txt")
     assert_no_fatal(log)
     if "Loading resolved QML skin entrypoint" not in log or "LateNightQML" not in log:
         raise UiTestError("LateNightQML loader success message not found in logcat")
     if "Failed to load the resolved Mixxx QML skin entrypoint" in log:
         raise UiTestError("LateNightQML loader reported an error")
-    wait_for_value("LateNight QML Skin", timeout=30)
-    screenshot("08-latenight-loaded.png")
+    screenshot("10-latenight-loaded.png")
 
     print("=== TEST LATENIGHT BEATGRID TOGGLE ===", flush=True)
-    wait_for_value("Deck 1 BeatGrid Editor ON", timeout=20)
-    click_value("Deck 1 BeatGrid Editor ON", exact=True)
-    wait_for_value("Deck 1 BeatGrid Editor OFF", timeout=10)
-    click_value("Deck 1 BeatGrid Editor OFF", exact=True)
-    wait_for_value("Deck 1 BeatGrid Editor ON", timeout=10)
-    screenshot("09-latenight-beatgrid.png")
+    visual_toggle(0.248, 0.704, "LateNight Deck 1 BeatGrid")
+    screenshot("11-latenight-beatgrid.png")
 
     print("=== FINAL CRASH CHECK ===", flush=True)
     final_log = save_logcat("09-final-logcat.txt")
