@@ -211,7 +211,9 @@ def app_window_bounds() -> tuple[int, int, int, int] | None:
 
 def click_settings_button() -> None:
     # The Settings control is an icon-only gear. Qt Quick accessibility is not
-    # guaranteed to appear in Android UIAutomator, so use semantic lookup first.
+    # guaranteed to appear in Android UIAutomator. Clear Android system
+    # overlays first, then use semantic lookup and finally app-window geometry.
+    dismiss_android_system_overlays(timeout=5)
     for value in ("nrave_settings_button", "Settings"):
         nodes = find_nodes(value, exact=True)
         if nodes:
@@ -485,8 +487,19 @@ def launch() -> None:
     )
     wait_for_process()
     time.sleep(3)
-    dismiss_android_system_overlays(timeout=20)
+    # Android 35 may surface the immersive-mode confirmation after the app
+    # has already created its window. Clear it immediately before UI interaction.
+    for _ in range(3):
+        dismiss_android_system_overlays(timeout=5)
+        if not safe_find_nodes("Viewing full screen", exact=True):
+            break
+        time.sleep(1)
+    if safe_find_nodes("Viewing full screen", exact=True):
+        raise UiTestError("Android immersive-mode confirmation remained on screen after launch")
     wait_for_main_window(timeout=90)
+    dismiss_android_system_overlays(timeout=5)
+    if safe_find_nodes("Viewing full screen", exact=True):
+        raise UiTestError("Android immersive-mode confirmation reappeared after MainWindow became ready")
     time.sleep(2)
 
 
