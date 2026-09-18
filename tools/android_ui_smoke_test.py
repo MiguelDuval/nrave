@@ -242,27 +242,39 @@ def app_window_bounds() -> tuple[int, int, int, int] | None:
 
 
 def click_settings_button() -> None:
-    # The Settings control is an icon-only gear. Qt Quick accessibility is not
-    # guaranteed to appear in Android UIAutomator. Clear Android system
-    # overlays first, then use semantic lookup and finally app-window geometry.
-    dismiss_android_system_overlays(timeout=5)
+    # Settings is an icon-only gear. UIAutomator may not expose Qt Quick
+    # accessibility nodes, so semantic lookup is optional. The Android
+    # immersive-mode confirmation is a native overlay and MUST be gone before
+    # any coordinate tap; otherwise the tap is consumed by "Got it".
+    dismiss_android_system_overlays(timeout=10)
+    if safe_find_nodes("Viewing full screen", exact=True):
+        raise UiTestError("Android immersive-mode confirmation is still visible before Settings tap")
+
     for value in ("nrave_settings_button", "Settings"):
-        nodes = find_nodes(value, exact=True)
+        nodes = safe_find_nodes(value, exact=True)
         if nodes:
             node = nodes[0]
             if node.attrib.get("enabled", "true").casefold() != "false":
                 click_node(node)
+                time.sleep(1)
                 return
 
     frame = app_window_bounds()
     if frame:
-        left, top, right, _ = frame
-        run_shell("input", "tap", str(right - 38), str(top + 18), timeout=10)
+        left, top, right, bottom = frame
+        # MainWindow toolbar is 36 dp high. With the CI density fixed to 160,
+        # the gear button is the final visible toolbar button at the right
+        # edge of the Qt application frame. Tap its center, not the screen
+        # edge, because the emulator display is wider than the Qt window.
+        x = right - 38
+        y = top + 18
+        run_shell("input", "tap", str(x), str(y), timeout=10)
+        time.sleep(1)
         return
 
-    # Last-resort fallback for unusual Android window dumps.
     width, _ = physical_screen_size()
     run_shell("input", "tap", str(width - 38), "18", timeout=10)
+    time.sleep(1)
 
 
 def reopen_settings() -> None:
@@ -522,24 +534,29 @@ def launch() -> None:
         "1",
         timeout=30,
     )
-    # Keep the launcher out of the foreground/input path on the runtime image.
     for launcher in ("com.google.android.apps.nexuslauncher", "com.android.launcher3"):
         run_shell("am", "force-stop", launcher, timeout=10, check=False)
     wait_for_process()
     time.sleep(3)
-    # Android 35 may surface the immersive-mode confirmation after the app
-    # has already created its window. Clear it immediately before UI interaction.
-    for _ in range(3):
-        dismiss_android_system_overlays(timeout=5)
+
+    # Android 35 can present the native immersive-mode confirmation after the
+    # Qt activity already has focus. Dismiss it repeatedly and verify the
+    # hierarchy no longer contains the dialog before declaring the app ready.
+    for _ in range(5):
+        dismiss_android_system_overlays(timeout=3)
         if not safe_find_nodes("Viewing full screen", exact=True):
             break
         time.sleep(1)
     if safe_find_nodes("Viewing full screen", exact=True):
+        screenshot("launch-immersive-overlay.png")
         raise UiTestError("Android immersive-mode confirmation remained on screen after launch")
+
     wait_for_main_window(timeout=90)
-    dismiss_android_system_overlays(timeout=5)
+    dismiss_android_system_overlays(timeout=3)
     if safe_find_nodes("Viewing full screen", exact=True):
+        screenshot("launch-immersive-overlay-reappeared.png")
         raise UiTestError("Android immersive-mode confirmation reappeared after MainWindow became ready")
+    assert_nrave_foreground()
     time.sleep(2)
 
 
