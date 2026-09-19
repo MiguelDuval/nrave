@@ -25,7 +25,7 @@
             </intent-filter>
             <meta-data android:name="android.app.lib_name" android:value="mixxx" />
             <meta-data android:name="android.app.background_running" android:value="true" />
-            <meta-data android:name="android.app.arguments" android:value="--log-level info" />
+            <meta-data android:name="android.app.arguments" android:value="--qml --log-level debug --developer" />
         </activity>
         <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.qtprovider" android:exported="false" android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/qtprovider_paths" />

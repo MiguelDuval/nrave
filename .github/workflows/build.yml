@@ -156,6 +156,8 @@ jobs:
           grep -Fq "assets/skins/AndroidDefault/MainWindow.qml" "$RUNNER_TEMP/apk-files.txt"
           grep -Fq "assets/skins/TestSkin/MainWindow.qml" "$RUNNER_TEMP/apk-files.txt"
           grep -Fq "assets/skins/TestSkin/skin.ini" "$RUNNER_TEMP/apk-files.txt"
+          grep -Fq "assets/skins/LateNightQML/MainWindow.qml" "$RUNNER_TEMP/apk-files.txt"
+          grep -Fq "assets/skins/LateNightQML/skin.ini" "$RUNNER_TEMP/apk-files.txt"
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
