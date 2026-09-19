@@ -39,6 +39,7 @@ Rectangle {
     property double recentlyClosedPopupTimestamp: 0
 
     signal focusLibrarySearchRequested
+    signal preferencesRequested
 
     function focusActiveAppMenuTab() {
         switch (root.activeAppMenuSection) {
@@ -1003,6 +1004,35 @@ Rectangle {
 
             onClicked: {
                 broadcastEnabledControl.value = broadcastEnabledControl.value > 0 ? 0.0 : 1.0;
+            }
+        }
+        MouseArea {
+            id: preferencesButton
+
+            objectName: "nrave_latenight_settings_button"
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: 20
+            Layout.preferredWidth: 26
+            cursorShape: Qt.ArrowCursor
+
+            Accessible.id: "nrave_latenight_settings_button"
+            Accessible.name: "Settings"
+            Accessible.role: Accessible.Button
+
+            onClicked: root.preferencesRequested()
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 2
+                color: "transparent"
+            }
+
+            Image {
+                anchors.centerIn: parent
+                fillMode: Image.PreserveAspectFit
+                height: 18
+                source: "../../../qml/images/gear.svg"
+                width: 18
             }
         }
         Image {
