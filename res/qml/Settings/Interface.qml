@@ -46,8 +46,8 @@ Category {
         rampingSensitivityInput.value = Mixxx.Config.controlRateRampSensitivity;
         decksTab.dirty = false;
     }
-    readonly property var androidSkinIds: ["AndroidDefault", "TestSkin"]
-    readonly property var androidSkinLabels: ["Android Default", "Test Skin"]
+    readonly property var androidSkinIds: ["AndroidDefault", "TestSkin", "LateNightQML"]
+    readonly property var androidSkinLabels: ["Android Default", "Test Skin", "LateNight QML (Experimental)"]
 
     function loadInterface() {
         // Interface tab
