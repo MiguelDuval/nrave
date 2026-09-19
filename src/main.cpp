@@ -106,23 +106,50 @@ QString materializeAndroidQmlResources() {
     const QString appDataDir =
             QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (appDataDir.isEmpty()) {
-        qCritical() << "Android QML app data directory is unavailable";
+        qCritical() << "NRAVE_ANDROID_STARTUP stage=app-data-missing";
         return {};
     }
 
     const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
     const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
 
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=materialize-begin"
+            << "appData=" << appDataDir;
+
     if (!QDir(qmlDir).removeRecursively() ||
             !QDir(skinDir).removeRecursively()) {
-        qCritical() << "NRAVE_ANDROID_STARTUP cannot reset materialized resource directories";
+        qCritical() << "NRAVE_ANDROID_STARTUP stage=materialize-reset-failed";
         return {};
     }
 
-    if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir) ||
-            !copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir)) {
-        qCritical() << "NRAVE_ANDROID_STARTUP resource materialization failed";
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-qml-begin"
+            << "source=assets:/qml";
+    if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir)) {
+        qCritical() << "NRAVE_ANDROID_STARTUP stage=copy-qml-failed";
         return {};
+    }
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-qml-done"
+            << "path=" << qmlDir;
+
+    // Stage 4 only needs the two explicit contract skins. Do not copy every
+    // legacy skin into app-private storage; this keeps the minimal contract
+    // small and avoids unrelated assets affecting startup time.
+    const QStringList requiredSkinDirs = {
+            QStringLiteral("AndroidDefault"),
+            QStringLiteral("TestSkin"),
+    };
+    for (const QString& skinName : requiredSkinDirs) {
+        const QString source = QStringLiteral("assets:/skins/") + skinName;
+        const QString destination = QDir(skinDir).filePath(skinName);
+        qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-skin-begin"
+                << "skin=" << skinName;
+        if (!copyAndroidAssetDir(source, destination)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP stage=copy-skin-failed"
+                        << "skin=" << skinName;
+            return {};
+        }
+        qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-skin-done"
+                << "skin=" << skinName;
     }
 
     const QStringList requiredFiles = {
