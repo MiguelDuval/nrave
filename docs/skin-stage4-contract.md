@@ -72,3 +72,14 @@ This separates loader correctness from LateNight's component graph.
 - Correct marker but unchanged LateNight later: LateNight-specific component/design problem, not the base skin contract.
 
 The Stage 3 1055-line UI smoke test is not the oracle for this stage.
+
+## Preserved regression process
+
+The Stage 3 feature-level Android harness is preserved separately as
+`tools/android_feature_smoke_test.py`.
+
+Its workflow is manual-only:
+`.github/workflows/android-feature-smoke-existing-apk.yml`.
+
+It is intentionally not part of the Stage 4 pass/fail gate because Stage 4 does
+not yet expose the LateNight selector and is proving a smaller architectural contract.
