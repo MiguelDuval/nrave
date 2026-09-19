@@ -411,6 +411,10 @@ Item {
             Item {
                 id: waveforms
 
+                // Diagnostic isolation: disable waveform scenegraph rendering on Android
+                // to test whether the large-triangle corruption originates in the
+                // QML waveform/rendergraph path.
+                visible: false
                 SplitView.fillHeight: !library.active
                 SplitView.preferredHeight: library.active ? 120 : undefined
                 visible: !root.maximizeLibrary
