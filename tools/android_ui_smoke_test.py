@@ -407,11 +407,35 @@ def wait_for_screen_change(previous_hash: str, timeout: float = 8.0) -> None:
 
 
 def settings_geometry() -> tuple[int, int, int, int]:
+    # Settings.qml is a Qt Quick Popup positioned relative to MainWindow, not
+    # necessarily relative to the physical Android display after landscape
+    # rotation. Use WindowManager's application frame so adb input taps and the
+    # Qt popup share the same coordinate system.
+    frame = app_window_bounds()
+    if frame:
+        left, top, right, bottom = frame
+        width = max(1, right - left)
+        height = max(1, bottom - top)
+        popup_width = min(1400, width)
+        popup_height = min(840, height)
+        popup_x = left + round((width - popup_width) / 2)
+        popup_y = top + round((height - popup_height) / 2)
+        print(
+            f"=== SETTINGS GEOMETRY === frame={frame} "
+            f"popup=({popup_x},{popup_y},{popup_width},{popup_height})",
+            flush=True,
+        )
+        return popup_x, popup_y, popup_width, popup_height
+
     width, height = physical_screen_size()
     popup_width = min(1400, width)
     popup_height = min(840, height)
     popup_x = round((width - popup_width) / 2)
     popup_y = round((height - popup_height) / 2)
+    print(
+        f"=== SETTINGS GEOMETRY FALLBACK === popup=({popup_x},{popup_y},{popup_width},{popup_height})",
+        flush=True,
+    )
     return popup_x, popup_y, popup_width, popup_height
 
 
@@ -529,11 +553,10 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 def select_latenight_skin() -> tuple[bytes, bytes]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
     x = popup_x + round(popup_width * 0.68)
-    # Measured directly from the rendered 3120x1440 Settings frame:
-    # the Skin ComboBox value spans roughly x=1610..1905 and y=430..490.
-    # Tap the indicator/right side to guarantee hitting the ComboBox.
-    x = 1890
-    y = 460
+    # Skin row is the first Theme & Color row. Tap the right side/indicator
+    # of the ComboBox inside the measured Qt Popup geometry.
+    x = popup_x + round(popup_width * 0.68)
+    y = popup_y + 150
     before = skin_text_signature("skin-before-selection")
 
     # The popup opens directly below the ComboBox. Delegate row height is
