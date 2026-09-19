@@ -17,6 +17,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import zipfile
 import sys
 import time
 from pathlib import Path
@@ -265,6 +266,25 @@ def assert_skin_ready(expected: str, log: str) -> None:
 def main() -> int:
     if not APK.exists():
         raise TestFailure(f"APK not found: {APK}")
+
+    required_assets = (
+        "assets/skins/AndroidDefault/MainWindow.qml",
+        "assets/skins/AndroidDefault/skin.ini",
+        "assets/skins/TestSkin/MainWindow.qml",
+        "assets/skins/TestSkin/skin.ini",
+    )
+    try:
+        with zipfile.ZipFile(APK) as package:
+            names = set(package.namelist())
+    except zipfile.BadZipFile as exc:
+        raise TestFailure(f"APK is not a valid ZIP archive: {APK}") from exc
+
+    missing_assets = [path for path in required_assets if path not in names]
+    if missing_assets:
+        raise TestFailure(
+            "APK is missing required Android skin assets: "
+            + ", ".join(missing_assets)
+        )
 
     prepare_runtime()
 
