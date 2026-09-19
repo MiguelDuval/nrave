@@ -11,7 +11,7 @@ import "Theme"
 Item {
     id: root
 
-    property ApplicationWindow applicationWindow: null
+    required property ApplicationWindow applicationWindow
     property alias menuBar: nativeApplicationMenuLoader.item
 
     property alias editDeck: editDeckButton.checked
@@ -279,9 +279,6 @@ Item {
                     icon.source: "images/gear.svg"
                     icon.width: 18
                     implicitWidth: 76
-                    Accessible.id: "nrave_settings_button"
-                    Accessible.name: "Settings"
-                    Accessible.role: Accessible.Button
 
                     onClicked: {
                         if (!settingsPopup.opened) {
@@ -411,10 +408,6 @@ Item {
             Item {
                 id: waveforms
 
-                // Diagnostic isolation: disable waveform scenegraph rendering on Android
-                // to test whether the large-triangle corruption originates in the
-                // QML waveform/rendergraph path.
-                visible: false
                 SplitView.fillHeight: !library.active
                 SplitView.preferredHeight: library.active ? 120 : undefined
                 visible: !root.maximizeLibrary
