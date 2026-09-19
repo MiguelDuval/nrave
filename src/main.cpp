@@ -113,8 +113,11 @@ QString materializeAndroidQmlResources() {
     const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
     const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
 
-    QDir(qmlDir).removeRecursively();
-    QDir(skinDir).removeRecursively();
+    if (!QDir(qmlDir).removeRecursively() ||
+            !QDir(skinDir).removeRecursively()) {
+        qCritical() << "NRAVE_ANDROID_STARTUP cannot reset materialized resource directories";
+        return {};
+    }
 
     if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir) ||
             !copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir)) {
