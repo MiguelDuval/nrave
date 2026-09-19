@@ -97,7 +97,8 @@ constexpr int kSamplerCount = 4;
 template<typename T>
 void clearHelper(std::shared_ptr<T>& ref_ptr, const char* name) {
     std::weak_ptr<T> weak(ref_ptr);
-    ref_ptr.reset();    if (auto shared = weak.lock()) {
+    ref_ptr.reset();
+    if (auto shared = weak.lock()) {
         qWarning() << name << "was leaked! Use count:" << shared.use_count();
         DEBUG_ASSERT(false);
     }
@@ -196,7 +197,8 @@ QLocale localeFromXkbName(const QString& xkbLayout) {
             {"Russian",
                     QLocale(QLocale::Russian,
                             QLocale::Russia)}, // ru_RU.kbd.cfg
-            {"German (Switzerland)",                    QLocale(QLocale::German,
+            {"German (Switzerland)",
+                    QLocale(QLocale::German,
                             QLocale::Switzerland)}, // de_CH.kbd.cfg
             {"German (Switzerland, no dead keys)",
                     QLocale(QLocale::German,
@@ -295,7 +297,8 @@ inline QLocale inputLocale() {
             // code (e.g. 'us', 'de')
             static const QRegularExpression re(QStringLiteral("\\('xkb',\\s*'([^']+)'\\)"));
             QRegularExpressionMatch match = re.match(sourcesStr);
-            if (match.hasMatch()) {                const QString layout = match.captured(1);
+            if (match.hasMatch()) {
+                const QString layout = match.captured(1);
                 ;
                 qDebug() << "Keyboard Layout from GNOME dconf:" << layout;
                 return localeFromXkbSymbol(layout);
@@ -402,6 +405,7 @@ CoreServices::~CoreServices() {
     // at exit.
     m_pSettingsManager->save();
     m_pSettingsManager.reset();
+
     Sandbox::shutdown();
 
     // Check for leaked ControlObjects and give warnings.
@@ -509,7 +513,8 @@ void CoreServices::initialize(QApplication* pApp) {
 
 #if defined(Q_OS_LINUX) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // XESetWireToError will segfault if running as a Wayland client
-    if (pApp->platformName() == QLatin1String("xcb")) {        for (auto i = 0; i < NUM_HANDLERS; ++i) {
+    if (pApp->platformName() == QLatin1String("xcb")) {
+        for (auto i = 0; i < NUM_HANDLERS; ++i) {
             XESetWireToError(QX11Info::display(), i, &__xErrorHandler);
         }
     }
@@ -619,7 +624,8 @@ void CoreServices::initialize(QApplication* pApp) {
 #endif
 
 #ifdef __MODPLUG__
-    // Restore the configuration for the modplug library before trying to load a module.    DlgPrefModplug modplugPrefs{nullptr, pConfig};
+    // Restore the configuration for the modplug library before trying to load a module.
+    DlgPrefModplug modplugPrefs{nullptr, pConfig};
     modplugPrefs.loadSettings();
     modplugPrefs.applySettings();
 #endif
@@ -651,8 +657,7 @@ void CoreServices::initialize(QApplication* pApp) {
             m_pRecordingManager.get());
     qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-library-done";
 
-    OverviewCache* pOverviewCache
- = OverviewCache::createInstance(pConfig, m_pDbConnectionPool);
+    OverviewCache* pOverviewCache = OverviewCache::createInstance(pConfig, m_pDbConnectionPool);
     connect(&(m_pTrackCollectionManager->internalCollection()->getTrackDAO()),
             &TrackDAO::waveformSummaryUpdated,
             pOverviewCache,
@@ -722,7 +727,8 @@ void CoreServices::initialize(QApplication* pApp) {
         // TODO(XXX) this needs to be smarter, we can't distinguish between an empty
         // path return value (not sure if this is normally possible, but it is
         // possible with the Windows 7 "Music" library, which is what
-        // QStandardPaths::writableLocation(QStandardPaths::MusicLocation)        // resolves to) and a user hitting 'cancel'. If we get a blank return
+        // QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
+        // resolves to) and a user hitting 'cancel'. If we get a blank return
         // but the user didn't hit cancel, we need to know this and let the
         // user take some course of action -- bkgood
         QString fd = QFileDialog::getExistingDirectory(nullptr,
@@ -822,6 +828,7 @@ void CoreServices::initialize(QApplication* pApp) {
 #ifdef MIXXX_USE_QML
     initializeQMLSingletons();
 }
+
 void CoreServices::initializeQMLSingletons() {
     // Any uncreateable non-singleton types registered here require
     // arguments that we don't want to expose to QML directly. Instead, they
@@ -920,7 +927,8 @@ std::shared_ptr<QDialog> CoreServices::makeDlgPreferences() const {
     return pDlgPreferences;
 }
 
-void CoreServices::finalize() {    VERIFY_OR_DEBUG_ASSERT(m_isInitialized) {
+void CoreServices::finalize() {
+    VERIFY_OR_DEBUG_ASSERT(m_isInitialized) {
         qDebug() << "Skipping CoreServices finalization because it was never initialized.";
         return;
     }
@@ -1020,6 +1028,7 @@ void CoreServices::finalize() {    VERIFY_OR_DEBUG_ASSERT(m_isInitialized) {
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "closing database connection(s)";
     m_pDbConnectionPool->destroyThreadLocalConnection();
     m_pDbConnectionPool.reset(); // should drop the last reference
+
     m_pTouchShift.reset();
 
     m_pSkinControls.reset();
