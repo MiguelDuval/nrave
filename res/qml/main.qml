@@ -51,14 +51,6 @@ ApplicationWindow {
         return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
     }
 
-    readonly property bool preferencesOpen: settingsPopup.opened
-
-    function openPreferences() {
-        if (!settingsPopup.opened) {
-            settingsPopup.open();
-        }
-    }
-
     function loadSelectedMainWindow() {
         root.selectedSkinUsingAssetFallback = false;
         root.selectedSkinLoadError = "";
@@ -107,38 +99,6 @@ ApplicationWindow {
             // AndroidDefault. The resolved skin entrypoint is authoritative;
             // keeping the error visible prevents a loader failure from being
             // mistaken for a preference or persistence problem.
-        }
-    }
-
-    Skin.Settings {
-        id: settingsPopup
-
-        height: Math.min(840, parent.height)
-        modal: true
-        width: Math.min(1400, parent.width)
-        x: Math.round((parent.width - width) / 2)
-        y: Math.round((parent.height - height) / 2)
-
-        Overlay.modal: Rectangle {
-            id: overlayModal
-
-            readonly property bool hasHardwareAcceleration: Mixxx.Config.useAcceleration
-            property real radius: 12
-
-            anchors.fill: parent
-            color: Qt.alpha('#00000010', hasHardwareAcceleration ? 1.0 : 0.6)
-
-            Repeater {
-                model: hasHardwareAcceleration ? 1 : 0
-
-                GaussianBlur {
-                    anchors.fill: overlayModal
-                    deviation: 4
-                    radius: Math.max(0, overlayModal.radius)
-                    samples: 16
-                    source: content
-                }
-            }
         }
     }
 
