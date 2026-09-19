@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       apk_run_id:
-        description: "GitHub Actions run ID containing nrave-runtime-apk. Leave empty to use the newest unexpired APK artifact on this branch."
+        description: "Manual regression: run the preserved Stage 3 feature smoke test against an existing APK artifact."
         required: false
         type: string
   push:
