@@ -107,9 +107,17 @@ QDir SkinLoader::getSytemSkinDir() const {
     if (!appDataDir.isEmpty()) {
         const QDir materializedSkinsDir(
                 QDir(appDataDir).filePath(kSkinsDirName));
-        if (materializedSkinsDir.exists()) {
+        if (materializedSkinsDir.exists() &&
+                QFileInfo::exists(
+                        materializedSkinsDir.filePath(
+                                QStringLiteral("AndroidDefault/MainWindow.qml"))) &&
+                QFileInfo::exists(
+                        materializedSkinsDir.filePath(
+                                QStringLiteral("AndroidDefault/skin.ini")))) {
             return materializedSkinsDir;
         }
+        qWarning() << "NRAVE_SKIN_RESOLVE materialized Android skin directory is incomplete:"
+                   << materializedSkinsDir.absolutePath();
     }
 #endif
 
