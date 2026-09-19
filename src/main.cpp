@@ -83,10 +83,13 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 
     if (loadQml) {
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
-        const QString resolvedSkinMainWindowPath =
+        QString resolvedSkinMainWindowPath;
+#if defined(Q_OS_ANDROID)
+        resolvedSkinMainWindowPath =
                 pSkin->name() == QStringLiteral("AndroidDefault")
                 ? QString()
                 : pSkin->mainQmlFilePath();
+#endif
         mixxx::qml::QmlApplication qmlApplication(
                 pApp, pCoreServices, QString(), resolvedSkinMainWindowPath);
         if (!qmlApplication.isReady()) {
