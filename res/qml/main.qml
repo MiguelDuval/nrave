@@ -52,7 +52,7 @@ ApplicationWindow {
 
     function loadSelectedMainWindow() {
         const sourceUrl = root.selectedMainWindowUrl();
-        console.info("Loading QML skin content:", Mixxx.Config.configSkin || "AndroidDefault", sourceUrl);
+        console.info("NRAVE_QML_SHELL_LOADING_SKIN", root.selectedSkinName(), sourceUrl);
         content.setSource(sourceUrl, { "applicationWindow": root });
     }
 
@@ -76,9 +76,12 @@ ApplicationWindow {
             }
         }
         onStatusChanged: {
+            if (status === Loader.Ready) {
+                console.info("NRAVE_QML_SHELL_SKIN_READY", root.selectedSkinName(), source)
+                return
+            }
             if (status === Loader.Error) {
-                console.error("Failed to load the selected Mixxx main window:", source)
-                Qt.quit()
+                console.error("NRAVE_QML_SHELL_SKIN_ERROR", root.selectedSkinName(), source)
             }
         }
     }
