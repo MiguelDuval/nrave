@@ -57,16 +57,37 @@ const QStringList kAndroidQmlDirs = {
         QStringLiteral("Mixxx"),
 };
 
-void copyAndroidAssetDir(const QString& src, const QString& dst) {
-    QDir().mkpath(dst);
-
+bool copyAndroidAssetDir(const QString& src, const QString& dst) {
     const QDir srcDir(src);
+    if (!srcDir.exists()) {
+        qCritical() << "NRAVE_ANDROID_STARTUP missing asset directory:" << src;
+        return false;
+    }
+
+    if (!QDir().mkpath(dst)) {
+        qCritical() << "NRAVE_ANDROID_STARTUP cannot create destination:" << dst;
+        return false;
+    }
+
+    bool ok = true;
     for (const QString& file : srcDir.entryList(QDir::Files)) {
         QFile srcFile(srcDir.absoluteFilePath(file));
         QFile dstFile(QDir(dst).filePath(file));
-        if (srcFile.open(QIODevice::ReadOnly) &&
-                dstFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            dstFile.write(srcFile.readAll());
+        if (!srcFile.open(QIODevice::ReadOnly)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP cannot read asset:" << srcFile.fileName();
+            ok = false;
+            continue;
+        }
+        if (!dstFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP cannot write materialized file:"
+                        << dstFile.fileName();
+            ok = false;
+            continue;
+        }
+        const QByteArray data = srcFile.readAll();
+        if (dstFile.write(data) != data.size()) {
+            qCritical() << "NRAVE_ANDROID_STARTUP short write:" << dstFile.fileName();
+            ok = false;
         }
     }
 
@@ -74,8 +95,11 @@ void copyAndroidAssetDir(const QString& src, const QString& dst) {
         if (kAndroidQmlDirs.contains(dir)) {
             continue;
         }
-        copyAndroidAssetDir(src + '/' + dir, dst + '/' + dir);
+        if (!copyAndroidAssetDir(src + '/' + dir, dst + '/' + dir)) {
+            ok = false;
+        }
     }
+    return ok;
 }
 
 QString materializeAndroidQmlResources() {
@@ -88,8 +112,30 @@ QString materializeAndroidQmlResources() {
 
     const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
     const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
-    copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir);
-    copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir);
+
+    QDir(qmlDir).removeRecursively();
+    QDir(skinDir).removeRecursively();
+
+    if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir) ||
+            !copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir)) {
+        qCritical() << "NRAVE_ANDROID_STARTUP resource materialization failed";
+        return {};
+    }
+
+    const QStringList requiredFiles = {
+            QDir(qmlDir).filePath(QStringLiteral("main.qml")),
+            QDir(skinDir).filePath(QStringLiteral("AndroidDefault/MainWindow.qml")),
+            QDir(skinDir).filePath(QStringLiteral("AndroidDefault/skin.ini")),
+            QDir(skinDir).filePath(QStringLiteral("TestSkin/MainWindow.qml")),
+            QDir(skinDir).filePath(QStringLiteral("TestSkin/skin.ini")),
+    };
+    for (const QString& requiredFile : requiredFiles) {
+        if (!QFileInfo::exists(requiredFile)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP missing materialized resource:"
+                        << requiredFile;
+            return {};
+        }
+    }
 
     qInfo() << "NRAVE_ANDROID_STARTUP materialized_qml path=" << qmlDir;
     qInfo() << "NRAVE_ANDROID_STARTUP materialized_skins path=" << skinDir;
