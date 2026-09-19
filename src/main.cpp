@@ -71,16 +71,34 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
         const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
         if (pSkin && pSkin->type() == mixxx::skin::SkinType::QML) {
             loadQml = true;
-            mainQmlFilePath = pSkin->mainQmlFilePath();
+            // Use the skin's MainWindow.qml as the content, not the skin's main.qml
+            mainQmlFilePath = pSkin->mainWindowQmlFilePath();
         }
     }
+    // On Android with --new-ui, also check for a configured QML skin
+    if (loadQml && mainQmlFilePath.isEmpty()) {
+        mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
+        const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
+        if (pSkin && pSkin->type() == mixxx::skin::SkinType::QML) {
+            mainQmlFilePath = pSkin->mainWindowQmlFilePath();
+        }
+        // On Android with --new-ui, default to LateNightQML if no QML skin is configured
+        if (mainQmlFilePath.isEmpty()) {
+            mixxx::skin::SkinPointer pLateNightQml = skinLoader.getSkin(QStringLiteral("LateNightQML"));
+            if (pLateNightQml && pLateNightQml->type() == mixxx::skin::SkinType::QML) {
+                mainQmlFilePath = pLateNightQml->mainWindowQmlFilePath();
+            }
+        }
+    }
+    // Always use res/qml/main.qml as the shell entry point; pass skin's MainWindow.qml as context property
+    QString shellQmlFilePath = pCoreServices->getSettings()->getResourcePath() + kMainQmlFileName;
     if (loadQml) {
         // This is a workaround to support Qt 6.4.2, currently shipped on
         // Ubuntu 24.04 See
         // https://github.com/mixxxdj/mixxx/pull/14514#issuecomment-2770811094
         // for further details
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
-        mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices, mainQmlFilePath);
+        mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices, shellQmlFilePath, mainQmlFilePath);
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {

@@ -28,7 +28,8 @@ class QmlApplication : public QObject {
     QmlApplication(
             QApplication* app,
             std::shared_ptr<CoreServices> pCoreServices,
-            const QString& mainQmlFilePath = QString());
+            const QString& shellQmlFilePath,
+            const QString& skinMainWindowQmlFilePath = QString());
     ~QmlApplication() override;
 
     bool isReady() const {
@@ -63,6 +64,7 @@ class QmlApplication : public QObject {
     std::unique_ptr<ControlPushButton> m_pWaveformOverviewType;
 
     QString m_mainFilePath;
+    QString m_skinMainWindowQmlFilePath;
 
     std::unique_ptr<QQmlApplicationEngine> m_pAppEngine;
     bool m_loadSucceeded;

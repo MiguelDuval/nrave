@@ -41,6 +41,8 @@ class QmlSkin : public mixxx::skin::Skin {
 
     QString mainQmlFilePath() const override;
 
+    QString mainWindowQmlFilePath() const;
+
   private:
     QFileInfo skinIniFile() const;
 

@@ -91,6 +91,8 @@ ApplicationWindow {
                 // Do not fall back to Android Default here. A skin-loading
                 // failure must remain observable instead of being disguised
                 // as a successful legacy UI load.
+            } else if (status === Loader.Ready && content.item) {
+                content.item.applicationWindow = root
             }
         }
     }

@@ -116,13 +116,15 @@ namespace qml {
 QmlApplication::QmlApplication(
         QApplication* app,
         std::shared_ptr<CoreServices> pCoreServices,
-        const QString& mainQmlFilePath)
+        const QString& shellQmlFilePath,
+        const QString& skinMainWindowQmlFilePath)
         : m_pCoreServices(std::move(pCoreServices)),
           m_visualsManager(std::make_unique<VisualsManager>()),
           m_pGuiTick(std::make_unique<GuiTick>()),
-          m_mainFilePath(mainQmlFilePath.isEmpty()
+          m_mainFilePath(shellQmlFilePath.isEmpty()
                           ? m_pCoreServices->getSettings()->getResourcePath() + kMainQmlFileName
-                          : mainQmlFilePath),
+                          : shellQmlFilePath),
+          m_skinMainWindowQmlFilePath(skinMainWindowQmlFilePath),
           m_pAppEngine(nullptr),
           m_loadSucceeded(false),
 #if defined(Q_OS_ANDROID)
@@ -433,6 +435,11 @@ bool QmlApplication::loadQml(const QString& path) {
     m_pAppEngine->addImportPath(QStringLiteral(":/mixxx.org/imports"));
 
     registerImageProvider();
+
+    // Set skin MainWindow.qml path as context property if available
+    if (!m_skinMainWindowQmlFilePath.isEmpty() && QFile::exists(m_skinMainWindowQmlFilePath)) {
+        m_pAppEngine->rootContext()->setContextProperty(QStringLiteral("skinMainWindowPath"), m_skinMainWindowQmlFilePath);
+    }
 
     m_pAppEngine->load(path);
     if (m_pAppEngine->rootObjects().isEmpty()) {

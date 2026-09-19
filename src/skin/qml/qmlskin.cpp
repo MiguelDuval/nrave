@@ -145,6 +145,10 @@ QString QmlSkin::mainQmlFilePath() const {
     return m_path.absoluteFilePath() + QStringLiteral("/") + kMainQmlFileName;
 }
 
+QString QmlSkin::mainWindowQmlFilePath() const {
+    return m_path.absoluteFilePath() + QStringLiteral("/MainWindow.qml");
+}
+
 QFileInfo QmlSkin::skinIniFile() const {
     return QFileInfo(m_path.absoluteFilePath() + QStringLiteral("/") + kSkinManifestFileName);
 }
