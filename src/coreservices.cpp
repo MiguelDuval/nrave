@@ -97,8 +97,7 @@ constexpr int kSamplerCount = 4;
 template<typename T>
 void clearHelper(std::shared_ptr<T>& ref_ptr, const char* name) {
     std::weak_ptr<T> weak(ref_ptr);
-    ref_ptr.reset();
-    if (auto shared = weak.lock()) {
+    ref_ptr.reset();    if (auto shared = weak.lock()) {
         qWarning() << name << "was leaked! Use count:" << shared.use_count();
         DEBUG_ASSERT(false);
     }
@@ -197,8 +196,7 @@ QLocale localeFromXkbName(const QString& xkbLayout) {
             {"Russian",
                     QLocale(QLocale::Russian,
                             QLocale::Russia)}, // ru_RU.kbd.cfg
-            {"German (Switzerland)",
-                    QLocale(QLocale::German,
+            {"German (Switzerland)",                    QLocale(QLocale::German,
                             QLocale::Switzerland)}, // de_CH.kbd.cfg
             {"German (Switzerland, no dead keys)",
                     QLocale(QLocale::German,
@@ -297,8 +295,7 @@ inline QLocale inputLocale() {
             // code (e.g. 'us', 'de')
             static const QRegularExpression re(QStringLiteral("\\('xkb',\\s*'([^']+)'\\)"));
             QRegularExpressionMatch match = re.match(sourcesStr);
-            if (match.hasMatch()) {
-                const QString layout = match.captured(1);
+            if (match.hasMatch()) {                const QString layout = match.captured(1);
                 ;
                 qDebug() << "Keyboard Layout from GNOME dconf:" << layout;
                 return localeFromXkbSymbol(layout);
@@ -368,15 +365,23 @@ CoreServices::CoreServices(const CmdlineArgs& args, QApplication* pApp)
     // All this here is running without without start up screen
     // Defer long initializations to CoreServices::initialize() which is
     // called after the GUI is initialized
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-initializeSettings-begin";
     initializeSettings();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-initializeSettings-done";
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-initializeLogging-begin";
     initializeLogging();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-initializeLogging-done";
     // Only record stats in developer mode or when --stats is specified.
     if (m_cmdlineArgs.getStats()) {
         StatsManager::createInstance();
     }
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-translations-begin";
     mixxx::Translations::initializeTranslations(
             m_pSettingsManager->settings(), pApp, m_cmdlineArgs.getLocale());
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-translations-done";
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-keyboard-begin";
     initializeKeyboard();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-keyboard-done";
 }
 
 CoreServices::~CoreServices() {
@@ -397,7 +402,6 @@ CoreServices::~CoreServices() {
     // at exit.
     m_pSettingsManager->save();
     m_pSettingsManager.reset();
-
     Sandbox::shutdown();
 
     // Check for leaked ControlObjects and give warnings.
@@ -430,6 +434,7 @@ CoreServices::~CoreServices() {
 }
 
 void CoreServices::initializeSettings() {
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initializeSettings-begin";
 #ifdef Q_OS_MACOS
     // TODO: At this point it is too late to provide the same settings path to all components
     // and too early to log errors and give users advises in their system language.
@@ -466,22 +471,28 @@ void CoreServices::initializeSettings() {
         }
     }
 
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initializeSettings-createSettingsManager-begin";
     m_pSettingsManager = std::make_unique<SettingsManager>(settingsPath);
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initializeSettings-createSettingsManager-done";
 }
 
 void CoreServices::initializeLogging() {
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initializeLogging-begin";
     mixxx::LogFlags logFlags = mixxx::LogFlag::LogToFile;
     if (m_cmdlineArgs.getDebugAssertBreak()) {
         logFlags.setFlag(mixxx::LogFlag::DebugAssertBreak);
     }
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initializeLogging-logging-initialize-begin";
     mixxx::Logging::initialize(
             m_pSettingsManager->settings()->getSettingsPath(),
             m_cmdlineArgs.getLogLevel(),
             m_cmdlineArgs.getLogFlushLevel(),
             logFlags);
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initializeLogging-done";
 }
 
 void CoreServices::initialize(QApplication* pApp) {
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-begin";
     VERIFY_OR_DEBUG_ASSERT(!m_isInitialized) {
         return;
     }
@@ -494,11 +505,11 @@ void CoreServices::initialize(QApplication* pApp) {
     }
 
     VersionStore::logBuildDetails();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-version-logged";
 
 #if defined(Q_OS_LINUX) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // XESetWireToError will segfault if running as a Wayland client
-    if (pApp->platformName() == QLatin1String("xcb")) {
-        for (auto i = 0; i < NUM_HANDLERS; ++i) {
+    if (pApp->platformName() == QLatin1String("xcb")) {        for (auto i = 0; i < NUM_HANDLERS; ++i) {
             XESetWireToError(QX11Info::display(), i, &__xErrorHandler);
         }
     }
@@ -517,15 +528,20 @@ void CoreServices::initialize(QApplication* pApp) {
     FontUtils::initializeFonts(resourcePath); // takes a long time
 
     emit initializationProgressUpdate(10, tr("database"));
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-database-begin";
     m_pDbConnectionPool = MixxxDb(pConfig).connectionPool();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-database-pool-created";
     if (!m_pDbConnectionPool) {
         exit(-1);
     }
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-database-threadlocal-begin";
     // Create a connection for the main thread
     m_pDbConnectionPool->createThreadLocalConnection();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-database-threadlocal-done";
     if (!initializeDatabase()) {
         exit(-1);
     }
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-database-done";
 
     m_pControlIndicatorTimer = std::make_shared<mixxx::ControlIndicatorTimer>(this);
 
@@ -534,12 +550,14 @@ void CoreServices::initialize(QApplication* pApp) {
     emit initializationProgressUpdate(20, tr("effects"));
     m_pEffectsManager = std::make_shared<EffectsManager>(pConfig, pChannelHandleFactory);
 
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-engine-begin";
     m_pEngine = std::make_shared<EngineMixer>(
             pConfig,
             "[Master]",
             m_pEffectsManager.get(),
             pChannelHandleFactory,
             true);
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-engine-done";
 #ifdef __RUBBERBAND__
     RubberBandWorkerPool::createInstance(pConfig);
 #endif
@@ -547,7 +565,9 @@ void CoreServices::initialize(QApplication* pApp) {
     emit initializationProgressUpdate(30, tr("audio interface"));
     // Although m_pSoundManager is created here, m_pSoundManager->setupDevices()
     // needs to be called after m_pPlayerManager registers sound IO for each EngineChannel.
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-audio-begin";
     m_pSoundManager = std::make_shared<SoundManager>(pConfig, m_pEngine.get());
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-audio-soundmanager-created";
     m_pEngine->registerNonEngineChannelSoundIO(gsl::make_not_null(m_pSoundManager.get()));
 
     m_pRecordingManager = std::make_shared<RecordingManager>(pConfig, m_pEngine.get());
@@ -566,11 +586,13 @@ void CoreServices::initialize(QApplication* pApp) {
 
     emit initializationProgressUpdate(40, tr("decks"));
     // Create the player manager. (long)
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-player-begin";
     m_pPlayerManager = std::make_shared<PlayerManager>(
             pConfig,
             m_pSoundManager.get(),
             m_pEffectsManager.get(),
             m_pEngine.get());
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-player-done";
     // TODO: connect input not configured error dialog slots
     PlayerInfo::create();
 
@@ -597,8 +619,7 @@ void CoreServices::initialize(QApplication* pApp) {
 #endif
 
 #ifdef __MODPLUG__
-    // Restore the configuration for the modplug library before trying to load a module.
-    DlgPrefModplug modplugPrefs{nullptr, pConfig};
+    // Restore the configuration for the modplug library before trying to load a module.    DlgPrefModplug modplugPrefs{nullptr, pConfig};
     modplugPrefs.loadSettings();
     modplugPrefs.applySettings();
 #endif
@@ -611,6 +632,7 @@ void CoreServices::initialize(QApplication* pApp) {
             &ScreensaverManager::slotCurrentPlayingDeckChanged);
 
     emit initializationProgressUpdate(50, tr("library"));
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-library-begin";
     CoverArtCache::createInstance();
     Clipboard::createInstance();
 
@@ -618,6 +640,7 @@ void CoreServices::initialize(QApplication* pApp) {
             this,
             pConfig,
             m_pDbConnectionPool);
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-library-trackcollection-done";
 
     m_pLibrary = std::make_shared<Library>(
             this,
@@ -626,8 +649,10 @@ void CoreServices::initialize(QApplication* pApp) {
             m_pTrackCollectionManager.get(),
             m_pPlayerManager.get(),
             m_pRecordingManager.get());
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=initialize-library-done";
 
-    OverviewCache* pOverviewCache = OverviewCache::createInstance(pConfig, m_pDbConnectionPool);
+    OverviewCache* pOverviewCache
+ = OverviewCache::createInstance(pConfig, m_pDbConnectionPool);
     connect(&(m_pTrackCollectionManager->internalCollection()->getTrackDAO()),
             &TrackDAO::waveformSummaryUpdated,
             pOverviewCache,
@@ -697,8 +722,7 @@ void CoreServices::initialize(QApplication* pApp) {
         // TODO(XXX) this needs to be smarter, we can't distinguish between an empty
         // path return value (not sure if this is normally possible, but it is
         // possible with the Windows 7 "Music" library, which is what
-        // QStandardPaths::writableLocation(QStandardPaths::MusicLocation)
-        // resolves to) and a user hitting 'cancel'. If we get a blank return
+        // QStandardPaths::writableLocation(QStandardPaths::MusicLocation)        // resolves to) and a user hitting 'cancel'. If we get a blank return
         // but the user didn't hit cancel, we need to know this and let the
         // user take some course of action -- bkgood
         QString fd = QFileDialog::getExistingDirectory(nullptr,
@@ -798,7 +822,6 @@ void CoreServices::initialize(QApplication* pApp) {
 #ifdef MIXXX_USE_QML
     initializeQMLSingletons();
 }
-
 void CoreServices::initializeQMLSingletons() {
     // Any uncreateable non-singleton types registered here require
     // arguments that we don't want to expose to QML directly. Instead, they
@@ -897,8 +920,7 @@ std::shared_ptr<QDialog> CoreServices::makeDlgPreferences() const {
     return pDlgPreferences;
 }
 
-void CoreServices::finalize() {
-    VERIFY_OR_DEBUG_ASSERT(m_isInitialized) {
+void CoreServices::finalize() {    VERIFY_OR_DEBUG_ASSERT(m_isInitialized) {
         qDebug() << "Skipping CoreServices finalization because it was never initialized.";
         return;
     }
@@ -998,7 +1020,6 @@ void CoreServices::finalize() {
     qDebug() << t.elapsed(false).debugMillisWithUnit() << "closing database connection(s)";
     m_pDbConnectionPool->destroyThreadLocalConnection();
     m_pDbConnectionPool.reset(); // should drop the last reference
-
     m_pTouchShift.reset();
 
     m_pSkinControls.reset();
