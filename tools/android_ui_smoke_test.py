@@ -560,17 +560,24 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 def select_latenight_skin() -> tuple[bytes, bytes]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
     x = popup_x + round(popup_width * 0.68)
-    # Skin row is the first Theme & Color row. Tap the right side/indicator
-    # of the ComboBox inside the measured Qt Popup geometry.
-    x = popup_x + round(popup_width * 0.68)
-    y = popup_y + 150
+    # Pixel-measured from the rendered 3120x1440 frame:
+    # Android Default occupies approximately x=1755..1902, y=461..484.
+    # Tap its center in the Qt Popup coordinate system.
+    x = popup_x + round(popup_width * 0.693)
+    y = popup_y + 172
     before = skin_text_signature("skin-before-selection")
 
     # The popup opens directly below the ComboBox. Delegate row height is
     # roughly 36px at the test density; try a few nearby centers for the second
     # row because Qt font metrics can shift it slightly.
-    tried_offsets = (72, 88, 104, 120)
+    tried_offsets = (64, 80, 96)
     for attempt, offset in enumerate(tried_offsets, start=1):
+        # Re-establish Settings > Interface before every coordinate attempt so
+        # a miss outside the modal popup cannot poison the following attempt.
+        if attempt > 1:
+            reopen_settings()
+            click_interface_category()
+            time.sleep(1)
         run_shell("input", "tap", str(x), str(y), timeout=10)
         time.sleep(0.5)
         screenshot(f"skin-popup-open-{attempt}.png")
