@@ -1,3 +1,4 @@
+# Run selected-skin Loader readiness is asserted from logcat, not inferred from pixels.
 # Runtime-test iteration: reuse the existing APK artifact.
 #!/usr/bin/env python3
 """Black-box Android UI smoke test for NRave.
