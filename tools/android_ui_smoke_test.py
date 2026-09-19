@@ -177,7 +177,15 @@ def screenshot_region_hash(name: str, x1: int, y1: int, x2: int, y2: int) -> str
 
 
 def save_logcat(name: str = "logcat.txt") -> str:
-    data = run_adb("logcat", "-d", timeout=30)
+    # The Android 15 emulator can generate enough system/GMS log traffic to
+    # evict NRave's QML readiness messages from the global logcat ring buffer
+    # during a long cold start. Prefer a PID-filtered capture so the runtime
+    # assertions observe the application's own log stream deterministically.
+    pid = run_shell("pidof", "org.mixxx", timeout=10, check=False).strip().split()
+    if pid:
+        data = run_adb("logcat", "--pid", pid[0], "-d", timeout=30)
+    else:
+        data = run_adb("logcat", "-d", timeout=30)
     (DIAG / name).write_text(data, encoding="utf-8")
     return data
 
