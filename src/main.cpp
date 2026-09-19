@@ -1,6 +1,9 @@
 #include <QApplication>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QPixmapCache>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStyle>
@@ -49,6 +52,51 @@ const QString kNotifyMaxDbgTimeKey = QStringLiteral("notify_max_dbg_time");
 
 constexpr int kPixmapCacheLimitAt100PercentZoom = 32 * 1024;
 
+#if defined(Q_OS_ANDROID)
+const QStringList kAndroidQmlDirs = {
+        QStringLiteral("Mixxx"),
+};
+
+void copyAndroidAssetDir(const QString& src, const QString& dst) {
+    QDir().mkpath(dst);
+
+    const QDir srcDir(src);
+    for (const QString& file : srcDir.entryList(QDir::Files)) {
+        QFile srcFile(srcDir.absoluteFilePath(file));
+        QFile dstFile(QDir(dst).filePath(file));
+        if (srcFile.open(QIODevice::ReadOnly) &&
+                dstFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            dstFile.write(srcFile.readAll());
+        }
+    }
+
+    for (const QString& dir : srcDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        if (kAndroidQmlDirs.contains(dir)) {
+            continue;
+        }
+        copyAndroidAssetDir(src + '/' + dir, dst + '/' + dir);
+    }
+}
+
+QString materializeAndroidQmlResources() {
+    const QString appDataDir =
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (appDataDir.isEmpty()) {
+        qCritical() << "Android QML app data directory is unavailable";
+        return {};
+    }
+
+    const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
+    const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
+    copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir);
+    copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir);
+
+    qInfo() << "NRAVE_ANDROID_STARTUP materialized_qml path=" << qmlDir;
+    qInfo() << "NRAVE_ANDROID_STARTUP materialized_skins path=" << skinDir;
+    return qmlDir;
+}
+#endif
+
 int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     CmdlineArgs::Instance().parseForUserFeedback();
 
@@ -56,23 +104,56 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     auto pCoreServices = std::make_shared<mixxx::CoreServices>(args, pApp);
 #ifdef MIXXX_USE_QML
     bool loadQml = args.isQml();
+    QString mainQmlFilePath;
+    QString resolvedSkinName;
+    QString resolvedSkinMainWindowPath;
 
 #if defined(Q_OS_ANDROID)
-    // Android always uses the QML application shell. Skin selection changes
-    // only the MainWindow content inside res/qml/main.qml.
+    const QString androidQmlDir = materializeAndroidQmlResources();
+    if (androidQmlDir.isEmpty()) {
+        return kFatalErrorOnStartupExitCode;
+    }
+
+    // Android always uses one QML application shell. SkinLoader resolves the
+    // MainWindow.qml that the shell will insert.
     loadQml = true;
 
     mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
     const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
     if (!pSkin || pSkin->type() != mixxx::skin::SkinType::QML) {
-        qCritical() << "No valid Android QML skin is available";
+        qCritical() << "NRAVE_SKIN_RESOLVE failed: no valid Android QML skin";
         return kFatalErrorOnStartupExitCode;
     }
+
+    resolvedSkinName = pSkin->name();
+    resolvedSkinMainWindowPath = pSkin->mainQmlFilePath();
+    if (!QFileInfo::exists(resolvedSkinMainWindowPath)) {
+        qCritical() << "NRAVE_SKIN_RESOLVE failed: missing entrypoint"
+                    << resolvedSkinMainWindowPath;
+        return kFatalErrorOnStartupExitCode;
+    }
+
+    if (pCoreServices->getSettings()->getValueString(
+                ConfigKey("[Config]", "ResizableSkin")) != resolvedSkinName) {
+        pCoreServices->getSettings()->setValue(
+                ConfigKey("[Config]", "ResizableSkin"), resolvedSkinName);
+        pCoreServices->getSettings()->save();
+    }
+
+    mainQmlFilePath = QDir(androidQmlDir).filePath(QStringLiteral("main.qml"));
+    qInfo() << "NRAVE_SKIN_RESOLVED"
+            << "skin=" << resolvedSkinName
+            << "main=" << resolvedSkinMainWindowPath;
 #endif
 
     if (loadQml) {
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
-        mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices);
+        mixxx::qml::QmlApplication qmlApplication(
+                pApp,
+                pCoreServices,
+                mainQmlFilePath,
+                resolvedSkinName,
+                resolvedSkinMainWindowPath);
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {
