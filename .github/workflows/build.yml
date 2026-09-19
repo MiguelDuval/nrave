@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   push:
     branches: [main, stage4-minimal-skin-contract]
+  pull_request:
+    branches: [main]
 permissions:
   contents: write
 env:
