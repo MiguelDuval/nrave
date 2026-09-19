@@ -132,23 +132,9 @@ QmlApplication::QmlApplication(
     QQuickStyle::setStyle("Basic");
 
 #if defined(Q_OS_ANDROID)
-    // Keep an explicitly supplied QML shell path authoritative. The legacy
-    // external-storage materialization remains only for callers that do not
-    // provide a path, avoiding an accidental override of app-private storage.
-    if (mainQmlFilePath.isEmpty() && canWriteToExternalStorage()) {
-        const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
-        const QString externalSkinDir = QStringLiteral("/storage/emulated/0/Mixxx/skins");
-
-        // Keep the QML shell and optional QML skins in one ordinary filesystem
-        // resource tree. This gives relative imports inside LateNightQML exactly
-        // the same file-based semantics as desktop Mixxx.
-        copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
-        copyAssetDir(QStringLiteral("assets:/skins"), externalSkinDir);
-        m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
-
-        qDebug() << "Android QML resources materialized at"
-                 << externalQmlDir << "and" << externalSkinDir;
-    }
+    // Android resource materialization is performed before SkinLoader resolves
+    // the configured skin, so the shell and selected skin share one app-private
+    // filesystem tree. An explicit shell path is therefore authoritative.
 #endif
 
     qInfo() << "QmlApplication selected skin:" << m_selectedSkinName;

@@ -708,12 +708,12 @@ def assert_nrave_foreground() -> None:
 
 
 def main_ui_visible() -> bool:
-    # Do not use repeated screencap polling here. On the ARM64-through-ARM
-    # translation runtime, frequent full-resolution captures can starve the
-    # emulator and trigger a Pixel Launcher/system ANR while NRave is already
-    # rendering correctly. Foreground-window state is the stable readiness
-    # signal; screenshots are captured only at explicit checkpoints.
-    return "org.mixxx" in current_focus() and not splash_present()
+    # Foreground-window state alone is insufficient: the QML shell can remain
+    # on its splash while the Android Activity is already foreground. Require
+    # the actual Settings accessibility node exposed by the MainWindow.
+    if "org.mixxx" not in current_focus() or splash_present():
+        return False
+    return bool(safe_find_nodes("nrave_settings_button", exact=True) or safe_find_nodes("Settings", exact=True))
 
 
 def wait_for_main_window(timeout: float = 120.0) -> None:
@@ -844,7 +844,11 @@ def open_settings_with_cold_start_retry() -> None:
         time.sleep(2)
         try:
             assert_nrave_foreground()
+            before = screen_hash()
             screenshot(f"02-settings-attempt-{attempt}.png")
+            reopen_hash = screen_hash()
+            if reopen_hash == before:
+                raise UiTestError("Settings tap did not visibly change the QML screen")
             return
         except UiTestError:
             if attempt == 2:

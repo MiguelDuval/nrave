@@ -1,5 +1,7 @@
 #include <QApplication>
 #include <QDir>
+#include <QFile>
+#include <QStandardPaths>
 #include <QPixmapCache>
 #include <QString>
 #include <QStringList>
@@ -49,6 +51,45 @@ const QString kNotifyMaxDbgTimeKey = QStringLiteral("notify_max_dbg_time");
 
 constexpr int kPixmapCacheLimitAt100PercentZoom = 32 * 1024;
 
+#if defined(Q_OS_ANDROID)
+const QStringList kAndroidQmlDirs = {
+        QStringLiteral("Mixxx"),
+};
+
+void copyAndroidAssetDir(const QString& src, const QString& dst) {
+    QDir().mkpath(dst);
+    QDir srcDir(src);
+    for (const QString& file : srcDir.entryList(QDir::Files)) {
+        QFile srcFile(srcDir.absoluteFilePath(file));
+        QFile dstFile(QDir(dst).filePath(file));
+        if (srcFile.open(QIODevice::ReadOnly) && dstFile.open(QIODevice::WriteOnly)) {
+            dstFile.write(srcFile.readAll());
+        }
+    }
+    for (const QString& dir : srcDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        if (kAndroidQmlDirs.contains(dir)) {
+            continue;
+        }
+        copyAndroidAssetDir(src + '/' + dir, dst + '/' + dir);
+    }
+}
+
+QString materializeAndroidQmlResources() {
+    const QString appDataDir =
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (appDataDir.isEmpty()) {
+        qCritical() << "Android QML app data directory is unavailable";
+        return QString();
+    }
+    const QString qmlDir = QDir(appDataDir).filePath("qml");
+    const QString skinDir = QDir(appDataDir).filePath("skins");
+    copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir);
+    copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir);
+    qInfo() << "Android QML resources materialized at" << qmlDir << "and" << skinDir;
+    return qmlDir;
+}
+#endif
+
 int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     CmdlineArgs::Instance().parseForUserFeedback();
 
@@ -58,6 +99,11 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     bool loadQml = args.isQml();
 
 #if defined(Q_OS_ANDROID)
+    const QString androidQmlDir = materializeAndroidQmlResources();
+    if (androidQmlDir.isEmpty()) {
+        return kFatalErrorOnStartupExitCode;
+    }
+
     // Android always uses the QML application shell. Skin selection changes
     // only the MainWindow content inside res/qml/main.qml.
     loadQml = true;
@@ -90,8 +136,10 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
                 ? QString()
                 : pSkin->mainQmlFilePath();
 #endif
+        const QString androidMainQmlPath =
+                QDir(androidQmlDir).filePath(QStringLiteral("main.qml"));
         mixxx::qml::QmlApplication qmlApplication(
-                pApp, pCoreServices, QString(), resolvedSkinMainWindowPath);
+                pApp, pCoreServices, androidMainQmlPath, resolvedSkinMainWindowPath);
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {
