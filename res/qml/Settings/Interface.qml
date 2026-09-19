@@ -46,8 +46,17 @@ Category {
         rampingSensitivityInput.value = Mixxx.Config.controlRateRampSensitivity;
         decksTab.dirty = false;
     }
+    readonly property var androidSkinIds: ["AndroidDefault", "TestSkin", "LateNightQML"]
+    readonly property var androidSkinLabels: ["Android Default", "Test Skin", "LateNight QML (Experimental)"]
+
     function loadInterface() {
         // Interface tab
+        if (Qt.platform.os === "android") {
+            skinInput.model = root.androidSkinLabels;
+            const configuredSkin = Mixxx.Config.configSkin;
+            const index = root.androidSkinIds.indexOf(configuredSkin);
+            skinInput.currentIndex = index >= 0 ? index : 0;
+        }
         // skinInput.value =
         // colorInput.value =
         // layoutInput.value =
@@ -114,6 +123,10 @@ Category {
     }
     function saveInterface() {
         // Interface tab
+        if (Qt.platform.os === "android") {
+            Mixxx.Config.configSkin =
+                    root.androidSkinIds[Math.max(0, skinInput.currentIndex)];
+        }
         // skinInput.value =
         // colorInput.value =
         // layoutInput.value =

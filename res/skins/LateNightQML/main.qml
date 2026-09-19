@@ -5,17 +5,22 @@ import QtQuick.Window
 import "LateNightTheme"
 import "Samplers" as LateNightSamplers
 
-ApplicationWindow {
+Item {
     id: root
     property int displayedProgress: 0
     property bool diagnosticForcePanel: false
     color: startupScreen.backgroundColor
     height: 1008
-    menuBar: mainWindowLoader.item ? mainWindowLoader.item.menuBar : null
     minimumHeight: 668
     minimumWidth: 1280
-    visible: true
     width: 1792
+
+    // On mobile (Android/iOS), the shell loads MainWindow.qml directly.
+    // This Item is a no-op on mobile. On desktop, it loads MainWindow.qml.
+    readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
+
+    // Forward the shell's ApplicationWindow to MainWindow.qml on desktop.
+    required property ApplicationWindow applicationWindow
 
     Mixxx.ControlProxy { id: bitgrid1Action; group: "[Channel1]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: bitgrid2Action; group: "[Channel2]"; key: "beats_translate_curpos" }
@@ -37,7 +42,10 @@ ApplicationWindow {
 
     function updateVisibility() {
         if (!Mixxx.Core.ready) return;
-        root.visibility = Mixxx.Config.configStartInFullscreenKey ? Window.FullScreen : Window.Windowed;
+        if (!root.isMobile) {
+            // Only relevant on desktop where this Item is the root window
+            // On mobile, the shell handles visibility
+        }
     }
     function updateProgress() {
         if (!Mixxx.Core.ready)
@@ -63,11 +71,12 @@ ApplicationWindow {
     Loader {
         id: mainWindowLoader
         anchors.fill: parent
-        active: Mixxx.Core.ready
+        // On mobile, the shell loads MainWindow.qml directly. This Loader is only active on desktop.
+        active: Mixxx.Core.ready && !root.isMobile
         asynchronous: true
         onProgressChanged: root.updateProgress()
         onStatusChanged: root.handleMainWindowLoaderStatus()
-        sourceComponent: Component { MainWindow { applicationWindow: root; anchors.fill: parent } }
+        sourceComponent: Component { MainWindow { applicationWindow: root.applicationWindow; anchors.fill: parent } }
     }
 
     Rectangle {

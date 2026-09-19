@@ -1,6 +1,7 @@
 #include "qmlapplication.h"
 
 #include <QCoreApplication>
+#include <QQmlContext>
 #include <QEventLoop>
 #include <QLocale>
 #include <QMessageBox>
@@ -9,6 +10,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QTextDocument>
+#include <QUrl>
 #include <utility>
 
 #include "control/controlproxy.h"
@@ -30,13 +32,10 @@
 #include "waveform/visualsmanager.h"
 #include "waveform/waveformwidgetfactory.h"
 #if defined(Q_OS_ANDROID)
-#include <android/api-level.h>
 #include <android/log.h>
 #include <android/performance_hint.h>
 
-#include <QDir>
-#include <QFile>
-#include <QJniObject>
+#include <QFileInfo>
 #endif
 
 Q_IMPORT_QML_PLUGIN(MixxxPlugin)
@@ -61,45 +60,6 @@ auto lambda_to_singleton_type_factory_ptr(F&& f) {
         return fn(pEngine, pScriptEngine);
     };
 }
-#if defined(Q_OS_ANDROID)
-// Directories under res/qml/ that are compiled into the binary as QML modules
-// and should not be copied to external storage.
-const QStringList kSkipQmlDirs = {
-        QStringLiteral("Mixxx"),
-};
-
-bool canWriteToExternalStorage() {
-    // API 30+ (Android 11+) requires MANAGE_EXTERNAL_STORAGE.
-    // Older: WRITE_EXTERNAL_STORAGE is granted at install time.
-    if (android_get_device_api_level() >= 30) {
-        return QJniObject::callStaticMethod<jboolean>(
-                "android/os/Environment", "isExternalStorageManager");
-    }
-    return true;
-}
-
-void copyAssetDir(const QString& src, const QString& dst) {
-    QDir().mkpath(dst);
-
-    QDir srcDir(src);
-    const QStringList files = srcDir.entryList(QDir::Files);
-    for (const QString& file : files) {
-        QFile srcFile(srcDir.absoluteFilePath(file));
-        QFile dstFile(dst + '/' + file);
-        if (srcFile.open(QIODevice::ReadOnly) && dstFile.open(QIODevice::WriteOnly)) {
-            dstFile.write(srcFile.readAll());
-        }
-    }
-
-    const QStringList dirs = srcDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString& dir : dirs) {
-        if (kSkipQmlDirs.contains(dir)) {
-            continue;
-        }
-        copyAssetDir(src + '/' + dir, dst + '/' + dir);
-    }
-}
-#endif
 } // namespace
 
 namespace mixxx {
@@ -108,13 +68,17 @@ namespace qml {
 QmlApplication::QmlApplication(
         QApplication* app,
         std::shared_ptr<CoreServices> pCoreServices,
-        const QString& mainQmlFilePath)
+        const QString& mainQmlFilePath,
+        const QString& resolvedSkinName,
+        const QString& resolvedSkinMainWindowPath)
         : m_pCoreServices(std::move(pCoreServices)),
           m_visualsManager(std::make_unique<VisualsManager>()),
           m_pGuiTick(std::make_unique<GuiTick>()),
           m_mainFilePath(mainQmlFilePath.isEmpty()
                           ? m_pCoreServices->getSettings()->getResourcePath() + kMainQmlFileName
                           : mainQmlFilePath),
+          m_resolvedSkinName(resolvedSkinName),
+          m_resolvedSkinMainWindowPath(resolvedSkinMainWindowPath),
           m_pAppEngine(nullptr),
           m_loadSucceeded(false),
 #if defined(Q_OS_ANDROID)
@@ -122,14 +86,6 @@ QmlApplication::QmlApplication(
 #endif
           m_autoReload() {
     QQuickStyle::setStyle("Basic");
-
-#if defined(Q_OS_ANDROID)
-    if (canWriteToExternalStorage()) {
-        const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
-        copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
-        m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");
-    }
-#endif
 
     const QString colorScheme = m_pCoreServices->getSettings()->getValueString(
             ConfigKey("[Config]", "Scheme"));
@@ -415,6 +371,32 @@ bool QmlApplication::loadQml(const QString& path) {
     m_pAppEngine->addImportPath(QStringLiteral(":/mixxx.org/imports"));
 
     registerImageProvider();
+
+#if defined(Q_OS_ANDROID)
+    QString resolvedSkinMainWindowUrl;
+    if (!m_resolvedSkinMainWindowPath.isEmpty()) {
+        const QFileInfo entrypoint(m_resolvedSkinMainWindowPath);
+        if (entrypoint.exists()) {
+            resolvedSkinMainWindowUrl =
+                    QUrl::fromLocalFile(entrypoint.absoluteFilePath()).toString();
+        } else {
+            qCritical() << "NRAVE_SKIN_RESOLVE missing QML entrypoint:"
+                        << entrypoint.absoluteFilePath();
+        }
+    }
+#else
+    const QString resolvedSkinMainWindowUrl;
+#endif
+
+    m_pAppEngine->rootContext()->setContextProperty(
+            QStringLiteral("NraveResolvedSkinName"), m_resolvedSkinName);
+    m_pAppEngine->rootContext()->setContextProperty(
+            QStringLiteral("NraveResolvedSkinMainWindowUrl"),
+            resolvedSkinMainWindowUrl);
+
+    qWarning() << "NRAVE_QML_SHELL_RESOLVED"
+            << "skin=" << m_resolvedSkinName
+            << "url=" << resolvedSkinMainWindowUrl;
 
     m_pAppEngine->load(path);
     if (m_pAppEngine->rootObjects().isEmpty()) {
