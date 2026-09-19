@@ -459,7 +459,7 @@ def click_interface_category() -> None:
 def skin_text_region() -> tuple[int, int, int, int]:
     # Tight crop around the visible Skin value. A thresholded text signature is
     # much more stable than a full-color screenshot across Qt repaints.
-    return (990, 250, 1140, 295)
+    return (1700, 445, 1920, 495)
 
 
 def skin_text_signature(name: str) -> bytes:
@@ -558,11 +558,11 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 
 
 def select_latenight_skin() -> tuple[bytes, bytes]:
-    # Measured from the actual 3120x1440 Settings screenshot. Unlike the
-    # nominal 1400px popup geometry, the rendered Settings popup is wider and
-    # starts around x=710. The Skin ComboBox is centered around (1055, 272).
-    x = 1055
-    y = 272
+    # Pixel-measured from the actual 3120x1440 Settings frame:
+    # "Android Default" occupies x=1755..1885, y=462..476.
+    # The proven passing harness used this same control area.
+    x = 1818
+    y = 469
     before = skin_text_signature("skin-before-selection")
 
     # The popup opens directly below the ComboBox. Delegate row height is
