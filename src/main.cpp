@@ -203,6 +203,14 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     if (loadQml) {
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
 #if defined(Q_OS_ANDROID)
+        // Diagnostic only: determine whether the Android emulator artifact is
+        // caused by the hardware scene-graph backend. This is intentionally
+        // isolated to QML startup and will be removed after the renderer cause
+        // is established.
+        qputenv("QSG_INFO", "1");
+        qputenv("QSG_RHI_BACKEND", "software");
+#endif
+#if defined(Q_OS_ANDROID)
         mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices, androidMainQmlPath);
 #else
         mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices);
