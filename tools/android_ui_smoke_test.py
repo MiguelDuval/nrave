@@ -529,16 +529,17 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 def select_latenight_skin() -> tuple[bytes, bytes]:
     popup_x, popup_y, popup_width, _ = settings_geometry()
     x = popup_x + round(popup_width * 0.68)
-    # Measured from the actual 3120x1440 Settings frame: the Skin value is
-    # centered around y=442 on this runtime.
-    y = popup_y + 142
+    # Measured directly from the rendered 3120x1440 Settings frame:
+    # the Skin ComboBox value spans roughly x=1610..1905 and y=430..490.
+    # Tap the indicator/right side to guarantee hitting the ComboBox.
+    x = 1890
+    y = 460
     before = skin_text_signature("skin-before-selection")
 
-    # Try the actual touch-popup path at the measured Skin control position.
-    # Different Qt font metrics can move the delegate rows by a few pixels, so
-    # retry with nearby second-row centers if the first tap did not change the
-    # rendered value.
-    tried_offsets = (88, 104, 72)
+    # The popup opens directly below the ComboBox. Delegate row height is
+    # roughly 36px at the test density; try a few nearby centers for the second
+    # row because Qt font metrics can shift it slightly.
+    tried_offsets = (72, 88, 104, 120)
     for attempt, offset in enumerate(tried_offsets, start=1):
         run_shell("input", "tap", str(x), str(y), timeout=10)
         time.sleep(0.5)
