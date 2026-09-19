@@ -43,6 +43,7 @@ class QmlApplication : public QObject {
   private slots:
     void slotFrameSwapped();
     void slotWindowChanged(QQuickWindow* window);
+    void logSelectedSkinLoaderStatus();
 #endif
 
   private:

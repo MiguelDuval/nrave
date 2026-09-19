@@ -450,20 +450,12 @@ bool QmlApplication::loadQml(const QString& path) {
     if (auto* rootObject = m_pAppEngine->rootObjects().constFirst()) {
         if (auto* skinLoader = rootObject->findChild<QObject*>(
                     QStringLiteral("nrave_selected_skin_loader"))) {
-            const auto logSkinLoaderStatus = [this, skinLoader]() {
-                const int status = skinLoader->property("status").toInt();
-                const QString source = skinLoader->property("source").toString();
-                qWarning() << "NRAVE_SKIN_LOADER_STATUS"
-                           << "skin=" << m_selectedSkinName
-                           << "status=" << status
-                           << "source=" << source;
-            };
             QObject::connect(
                     skinLoader,
                     SIGNAL(statusChanged()),
                     this,
-                    logSkinLoaderStatus);
-            logSkinLoaderStatus();
+                    SLOT(logSelectedSkinLoaderStatus()));
+            logSelectedSkinLoaderStatus();
         } else {
             qWarning() << "NRAVE_SKIN_LOADER_STATUS missing_loader_object";
         }
@@ -482,6 +474,28 @@ bool QmlApplication::loadQml(const QString& path) {
 #endif
     return true;
 }
+
+#if defined(Q_OS_ANDROID)
+void QmlApplication::logSelectedSkinLoaderStatus() {
+    if (!m_pAppEngine || m_pAppEngine->rootObjects().isEmpty()) {
+        return;
+    }
+    QObject* rootObject = m_pAppEngine->rootObjects().constFirst();
+    QObject* skinLoader = rootObject->findChild<QObject*>(
+            QStringLiteral("nrave_selected_skin_loader"));
+    if (!skinLoader) {
+        qWarning() << "NRAVE_SKIN_LOADER_STATUS missing_loader_object";
+        return;
+    }
+
+    const int status = skinLoader->property("status").toInt();
+    const QString source = skinLoader->property("source").toString();
+    qWarning() << "NRAVE_SKIN_LOADER_STATUS"
+               << "skin=" << m_selectedSkinName
+               << "status=" << status
+               << "source=" << source;
+}
+#endif
 
 void QmlApplication::registerImageProvider() {
     if (!m_pAppEngine) {

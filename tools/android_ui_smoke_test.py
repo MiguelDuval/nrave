@@ -716,6 +716,35 @@ def main_ui_visible() -> bool:
     return bool(safe_find_nodes("nrave_settings_button", exact=True) or safe_find_nodes("Settings", exact=True))
 
 
+def assert_skin_loader_ready(log: str, expected_skin: str) -> None:
+    lines = [
+        line for line in log.splitlines()
+        if "NRAVE_SKIN_LOADER_STATUS" in line
+    ]
+    matching = [
+        line for line in lines
+        if f'skin= "{expected_skin}"' in line and "status= 1" in line
+    ]
+    if not matching:
+        recent = "\n".join(lines[-12:])
+        raise UiTestError(
+            f"Resolved QML skin loader did not reach Ready for {expected_skin!r}. "
+            f"Observed:\n{recent}"
+        )
+
+    line = matching[-1]
+    source_match = re.search(r'source= "([^"]*)"', line)
+    source = source_match.group(1) if source_match else ""
+    if expected_skin == "LateNightQML" and "LateNightQML/MainWindow.qml" not in source:
+        raise UiTestError(
+            f"LateNightQML resolved to an unexpected Loader source: {source!r}"
+        )
+    if expected_skin == "AndroidDefault" and "LateNightQML/MainWindow.qml" in source:
+        raise UiTestError(
+            f"AndroidDefault unexpectedly resolved to LateNightQML: {source!r}"
+        )
+
+
 def wait_for_main_window(timeout: float = 120.0) -> None:
     # The Qt splash surface can remain present while the QML MainWindow is
     # already rendering underneath it on the API-35 emulator. Capture a stable
@@ -880,8 +909,7 @@ def main() -> int:
     screenshot("01-android-default.png")
     log = save_logcat("01-default-logcat.txt")
     assert_no_fatal(log)
-    if "Loading resolved QML skin entrypoint" in log and "AndroidDefault" not in log:
-        raise UiTestError("Default skin loader did not report AndroidDefault")
+    assert_skin_loader_ready(log, "AndroidDefault")
 
     open_settings_with_cold_start_retry()
     screenshot("02-settings.png")
@@ -946,6 +974,7 @@ def main() -> int:
     assert_no_fatal(log)
     if "Failed to load the resolved Mixxx QML skin entrypoint" in log:
         raise UiTestError("QML skin loader reported an error")
+    assert_skin_loader_ready(log, "LateNightQML")
     screenshot("11-latenight-loaded.png")
 
     reopen_settings()
