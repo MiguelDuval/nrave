@@ -2,7 +2,7 @@ name: Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, stage4-minimal-skin-contract]
 permissions:
   contents: write
 env:
@@ -146,3 +146,74 @@ jobs:
           archive: false
           if-no-files-found: error
           retention-days: 30
+      - name: Upload APK for runtime smoke test
+        uses: actions/upload-artifact@v7
+        with:
+          name: nrave-runtime-apk
+          path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
+          archive: true
+          if-no-files-found: error
+          retention-days: 14
+
+  android-runtime-contract:
+    needs: android-apk
+    if: github.ref == 'refs/heads/stage4-minimal-skin-contract'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download APK
+        uses: actions/download-artifact@v8
+        with:
+          name: nrave-runtime-apk
+          path: runtime-apk
+
+      - name: Prepare runtime diagnostics
+        shell: bash
+        run: |
+          set -u
+          mkdir -p nrave-ui-test-diagnostics
+
+      - name: Verify x86_64 KVM runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "x86_64"
+          test "${RUNNER_ARCH:-}" = "X64"
+          test -e /dev/kvm
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+
+      - name: Run Stage 4 skin contract on Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -no-snapshot-save
+          disable-animations: true
+          script: |
+            set -eu
+            adb wait-for-device
+            adb shell getprop ro.product.cpu.abilist
+            adb shell getprop ro.build.version.release
+            adb shell getprop ro.build.version.sdk
+            python3 tools/android_skin_contract_test.py
+
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nrave-stage4-skin-contract-diagnostics
+          path: nrave-ui-test-diagnostics
+          archive: true
+          if-no-files-found: warn
+          retention-days: 14
