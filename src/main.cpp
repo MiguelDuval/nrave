@@ -1,9 +1,6 @@
 #include <QApplication>
 #include <QDir>
-#include <QFile>
-#include <QFileInfo>
 #include <QPixmapCache>
-#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStyle>
@@ -52,112 +49,6 @@ const QString kNotifyMaxDbgTimeKey = QStringLiteral("notify_max_dbg_time");
 
 constexpr int kPixmapCacheLimitAt100PercentZoom = 32 * 1024;
 
-#if defined(Q_OS_ANDROID)
-const QStringList kSkipAndroidQmlDirs = {
-        QStringLiteral("Mixxx"),
-};
-
-// Materialize the Android QML shell and packaged QML skins into the application's
-// private storage. This deliberately avoids the shared-storage path used by the
-// old implementation, which requires MANAGE_EXTERNAL_STORAGE on Android 11+.
-// QML skins rely on ordinary relative file URLs (../skins/...), so a real
-// filesystem tree is the most deterministic way to preserve those semantics.
-bool copyAndroidAssetDir(const QString& src, const QString& dst) {
-    if (!QDir().mkpath(dst)) {
-        qCritical() << "Failed to create Android QML resource directory:" << dst;
-        return false;
-    }
-
-    QDir srcDir(src);
-    if (!srcDir.exists()) {
-        qCritical() << "Android asset directory does not exist:" << src;
-        return false;
-    }
-
-    const QStringList files = srcDir.entryList(QDir::Files);
-    for (const QString& file : files) {
-        QFile srcFile(srcDir.absoluteFilePath(file));
-        if (!srcFile.open(QIODevice::ReadOnly)) {
-            qCritical() << "Failed to read Android QML asset:" << srcFile.fileName();
-            return false;
-        }
-        const QByteArray data = srcFile.readAll();
-        if (srcFile.error() != QFile::NoError) {
-            qCritical() << "Failed while reading Android QML asset:" << srcFile.fileName();
-            return false;
-        }
-
-        const QString dstFilePath = QDir(dst).filePath(file);
-        QFile dstFile(dstFilePath);
-        if (!dstFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            qCritical() << "Failed to write Android QML asset:" << dstFilePath;
-            return false;
-        }
-        if (dstFile.write(data) != data.size()) {
-            qCritical() << "Failed to write complete Android QML asset:" << dstFilePath;
-            return false;
-        }
-    }
-
-    const QStringList dirs = srcDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString& dir : dirs) {
-        if (kSkipAndroidQmlDirs.contains(dir)) {
-            continue;
-        }
-        if (!copyAndroidAssetDir(
-                    srcDir.filePath(dir),
-                    QDir(dst).filePath(dir))) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-QString materializeAndroidQmlResources() {
-    const QString appDataDir =
-            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    if (appDataDir.isEmpty()) {
-        qCritical() << "Android QML resource materialization failed:"
-                       " AppDataLocation is empty";
-        return {};
-    }
-
-    const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
-    const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
-
-    // Remove previous materialized copies so an app update cannot leave stale
-    // QML files behind after files are removed or renamed in the APK.
-    if (QDir(qmlDir).exists() && !QDir(qmlDir).removeRecursively()) {
-        qCritical() << "Failed to remove stale Android QML directory:" << qmlDir;
-        return {};
-    }
-    if (QDir(skinDir).exists() && !QDir(skinDir).removeRecursively()) {
-        qCritical() << "Failed to remove stale Android skin directory:" << skinDir;
-        return {};
-    }
-
-    if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir) ||
-            !copyAndroidAssetDir(QStringLiteral("assets:/skins"), skinDir)) {
-        qCritical() << "Android QML resource materialization failed under" << appDataDir;
-        return {};
-    }
-
-    const QString mainQmlFilePath = QDir(qmlDir).filePath(QStringLiteral("main.qml"));
-    if (!QFileInfo::exists(mainQmlFilePath)) {
-        qCritical() << "Android QML resource materialization completed without main.qml:"
-                    << mainQmlFilePath;
-        return {};
-    }
-
-    qInfo() << "Android QML resources materialized in app-private storage:"
-            << appDataDir;
-    qInfo() << "Android QML shell:" << mainQmlFilePath;
-    qInfo() << "Android packaged skins:" << skinDir;
-    return mainQmlFilePath;
-}
-#endif
-
 int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     CmdlineArgs::Instance().parseForUserFeedback();
 
@@ -170,16 +61,6 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     // Android always uses the QML application shell. Skin selection changes
     // only the MainWindow content inside res/qml/main.qml.
     loadQml = true;
-
-    // Materialize the APK's QML shell and skins before SkinLoader resolves the
-    // configured skin. SkinLoader needs an ordinary filesystem tree so QML skin
-    // manifests and MainWindow.qml are validated from the same runtime root
-    // that QmlApplication will use.
-    const QString androidMainQmlPath = materializeAndroidQmlResources();
-    if (androidMainQmlPath.isEmpty()) {
-        qCritical() << "Cannot start Android QML application without a materialized QML shell";
-        return kFatalErrorOnStartupExitCode;
-    }
 
     mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
     const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
@@ -202,19 +83,7 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 
     if (loadQml) {
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
-#if defined(Q_OS_ANDROID)
-        // Diagnostic only: determine whether the Android emulator artifact is
-        // caused by the hardware scene-graph backend. This is intentionally
-        // isolated to QML startup and will be removed after the renderer cause
-        // is established.
-        qputenv("QSG_INFO", "1");
-        qputenv("QSG_RHI_BACKEND", "software");
-#endif
-#if defined(Q_OS_ANDROID)
-        mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices, androidMainQmlPath);
-#else
         mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices);
-#endif
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {

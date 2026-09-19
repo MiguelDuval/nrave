@@ -411,13 +411,11 @@ Item {
             Item {
                 id: waveforms
 
-                // Diagnostic isolation: disable waveform scenegraph rendering on Android
-                // to test whether the large-triangle corruption originates in the
-                // QML waveform/rendergraph path.
-                visible: false
+                // Android-only diagnostic isolation: keep the shared shell and skin
+                // intact while disabling the waveform renderer scenegraph path.
+                visible: Qt.platform.os !== "android"
                 SplitView.fillHeight: !library.active
                 SplitView.preferredHeight: library.active ? 120 : undefined
-                visible: !root.maximizeLibrary
 
                 FadeBehavior on visible {
                     fadeTarget: waveforms
