@@ -95,11 +95,17 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 
     int exitCode;
     auto pCoreServices = std::make_shared<mixxx::CoreServices>(args, pApp);
+#if defined(Q_OS_ANDROID)
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=core-services-ready";
+#endif
 #ifdef MIXXX_USE_QML
     bool loadQml = args.isQml();
 
 #if defined(Q_OS_ANDROID)
     const QString androidQmlDir = materializeAndroidQmlResources();
+#if defined(Q_OS_ANDROID)
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=resources-materialized path=" << androidQmlDir;
+#endif
     if (androidQmlDir.isEmpty()) {
         return kFatalErrorOnStartupExitCode;
     }
@@ -121,6 +127,9 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     const ConfigKey resizableSkinKey(
             QStringLiteral("[Config]"), QStringLiteral("ResizableSkin"));
     const QString resolvedSkinName = pSkin->name();
+#if defined(Q_OS_ANDROID)
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=skin-resolved skin=" << resolvedSkinName;
+#endif
     if (pCoreServices->getSettings()->getValueString(resizableSkinKey) != resolvedSkinName) {
         qInfo() << "Normalized Android QML skin selection to" << resolvedSkinName;
         pCoreServices->getSettings()->setValue(resizableSkinKey, resolvedSkinName);
@@ -138,8 +147,17 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 #endif
         const QString androidMainQmlPath =
                 QDir(androidQmlDir).filePath(QStringLiteral("main.qml"));
+#if defined(Q_OS_ANDROID)
+        qInfo() << "NRAVE_ANDROID_STARTUP stage=creating-qml-application"
+                << "main=" << androidMainQmlPath
+                << "skinMainWindow=" << resolvedSkinMainWindowPath;
+#endif
         mixxx::qml::QmlApplication qmlApplication(
                 pApp, pCoreServices, androidMainQmlPath, resolvedSkinMainWindowPath);
+#if defined(Q_OS_ANDROID)
+        qInfo() << "NRAVE_ANDROID_STARTUP stage=qml-application-constructed"
+                << "ready=" << qmlApplication.isReady();
+#endif
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {
