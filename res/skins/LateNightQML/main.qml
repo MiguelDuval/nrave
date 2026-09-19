@@ -19,6 +19,9 @@ Item {
     // This Item is a no-op on mobile. On desktop, it loads MainWindow.qml.
     readonly property bool isMobile: Qt.platform.os === "android" || Qt.platform.os === "ios"
 
+    // Forward the shell's ApplicationWindow to MainWindow.qml on desktop.
+    required property ApplicationWindow applicationWindow
+
     Mixxx.ControlProxy { id: bitgrid1Action; group: "[Channel1]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: bitgrid2Action; group: "[Channel2]"; key: "beats_translate_curpos" }
     Mixxx.ControlProxy { id: abletonLinkControl; group: "[AbletonLink]"; key: "sync_enabled" }
@@ -73,7 +76,7 @@ Item {
         asynchronous: true
         onProgressChanged: root.updateProgress()
         onStatusChanged: root.handleMainWindowLoaderStatus()
-        sourceComponent: Component { MainWindow { applicationWindow: root; anchors.fill: parent } }
+        sourceComponent: Component { MainWindow { applicationWindow: root.applicationWindow; anchors.fill: parent } }
     }
 
     Rectangle {
