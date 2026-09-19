@@ -725,33 +725,54 @@ def main_ui_visible() -> bool:
     return bool(safe_find_nodes("nrave_settings_button", exact=True) or safe_find_nodes("Settings", exact=True))
 
 
-def assert_skin_loader_ready(log: str, expected_skin: str) -> None:
-    lines = [
-        line for line in log.splitlines()
-        if "NRAVE_SKIN_LOADER_STATUS" in line
-    ]
-    matching = [
-        line for line in lines
-        if f'skin= "{expected_skin}"' in line and "status= 1" in line
-    ]
-    if not matching:
-        recent = "\n".join(lines[-12:])
-        raise UiTestError(
-            f"Resolved QML skin loader did not reach Ready for {expected_skin!r}. "
-            f"Observed:\n{recent}"
-        )
+def current_app_logcat() -> str:
+    pid = run_shell("pidof", "org.mixxx", timeout=10, check=False).strip().split()
+    if not pid:
+        return ""
+    return run_adb("logcat", "--pid", pid[0], "-d", timeout=30)
 
-    line = matching[-1]
-    source_match = re.search(r'source= "([^"]*)"', line)
-    source = source_match.group(1) if source_match else ""
-    if expected_skin == "LateNightQML" and "LateNightQML/MainWindow.qml" not in source:
-        raise UiTestError(
-            f"LateNightQML resolved to an unexpected Loader source: {source!r}"
-        )
-    if expected_skin == "AndroidDefault" and "LateNightQML/MainWindow.qml" in source:
-        raise UiTestError(
-            f"AndroidDefault unexpectedly resolved to LateNightQML: {source!r}"
-        )
+
+def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> str:
+    """Wait for the application's own loader status instead of sampling logcat once."""
+    deadline = time.time() + timeout
+    last_log = ""
+    while time.time() < deadline:
+        last_log = current_app_logcat()
+        assert_no_fatal(last_log)
+
+        lines = [
+            line for line in last_log.splitlines()
+            if "NRAVE_SKIN_LOADER_STATUS" in line
+        ]
+        matching = [
+            line for line in lines
+            if f'skin= "{expected_skin}"' in line and "status= 1" in line
+        ]
+        if matching:
+            line = matching[-1]
+            source_match = re.search(r'source= "([^"]*)"', line)
+            source = source_match.group(1) if source_match else ""
+            if expected_skin == "LateNightQML" and "LateNightQML/MainWindow.qml" not in source:
+                raise UiTestError(
+                    f"LateNightQML resolved to an unexpected Loader source: {source!r}"
+                )
+            if expected_skin == "AndroidDefault" and "LateNightQML/MainWindow.qml" in source:
+                raise UiTestError(
+                    f"AndroidDefault unexpectedly resolved to LateNightQML: {source!r}"
+                )
+            return last_log
+
+        time.sleep(2)
+
+    stage_lines = [
+        line for line in last_log.splitlines()
+        if "NRAVE_ANDROID_STARTUP" in line
+    ]
+    recent = "\n".join(stage_lines[-12:] + lines[-12:])
+    raise UiTestError(
+        f"Resolved QML skin loader did not reach Ready for {expected_skin!r} "
+        f"within {timeout:.0f}s. Observed startup/loader diagnostics:\n{recent}"
+    )
 
 
 def wait_for_main_window(timeout: float = 120.0) -> None:
@@ -916,9 +937,8 @@ def main() -> int:
     print("=== LAUNCH ANDROID DEFAULT ===", flush=True)
     launch()
     screenshot("01-android-default.png")
-    log = save_logcat("01-default-logcat.txt")
-    assert_no_fatal(log)
-    assert_skin_loader_ready(log, "AndroidDefault")
+    log = wait_for_skin_loader_ready("AndroidDefault", timeout=120)
+    (DIAG / "01-default-logcat.txt").write_text(log, encoding="utf-8")
 
     open_settings_with_cold_start_retry()
     screenshot("02-settings.png")
@@ -980,10 +1000,10 @@ def main() -> int:
     launch()
     time.sleep(4)
     log = save_logcat("09-latenight-logcat.txt")
-    assert_no_fatal(log)
+    log = wait_for_skin_loader_ready("LateNightQML", timeout=120)
+    (DIAG / "09-latenight-logcat.txt").write_text(log, encoding="utf-8")
     if "Failed to load the resolved Mixxx QML skin entrypoint" in log:
         raise UiTestError("QML skin loader reported an error")
-    assert_skin_loader_ready(log, "LateNightQML")
     screenshot("11-latenight-loaded.png")
 
     reopen_settings()
