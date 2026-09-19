@@ -131,12 +131,13 @@ QString materializeAndroidQmlResources() {
     qWarning() << "NRAVE_ANDROID_STARTUP stage=copy-qml-done"
             << "path=" << qmlDir;
 
-    // Stage 4 only needs the two explicit contract skins. Do not copy every
+    // Stage 4 only needs the explicit contract skins. Do not copy every
     // legacy skin into app-private storage; this keeps the minimal contract
     // small and avoids unrelated assets affecting startup time.
     const QStringList requiredSkinDirs = {
             QStringLiteral("AndroidDefault"),
             QStringLiteral("TestSkin"),
+            QStringLiteral("LateNightQML"),
     };
     for (const QString& skinName : requiredSkinDirs) {
         const QString source = QStringLiteral("assets:/skins/") + skinName;
@@ -158,6 +159,8 @@ QString materializeAndroidQmlResources() {
             QDir(skinDir).filePath(QStringLiteral("AndroidDefault/skin.ini")),
             QDir(skinDir).filePath(QStringLiteral("TestSkin/MainWindow.qml")),
             QDir(skinDir).filePath(QStringLiteral("TestSkin/skin.ini")),
+            QDir(skinDir).filePath(QStringLiteral("LateNightQML/MainWindow.qml")),
+            QDir(skinDir).filePath(QStringLiteral("LateNightQML/skin.ini")),
     };
     for (const QString& requiredFile : requiredFiles) {
         if (!QFileInfo::exists(requiredFile)) {
