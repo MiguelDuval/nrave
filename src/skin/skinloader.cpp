@@ -1,6 +1,7 @@
 #include "skin/skinloader.h"
 
 #include <QDir>
+#include <QStandardPaths>
 #include <QString>
 #include <QtDebug>
 
@@ -97,6 +98,21 @@ QDir SkinLoader::getUserSkinDir() const {
 }
 
 QDir SkinLoader::getSytemSkinDir() const {
+#if defined(Q_OS_ANDROID)
+    // Android QML resources are materialized into app-private storage before
+    // SkinLoader resolves the configured skin. Use that filesystem tree as the
+    // authoritative Android system skin location.
+    const QString appDataDir =
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (!appDataDir.isEmpty()) {
+        const QDir materializedSkinsDir(
+                QDir(appDataDir).filePath(kSkinsDirName));
+        if (materializedSkinsDir.exists()) {
+            return materializedSkinsDir;
+        }
+    }
+#endif
+
     // If we can't find the skins folder then we can't load a skin at all. This
     // is a critical error in the user's Mixxx installation.
     QDir skinsPath(m_pConfig->getResourcePath());
