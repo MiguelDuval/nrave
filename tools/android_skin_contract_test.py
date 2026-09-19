@@ -207,10 +207,11 @@ def choose_skin(index: int, popup: tuple[int, int, int, int]) -> None:
         if index == 0:
             return
         # A second-row selection can be retried at a few nearby row centers.
-        # Re-open the selector on each attempt after the first.
+        # Selecting a delegate closes the ComboBox. Reopen it for the next retry.
         if offset != row_offsets[-1]:
             tap(x, y)
-    raise TestFailure("Could not select Test Skin from the Android selector")
+            sleep(0.5)
+    raise TestFailure("Could not select Test Skin")
 
 
 def save_settings() -> None:
