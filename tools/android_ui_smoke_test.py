@@ -717,13 +717,19 @@ def main_ui_visible() -> bool:
 
 
 def wait_for_main_window(timeout: float = 120.0) -> None:
+    # The Qt splash surface can remain present while the QML MainWindow is
+    # already rendering underneath it on the API-35 emulator. Capture a stable
+    # post-launch baseline and wait for the application frame to change instead
+    # of treating the Android splash window itself as the readiness signal.
+    baseline_hash = screen_hash()
+
     def ready() -> bool:
         dismiss_android_system_overlays(timeout=2)
-        return (
-            "org.mixxx" in current_focus()
-            and not splash_present()
-            and main_ui_visible()
-        )
+        if "org.mixxx" not in current_focus():
+            return False
+        if splash_present() and screen_hash() == baseline_hash:
+            return False
+        return screen_hash() != baseline_hash
 
     wait_until(
         ready,
