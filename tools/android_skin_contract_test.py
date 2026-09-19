@@ -83,8 +83,23 @@ def app_logcat() -> str:
 def wait_for_log(needles: tuple[str, ...], description: str, timeout: int = 120) -> str:
     deadline = time.time() + timeout
     last = ""
+    forbidden = (
+        "FATAL EXCEPTION",
+        "Fatal signal",
+        "SIGSEGV",
+        "SIGABRT",
+        "NRAVE_QML_SHELL_SKIN_ERROR",
+        "QQmlApplicationEngine failed to load component",
+    )
     while time.time() < deadline:
         last = app_logcat()
+        for marker in forbidden:
+            if marker in last:
+                recent = "\n".join(last.splitlines()[-120:])
+                raise TestFailure(
+                    f"Runtime error while waiting for {description}: {marker}\n"
+                    f"Recent app log:\n{recent}"
+                )
         if all(needle in last for needle in needles):
             return last
         time.sleep(2)
