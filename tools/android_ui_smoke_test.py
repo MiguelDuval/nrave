@@ -332,19 +332,26 @@ def physical_screen_size() -> tuple[int, int]:
 
 def app_window_bounds() -> tuple[int, int, int, int] | None:
     output = run_shell("dumpsys", "window", "windows", timeout=15, check=False)
-    # Android's window dump normally exposes the application frame as
-    # mFrame=Rect(left,top - right,bottom). The physical display can be much
-    # wider than the Qt window on this emulator, so screen width is not a safe
-    # Settings-button coordinate.
+    # Activity/window labels vary between Qt/Android versions. Match any
+    # WindowManager record belonging to org.mixxx and choose the largest frame,
+    # which is the actual application window rather than a child surface.
+    candidates: list[tuple[int, int, int, int]] = []
     for line in output.splitlines():
-        if "org.mixxx/org.mixxx.MainActivity" not in line:
+        if "org.mixxx" not in line:
             continue
         match = re.search(
             r"mFrame=Rect\((-?\d+),(-?\d+) - (-?\d+),(-?\d+)\)",
             line,
         )
-        if match:
-            return tuple(map(int, match.groups()))
+        if not match:
+            continue
+        frame = tuple(map(int, match.groups()))
+        width = max(0, frame[2] - frame[0])
+        height = max(0, frame[3] - frame[1])
+        if width > 100 and height > 100:
+            candidates.append(frame)
+    if candidates:
+        return max(candidates, key=lambda f: (f[2] - f[0]) * (f[3] - f[1]))
     return None
 
 
