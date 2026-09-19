@@ -30,13 +30,22 @@ ApplicationWindow {
                 : Window.Windowed;
     }
 
+    function selectedSkinName() {
+        if (typeof NraveResolvedSkinName !== "undefined" && NraveResolvedSkinName !== "") {
+            return NraveResolvedSkinName;
+        }
+        return Mixxx.Config.configSkin || "AndroidDefault";
+    }
+
     function selectedMainWindowUrl() {
-        const selectedSkin = Mixxx.Config.configSkin;
+        if (Qt.platform.os === "android" &&
+                typeof NraveResolvedSkinMainWindowUrl !== "undefined" &&
+                NraveResolvedSkinMainWindowUrl !== "") {
+            return NraveResolvedSkinMainWindowUrl;
+        }
+        const selectedSkin = root.selectedSkinName();
         if (selectedSkin === "" || selectedSkin === "AndroidDefault") {
             return Qt.resolvedUrl("MainWindow.qml");
-        }
-        if (Qt.platform.os === "android") {
-            return "assets:/skins/" + selectedSkin + "/MainWindow.qml";
         }
         return Qt.resolvedUrl("../skins/" + selectedSkin + "/MainWindow.qml");
     }
