@@ -1,0 +1,102 @@
+name: Android Skin Contract Existing APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_run_id:
+        description: GitHub Actions run ID containing nrave-runtime-apk. Leave empty to use newest unexpired artifact on this branch.
+        required: false
+        type: string
+  push:
+    branches: [stage4-minimal-skin-contract]
+    paths:
+      - tools/android_skin_contract_test.py
+      - .github/workflows/android-skin-contract-existing-apk.yml
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: nrave-android-skin-contract-existing-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve-apk:
+    runs-on: ubuntu-24.04
+    outputs:
+      run_id: ${{ steps.resolve.outputs.run_id }}
+    steps:
+      - name: Resolve APK source run
+        id: resolve
+        shell: bash
+        env:
+          INPUT_RUN_ID: ${{ inputs.apk_run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_RUN_ID:-}" ]; then
+            run_id="$INPUT_RUN_ID"
+          else
+            run_id=""
+            candidate_runs="$(gh api "/repos/$GITHUB_REPOSITORY/actions/workflows/build.yml/runs?branch=$GITHUB_REF_NAME&per_page=30" --jq '.workflow_runs[] | .id')"
+            while IFS= read -r candidate; do
+              [ -n "$candidate" ] || continue
+              artifact_id="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$candidate/artifacts?per_page=100" --jq '.artifacts[]? | select(.name=="nrave-runtime-apk" and .expired==false) | .id' | sed -n '1p')"
+              if printf '%s' "$artifact_id" | grep -Eq '^[0-9]+$'; then
+                run_id="$candidate"
+                break
+              fi
+            done <<< "$candidate_runs"
+          fi
+          if ! printf '%s' "$run_id" | grep -Eq '^[0-9]+$'; then
+            echo "Could not resolve a runtime APK" >&2
+            exit 1
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+  android-runtime-existing-apk:
+    needs: resolve-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download existing runtime APK
+        uses: actions/download-artifact@v8
+        with:
+          name: nrave-runtime-apk
+          path: runtime-apk
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve-apk.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Verify x86_64 KVM runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "x86_64"
+          test "${RUNNER_ARCH:-}" = "X64"
+          test -e /dev/kvm
+          sudo chmod 0666 /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+
+      - name: Run Stage 4 skin contract on existing APK
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -no-snapshot-save
+          disable-animations: true
+          script: |
+            set -eu
+            adb wait-for-device
+            python3 tools/android_skin_contract_test.py
