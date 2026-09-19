@@ -177,7 +177,9 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     CmdlineArgs::Instance().parseForUserFeedback();
 
     int exitCode;
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-begin";
     auto pCoreServices = std::make_shared<mixxx::CoreServices>(args, pApp);
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=core-services-done";
 #ifdef MIXXX_USE_QML
     bool loadQml = args.isQml();
     QString mainQmlFilePath;
@@ -185,7 +187,9 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     QString resolvedSkinMainWindowPath;
 
 #if defined(Q_OS_ANDROID)
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=materialize-call-begin";
     const QString androidQmlDir = materializeAndroidQmlResources();
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=materialize-call-done" << "path=" << androidQmlDir;
     if (androidQmlDir.isEmpty()) {
         return kFatalErrorOnStartupExitCode;
     }
