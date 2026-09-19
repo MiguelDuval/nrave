@@ -119,6 +119,15 @@ jobs:
             sleep 5
           done
           exit 1
+      - name: Preflight Android skin assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build-android --target copy-resource-android --parallel 2
+          test -f build-android/android-build/assets/skins/AndroidDefault/MainWindow.qml
+          test -f build-android/android-build/assets/skins/TestSkin/MainWindow.qml
+          test -f build-android/android-build/assets/skins/TestSkin/skin.ini
+
       - name: Build APK only
         shell: bash
         run: |
@@ -136,8 +145,14 @@ jobs:
       - name: Verify APK
         shell: bash
         run: |
-          test -f build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-          ls -lh build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
+          set -euo pipefail
+          APK="build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk"
+          test -f "$APK"
+          ls -lh "$APK"
+          unzip -Z1 "$APK" > "$RUNNER_TEMP/apk-files.txt"
+          grep -Fq "assets/skins/AndroidDefault/MainWindow.qml" "$RUNNER_TEMP/apk-files.txt"
+          grep -Fq "assets/skins/TestSkin/MainWindow.qml" "$RUNNER_TEMP/apk-files.txt"
+          grep -Fq "assets/skins/TestSkin/skin.ini" "$RUNNER_TEMP/apk-files.txt"
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
