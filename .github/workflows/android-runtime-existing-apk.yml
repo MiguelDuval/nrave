@@ -120,10 +120,10 @@ jobs:
       - name: Run NRave UI test on existing APK
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
-          api-level: 35
+          api-level: 34
           target: google_apis
           arch: x86_64
-          profile: pixel_7_pro
+          profile: pixel_2
           cores: 4
           ram-size: 4096M
           heap-size: 512M
