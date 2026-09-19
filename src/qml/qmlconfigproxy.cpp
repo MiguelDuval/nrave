@@ -421,11 +421,32 @@ PROPERTY_IMPL(kConfigGroup,
         QString,
         configScheme,
         QStringLiteral("PaleMoon"));
-PROPERTY_IMPL(kConfigGroup,
-        kResizableSkinKey,
-        QString,
-        configSkin,
-        QString());
+QString QmlConfigProxy::configSkin() const {
+    return m_pConfig->getValue(
+            ConfigKey(kConfigGroup, kResizableSkinKey),
+            QString());
+}
+
+void QmlConfigProxy::set_configSkin(const QString& value) {
+    const QString canonicalValue =
+            value.isEmpty() ? QStringLiteral("AndroidDefault") : value;
+#if defined(Q_OS_ANDROID)
+    m_pConfig->setValue(
+            ConfigKey(kConfigGroup, kResizableSkinKey), canonicalValue);
+    emit configSkinChanged();
+    if (!m_pConfig->save()) {
+        qWarning() << "Failed to persist Android QML skin selection:"
+                   << canonicalValue;
+    }
+#else
+    setConfigValueAndNotify<QString>(
+            kConfigGroup,
+            kResizableSkinKey,
+            canonicalValue,
+            QString(),
+            &QmlConfigProxy::configSkinChanged);
+#endif
+}
 PROPERTY_IMPL(kBpmGroup,
         kSyncLockAlgorithmKey,
         EngineSync::SyncLockAlgorithm,

@@ -1,6 +1,9 @@
 #include <QApplication>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QPixmapCache>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStyle>
@@ -49,6 +52,127 @@ const QString kNotifyMaxDbgTimeKey = QStringLiteral("notify_max_dbg_time");
 
 constexpr int kPixmapCacheLimitAt100PercentZoom = 32 * 1024;
 
+#if defined(Q_OS_ANDROID)
+const QStringList kAndroidQmlDirs = {
+        QStringLiteral("Mixxx"),
+};
+
+bool copyAndroidAssetDir(const QString& src, const QString& dst) {
+    const QDir srcDir(src);
+    if (!srcDir.exists()) {
+        qCritical() << "NRAVE_ANDROID_STARTUP missing asset directory:" << src;
+        return false;
+    }
+
+    if (!QDir().mkpath(dst)) {
+        qCritical() << "NRAVE_ANDROID_STARTUP cannot create destination:" << dst;
+        return false;
+    }
+
+    bool ok = true;
+    for (const QString& file : srcDir.entryList(QDir::Files)) {
+        QFile srcFile(srcDir.absoluteFilePath(file));
+        QFile dstFile(QDir(dst).filePath(file));
+        if (!srcFile.open(QIODevice::ReadOnly)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP cannot read asset:" << srcFile.fileName();
+            ok = false;
+            continue;
+        }
+        if (!dstFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP cannot write materialized file:"
+                        << dstFile.fileName();
+            ok = false;
+            continue;
+        }
+        const QByteArray data = srcFile.readAll();
+        if (dstFile.write(data) != data.size()) {
+            qCritical() << "NRAVE_ANDROID_STARTUP short write:" << dstFile.fileName();
+            ok = false;
+        }
+    }
+
+    for (const QString& dir : srcDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        if (kAndroidQmlDirs.contains(dir)) {
+            continue;
+        }
+        if (!copyAndroidAssetDir(src + '/' + dir, dst + '/' + dir)) {
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+QString materializeAndroidQmlResources() {
+    const QString appDataDir =
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (appDataDir.isEmpty()) {
+        qCritical() << "NRAVE_ANDROID_STARTUP stage=app-data-missing";
+        return {};
+    }
+
+    const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
+    const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
+
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=materialize-begin"
+            << "appData=" << appDataDir;
+
+    if (!QDir(qmlDir).removeRecursively() ||
+            !QDir(skinDir).removeRecursively()) {
+        qCritical() << "NRAVE_ANDROID_STARTUP stage=materialize-reset-failed";
+        return {};
+    }
+
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-qml-begin"
+            << "source=assets:/qml";
+    if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir)) {
+        qCritical() << "NRAVE_ANDROID_STARTUP stage=copy-qml-failed";
+        return {};
+    }
+    qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-qml-done"
+            << "path=" << qmlDir;
+
+    // Stage 4 only needs the two explicit contract skins. Do not copy every
+    // legacy skin into app-private storage; this keeps the minimal contract
+    // small and avoids unrelated assets affecting startup time.
+    const QStringList requiredSkinDirs = {
+            QStringLiteral("AndroidDefault"),
+            QStringLiteral("TestSkin"),
+    };
+    for (const QString& skinName : requiredSkinDirs) {
+        const QString source = QStringLiteral("assets:/skins/") + skinName;
+        const QString destination = QDir(skinDir).filePath(skinName);
+        qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-skin-begin"
+                << "skin=" << skinName;
+        if (!copyAndroidAssetDir(source, destination)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP stage=copy-skin-failed"
+                        << "skin=" << skinName;
+            return {};
+        }
+        qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-skin-done"
+                << "skin=" << skinName;
+    }
+
+    const QStringList requiredFiles = {
+            QDir(qmlDir).filePath(QStringLiteral("main.qml")),
+            QDir(skinDir).filePath(QStringLiteral("AndroidDefault/MainWindow.qml")),
+            QDir(skinDir).filePath(QStringLiteral("AndroidDefault/skin.ini")),
+            QDir(skinDir).filePath(QStringLiteral("TestSkin/MainWindow.qml")),
+            QDir(skinDir).filePath(QStringLiteral("TestSkin/skin.ini")),
+    };
+    for (const QString& requiredFile : requiredFiles) {
+        if (!QFileInfo::exists(requiredFile)) {
+            qCritical() << "NRAVE_ANDROID_STARTUP missing materialized resource:"
+                        << requiredFile;
+            return {};
+        }
+    }
+
+    qInfo() << "NRAVE_ANDROID_STARTUP materialized_qml path=" << qmlDir;
+    qInfo() << "NRAVE_ANDROID_STARTUP materialized_skins path=" << skinDir;
+    return qmlDir;
+}
+#endif
+
 int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     CmdlineArgs::Instance().parseForUserFeedback();
 
@@ -56,23 +180,56 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     auto pCoreServices = std::make_shared<mixxx::CoreServices>(args, pApp);
 #ifdef MIXXX_USE_QML
     bool loadQml = args.isQml();
+    QString mainQmlFilePath;
+    QString resolvedSkinName;
+    QString resolvedSkinMainWindowPath;
 
 #if defined(Q_OS_ANDROID)
-    // Android always uses the QML application shell. Skin selection changes
-    // only the MainWindow content inside res/qml/main.qml.
+    const QString androidQmlDir = materializeAndroidQmlResources();
+    if (androidQmlDir.isEmpty()) {
+        return kFatalErrorOnStartupExitCode;
+    }
+
+    // Android always uses one QML application shell. SkinLoader resolves the
+    // MainWindow.qml that the shell will insert.
     loadQml = true;
 
     mixxx::skin::SkinLoader skinLoader(pCoreServices->getSettings());
     const mixxx::skin::SkinPointer pSkin = skinLoader.getConfiguredSkin();
     if (!pSkin || pSkin->type() != mixxx::skin::SkinType::QML) {
-        qCritical() << "No valid Android QML skin is available";
+        qCritical() << "NRAVE_SKIN_RESOLVE failed: no valid Android QML skin";
         return kFatalErrorOnStartupExitCode;
     }
+
+    resolvedSkinName = pSkin->name();
+    resolvedSkinMainWindowPath = pSkin->mainQmlFilePath();
+    if (!QFileInfo::exists(resolvedSkinMainWindowPath)) {
+        qCritical() << "NRAVE_SKIN_RESOLVE failed: missing entrypoint"
+                    << resolvedSkinMainWindowPath;
+        return kFatalErrorOnStartupExitCode;
+    }
+
+    if (pCoreServices->getSettings()->getValueString(
+                ConfigKey("[Config]", "ResizableSkin")) != resolvedSkinName) {
+        pCoreServices->getSettings()->setValue(
+                ConfigKey("[Config]", "ResizableSkin"), resolvedSkinName);
+        pCoreServices->getSettings()->save();
+    }
+
+    mainQmlFilePath = QDir(androidQmlDir).filePath(QStringLiteral("main.qml"));
+    qInfo() << "NRAVE_SKIN_RESOLVED"
+            << "skin=" << resolvedSkinName
+            << "main=" << resolvedSkinMainWindowPath;
 #endif
 
     if (loadQml) {
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
-        mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices);
+        mixxx::qml::QmlApplication qmlApplication(
+                pApp,
+                pCoreServices,
+                mainQmlFilePath,
+                resolvedSkinName,
+                resolvedSkinMainWindowPath);
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {
