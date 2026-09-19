@@ -394,7 +394,7 @@ bool QmlApplication::loadQml(const QString& path) {
             QStringLiteral("NraveResolvedSkinMainWindowUrl"),
             resolvedSkinMainWindowUrl);
 
-    qInfo() << "NRAVE_QML_SHELL_RESOLVED"
+    qWarning() << "NRAVE_QML_SHELL_RESOLVED"
             << "skin=" << m_resolvedSkinName
             << "url=" << resolvedSkinMainWindowUrl;
 

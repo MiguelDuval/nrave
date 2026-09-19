@@ -52,7 +52,7 @@ ApplicationWindow {
 
     function loadSelectedMainWindow() {
         const sourceUrl = root.selectedMainWindowUrl();
-        console.info("NRAVE_QML_SHELL_LOADING_SKIN", root.selectedSkinName(), sourceUrl);
+        console.warn("NRAVE_QML_SHELL_LOADING_SKIN", root.selectedSkinName(), sourceUrl);
         content.setSource(sourceUrl, { "applicationWindow": root });
     }
 
@@ -77,7 +77,7 @@ ApplicationWindow {
         }
         onStatusChanged: {
             if (status === Loader.Ready) {
-                console.info("NRAVE_QML_SHELL_SKIN_READY", root.selectedSkinName(), source)
+                console.warn("NRAVE_QML_SHELL_SKIN_READY", root.selectedSkinName(), source)
                 return
             }
             if (status === Loader.Error) {

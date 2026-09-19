@@ -113,7 +113,7 @@ QString materializeAndroidQmlResources() {
     const QString qmlDir = QDir(appDataDir).filePath(QStringLiteral("qml"));
     const QString skinDir = QDir(appDataDir).filePath(QStringLiteral("skins"));
 
-    qInfo() << "NRAVE_ANDROID_STARTUP stage=materialize-begin"
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=materialize-begin"
             << "appData=" << appDataDir;
 
     if (!QDir(qmlDir).removeRecursively() ||
@@ -122,13 +122,13 @@ QString materializeAndroidQmlResources() {
         return {};
     }
 
-    qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-qml-begin"
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=copy-qml-begin"
             << "source=assets:/qml";
     if (!copyAndroidAssetDir(QStringLiteral("assets:/qml"), qmlDir)) {
         qCritical() << "NRAVE_ANDROID_STARTUP stage=copy-qml-failed";
         return {};
     }
-    qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-qml-done"
+    qWarning() << "NRAVE_ANDROID_STARTUP stage=copy-qml-done"
             << "path=" << qmlDir;
 
     // Stage 4 only needs the two explicit contract skins. Do not copy every
@@ -141,14 +141,14 @@ QString materializeAndroidQmlResources() {
     for (const QString& skinName : requiredSkinDirs) {
         const QString source = QStringLiteral("assets:/skins/") + skinName;
         const QString destination = QDir(skinDir).filePath(skinName);
-        qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-skin-begin"
+        qWarning() << "NRAVE_ANDROID_STARTUP stage=copy-skin-begin"
                 << "skin=" << skinName;
         if (!copyAndroidAssetDir(source, destination)) {
             qCritical() << "NRAVE_ANDROID_STARTUP stage=copy-skin-failed"
                         << "skin=" << skinName;
             return {};
         }
-        qInfo() << "NRAVE_ANDROID_STARTUP stage=copy-skin-done"
+        qWarning() << "NRAVE_ANDROID_STARTUP stage=copy-skin-done"
                 << "skin=" << skinName;
     }
 
@@ -167,8 +167,8 @@ QString materializeAndroidQmlResources() {
         }
     }
 
-    qInfo() << "NRAVE_ANDROID_STARTUP materialized_qml path=" << qmlDir;
-    qInfo() << "NRAVE_ANDROID_STARTUP materialized_skins path=" << skinDir;
+    qWarning() << "NRAVE_ANDROID_STARTUP materialized_qml path=" << qmlDir;
+    qWarning() << "NRAVE_ANDROID_STARTUP materialized_skins path=" << skinDir;
     return qmlDir;
 }
 #endif
@@ -217,7 +217,7 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
     }
 
     mainQmlFilePath = QDir(androidQmlDir).filePath(QStringLiteral("main.qml"));
-    qInfo() << "NRAVE_SKIN_RESOLVED"
+    qWarning() << "NRAVE_SKIN_RESOLVED"
             << "skin=" << resolvedSkinName
             << "main=" << resolvedSkinMainWindowPath;
 #endif
