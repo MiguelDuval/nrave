@@ -112,7 +112,8 @@ namespace qml {
 QmlApplication::QmlApplication(
         QApplication* app,
         std::shared_ptr<CoreServices> pCoreServices,
-        const QString& mainQmlFilePath)
+        const QString& mainQmlFilePath,
+        const QString& resolvedSkinMainWindowPath)
         : m_pCoreServices(std::move(pCoreServices)),
           m_visualsManager(std::make_unique<VisualsManager>()),
           m_pGuiTick(std::make_unique<GuiTick>()),
@@ -121,6 +122,7 @@ QmlApplication::QmlApplication(
                           : mainQmlFilePath),
           m_selectedSkinName(m_pCoreServices->getSettings()->getValueString(
                   ConfigKey("[Config]", "ResizableSkin"))),
+          m_resolvedSkinMainWindowPath(resolvedSkinMainWindowPath),
           m_pAppEngine(nullptr),
           m_loadSucceeded(false),
 #if defined(Q_OS_ANDROID)
@@ -412,18 +414,23 @@ void QmlApplication::updateSpinnyCoverControls() {
 bool QmlApplication::loadQml(const QString& path) {
     m_pAppEngine = std::make_unique<QQmlApplicationEngine>();
     m_pAppEngine->setUiLanguage(QLocale().name());
+    connect(m_pAppEngine.get(),
+            &QQmlApplicationEngine::warnings,
+            this,
+            [](const QList<QQmlError>& warnings) {
+                for (const auto& warning : warnings) {
+                    qCritical() << "QML engine warning:" << warning.toString();
+                }
+            });
 
     m_autoReload.clear();
     m_pAppEngine->addUrlInterceptor(&m_autoReload);
     m_pAppEngine->addImportPath(QStringLiteral(":/mixxx.org/imports"));
     QString selectedSkinMainWindowUrl;
 #if defined(Q_OS_ANDROID)
-    if (!m_selectedSkinName.isEmpty() &&
+    if (!m_resolvedSkinMainWindowPath.isEmpty() &&
             m_selectedSkinName != QStringLiteral("AndroidDefault")) {
-        const QFileInfo mainFileInfo(path);
-        const QString skinMainWindowPath = QDir(mainFileInfo.absolutePath()).filePath(
-                QStringLiteral("../skins/%1/MainWindow.qml").arg(m_selectedSkinName));
-        const QFileInfo skinMainWindowFile(QDir::cleanPath(skinMainWindowPath));
+        const QFileInfo skinMainWindowFile(m_resolvedSkinMainWindowPath);
         if (skinMainWindowFile.exists()) {
             selectedSkinMainWindowUrl = QUrl::fromLocalFile(
                     skinMainWindowFile.absoluteFilePath()).toString();

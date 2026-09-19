@@ -83,7 +83,12 @@ int runMixxx(MixxxApplication* pApp, const CmdlineArgs& args) {
 
     if (loadQml) {
         qputenv("QT_QUICK_TABLEVIEW_COMPAT_VERSION", "6.4");
-        mixxx::qml::QmlApplication qmlApplication(pApp, pCoreServices);
+        const QString resolvedSkinMainWindowPath =
+                pSkin->name() == QStringLiteral("AndroidDefault")
+                ? QString()
+                : pSkin->mainQmlFilePath();
+        mixxx::qml::QmlApplication qmlApplication(
+                pApp, pCoreServices, QString(), resolvedSkinMainWindowPath);
         if (!qmlApplication.isReady()) {
             exitCode = kFatalErrorOnStartupExitCode;
         } else {

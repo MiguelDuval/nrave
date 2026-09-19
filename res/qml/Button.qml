@@ -26,9 +26,13 @@ AbstractButton {
             color: root.normalBackgroundColor
             radius: 2
         }
+
+        // Diagnostic isolation: Qt5Compat GraphicalEffects are disabled here
+        // to determine whether their render-to-texture path causes the Android
+        // oversized triangle artifacts. No control contract is changed.
         DropShadow {
             id: effect1
-
+            visible: false
             anchors.fill: backgroundImage
             color: "#80000000"
             horizontalOffset: 0
@@ -38,7 +42,7 @@ AbstractButton {
         }
         InnerShadow {
             id: effect2
-
+            visible: false
             anchors.fill: backgroundImage
             color: "#353535"
             horizontalOffset: 1
@@ -48,6 +52,7 @@ AbstractButton {
             verticalOffset: 1
         }
         InnerShadow {
+            visible: false
             anchors.fill: backgroundImage
             color: "#353535"
             horizontalOffset: -1
@@ -57,21 +62,22 @@ AbstractButton {
             verticalOffset: -1
         }
     }
+
     contentItem: Item {
         anchors.fill: parent
 
         Glow {
             id: labelGlow
-
+            visible: false
             anchors.fill: parent
             color: label.color
             radius: 1
             source: label
             spread: 0.1
         }
+
         Label {
             id: label
-
             anchors.fill: parent
             color: root.normalColor
             font.bold: true
@@ -83,9 +89,9 @@ AbstractButton {
             verticalAlignment: Text.AlignVCenter
             visible: root.text != null
         }
+
         Image {
             id: image
-
             anchors.centerIn: parent
             asynchronous: true
             fillMode: Image.PreserveAspectFit
@@ -94,19 +100,20 @@ AbstractButton {
             visible: false
             width: icon.width
         }
+
         ColorOverlay {
             anchors.fill: image
             antialiasing: true
             color: root.normalColor
             source: image
-            visible: icon.source != null
+            visible: false
         }
     }
+
     states: [
         State {
             name: "pressed"
             when: root.pressed
-
             PropertyChanges {
                 color: root.highlight || root.checked ? root.activeBackgroundColor : Theme.darkGray3
                 target: backgroundImage
@@ -115,15 +122,10 @@ AbstractButton {
                 color: root.pressedColor
                 target: label
             }
-            PropertyChanges {
-                target: labelGlow
-                visible: true
-            }
         },
         State {
             name: "active"
             when: (root.highlight || root.checked) && !root.pressed
-
             PropertyChanges {
                 color: root.activeBackgroundColor
                 target: backgroundImage
@@ -132,22 +134,13 @@ AbstractButton {
                 color: root.activeColor
                 target: label
             }
-            PropertyChanges {
-                target: labelGlow
-                visible: true
-            }
         },
         State {
             name: "inactive"
             when: !root.checked && !root.highlight && !root.pressed
-
             PropertyChanges {
                 color: root.normalColor
                 target: label
-            }
-            PropertyChanges {
-                target: labelGlow
-                visible: false
             }
         }
     ]

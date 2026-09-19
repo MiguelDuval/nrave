@@ -28,7 +28,8 @@ class QmlApplication : public QObject {
     QmlApplication(
             QApplication* app,
             std::shared_ptr<CoreServices> pCoreServices,
-            const QString& mainQmlFilePath = QString());
+            const QString& mainQmlFilePath = QString(),
+            const QString& resolvedSkinMainWindowPath = QString());
     ~QmlApplication() override;
 
     bool isReady() const {
@@ -64,6 +65,7 @@ class QmlApplication : public QObject {
 
     QString m_mainFilePath;
     QString m_selectedSkinName;
+    QString m_resolvedSkinMainWindowPath;
 
     std::unique_ptr<QQmlApplicationEngine> m_pAppEngine;
     bool m_loadSucceeded;

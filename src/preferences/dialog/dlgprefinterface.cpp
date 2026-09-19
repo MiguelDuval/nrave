@@ -283,15 +283,19 @@ void DlgPrefInterface::slotUpdateSkins() {
     const QList<SkinPointer> userSkins = m_pSkinLoader->getUserSkins();
     int index = 0;
     for (const SkinPointer& pSkin : userSkins) {
+        if (m_skins.contains(pSkin->name())) {
+            continue;
+        }
         ComboBoxSkinconf->insertItem(index, userSkinIcon, pSkin->displayName(), pSkin->name());
         m_skins.insert(pSkin->name(), pSkin);
         index++;
     }
 
     // If there are user skins, we add a separator and the
-    // built-in skins also get an icon.
+    // built-in skins also get an icon. A skin name is unique in the selector;
+    // the user-skin search path already has precedence over system skins.
     QIcon systemSkinIcon;
-    if (ComboBoxSkinconf->count() > 0) {
+    if (index > 0) {
         ComboBoxSkinconf->insertSeparator(index);
         systemSkinIcon = QIcon(iconsPath.filePath("ic_mixxx_symbolic.svg"));
         index++;
@@ -299,6 +303,9 @@ void DlgPrefInterface::slotUpdateSkins() {
 
     const QList<SkinPointer> systemSkins = m_pSkinLoader->getSystemSkins();
     for (const SkinPointer& pSkin : systemSkins) {
+        if (m_skins.contains(pSkin->name())) {
+            continue;
+        }
         ComboBoxSkinconf->insertItem(
                 index, systemSkinIcon, pSkin->displayName(), pSkin->name());
         m_skins.insert(pSkin->name(), pSkin);
