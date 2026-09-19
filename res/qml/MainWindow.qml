@@ -274,16 +274,14 @@ Item {
 
                     activeColor: Theme.white
                     checkable: false
-                    checked: settingsPopup.opened
+                    checked: root.applicationWindow.preferencesOpen
                     icon.height: 18
                     icon.source: "images/gear.svg"
                     icon.width: 18
                     implicitWidth: 76
 
                     onClicked: {
-                        if (!settingsPopup.opened) {
-                            settingsPopup.open();
-                        }
+                        root.applicationWindow.openPreferences()
                     }
                     onPressAndHold: {
                         Mixxx.PreferencesDialog.show();
@@ -302,16 +300,14 @@ Item {
                     visible: false
 
                     activeColor: Theme.white
-                    checked: settingsPopup.opened
+                    checked: root.applicationWindow.preferencesOpen
                     icon.height: 16
                     icon.source: "images/gear.svg"
                     icon.width: 16
                     implicitWidth: implicitHeight
 
                     onClicked: {
-                        if (!settingsPopup.opened) {
-                            settingsPopup.open();
-                        }
+                        root.applicationWindow.openPreferences()
                     }
                     onPressAndHold: {
                         Mixxx.PreferencesDialog.show();
@@ -824,35 +820,5 @@ Item {
             }
         }
     }
-    Skin.Settings {
-        id: settingsPopup
 
-        height: Math.min(840, parent.height)
-        modal: true
-        width: Math.min(1400, parent.width)
-        x: Math.round((parent.width - width) / 2)
-        y: Math.round((parent.height - height) / 2)
-
-        Overlay.modal: Rectangle {
-            id: overlayModal
-
-            readonly property bool hasHardwareAcceleration: Mixxx.Config.useAcceleration
-            property real radius: 12
-
-            anchors.fill: parent
-            color: Qt.alpha('#00000010', hasHardwareAcceleration ? 1.0 : 0.6)
-
-            Repeater {
-                model: hasHardwareAcceleration ? 1 : 0
-
-                GaussianBlur {
-                    anchors.fill: overlayModal
-                    deviation: 4
-                    radius: Math.max(0, overlayModal.radius)
-                    samples: 16
-                    source: content
-                }
-            }
-        }
-    }
 }
