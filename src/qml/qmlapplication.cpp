@@ -447,6 +447,30 @@ bool QmlApplication::loadQml(const QString& path) {
     }
 
 #if defined(Q_OS_ANDROID)
+    if (auto* rootObject = m_pAppEngine->rootObjects().constFirst()) {
+        if (auto* skinLoader = rootObject->findChild<QObject*>(
+                    QStringLiteral("nrave_selected_skin_loader"))) {
+            const auto logSkinLoaderStatus = [this, skinLoader]() {
+                const int status = skinLoader->property("status").toInt();
+                const QString source = skinLoader->property("source").toString();
+                qWarning() << "NRAVE_SKIN_LOADER_STATUS"
+                           << "skin=" << m_selectedSkinName
+                           << "status=" << status
+                           << "source=" << source;
+            };
+            QObject::connect(
+                    skinLoader,
+                    SIGNAL(statusChanged()),
+                    this,
+                    logSkinLoaderStatus);
+            logSkinLoaderStatus();
+        } else {
+            qWarning() << "NRAVE_SKIN_LOADER_STATUS missing_loader_object";
+        }
+    }
+#endif
+
+#if defined(Q_OS_ANDROID)
     for (auto* item : m_pAppEngine->rootObjects()) {
         auto* pWindow = qobject_cast<QQuickWindow*>(item);
         if (!pWindow) {
