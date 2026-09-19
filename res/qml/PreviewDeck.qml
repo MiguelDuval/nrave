@@ -14,7 +14,9 @@ Rectangle {
 
     color: 'transparent'
 
+    // Android diagnostic: isolate QtQuick.Shapes from the scenegraph corruption.
     Shape {
+        visible: Qt.platform.os !== "android"
         anchors.fill: parent
         ShapePath {
             strokeColor: Theme.midGray
