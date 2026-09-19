@@ -7,11 +7,6 @@ on:
         description: GitHub Actions run ID containing nrave-runtime-apk. Leave empty to use newest unexpired artifact on this branch.
         required: false
         type: string
-  push:
-    branches: [stage4-minimal-skin-contract]
-    paths:
-      - tools/android_skin_contract_test.py
-      - .github/workflows/android-skin-contract-existing-apk.yml
 
 permissions:
   actions: read
