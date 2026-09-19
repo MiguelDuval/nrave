@@ -410,7 +410,10 @@ Item {
 
                 SplitView.fillHeight: !library.active
                 SplitView.preferredHeight: library.active ? 120 : undefined
-                visible: !root.maximizeLibrary
+                // Diagnostic isolation: disable the shared waveform scenegraph
+                // on Android to determine whether it is the source of the emulator
+                // triangle corruption. No skin/control contract is changed.
+                visible: !root.maximizeLibrary && Qt.platform.os !== "android"
 
                 FadeBehavior on visible {
                     fadeTarget: waveforms
