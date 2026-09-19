@@ -177,7 +177,6 @@ Item {
             width: parent.width
 
             onFocusLibrarySearchRequested: root.focusLegacyLibrarySearch()
-            onPreferencesRequested: root.applicationWindow.openPreferences()
         }
         SplitView {
             id: splitView
