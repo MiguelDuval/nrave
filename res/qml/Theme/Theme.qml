@@ -71,7 +71,8 @@ QtObject {
     property color textColor: "#D6E1EB"
     property int textFontPixelSize: 14
     property color toolbarActiveColor: "#F4FAFF"
-    property color toolbarBackgroundColor: "#111821"\n    property color buttonNormalBackgroundColor: "#111922"
+    property color toolbarBackgroundColor: "#111821"
+    property color buttonNormalBackgroundColor: "#111922"
     property color buttonActiveBackgroundColor: "#153C49"
     property color buttonBorderColor: "#263746"
     property color buttonActiveBorderColor: "#00D9FF"
