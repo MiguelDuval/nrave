@@ -151,15 +151,7 @@ jobs:
           path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           archive: false
           if-no-files-found: error
-          retention-days: 30
-      - name: Upload APK for runtime smoke test
-        uses: actions/upload-artifact@v7
-        with:
-          name: nrave-runtime-apk
-          path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-          archive: true
-          if-no-files-found: error
-          retention-days: 30
+          retention-days: 7
 
   android-runtime-smoke:
     needs: android-apk
@@ -172,7 +164,7 @@ jobs:
       - name: Download APK
         uses: actions/download-artifact@v8
         with:
-          name: nrave-runtime-apk
+          name: android-build-release-signed.apk
           path: runtime-apk
 
       - name: Prepare runtime diagnostics
