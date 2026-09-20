@@ -389,18 +389,33 @@ void Logging::initialize(
         LogLevel logLevel,
         LogLevel logFlushLevel,
         LogFlags flags) {
+    fprintf(stderr, "NRAVE_LOGGING stage=initialize-enter\n");
+    fflush(stderr);
+
     VERIFY_OR_DEBUG_ASSERT(!s_logfile.isOpen()) {
         // Somebody already called Logging::initialize.
         return;
     }
 
+    fprintf(stderr, "NRAVE_LOGGING stage=set-log-level-begin\n");
+    fflush(stderr);
     setLogLevel(logLevel);
+    fprintf(stderr, "NRAVE_LOGGING stage=set-log-level-done\n");
+    fflush(stderr);
 
     QString logFilePath;
     if (flags.testFlag(LogFlag::LogToFile)) {
+        fprintf(stderr, "NRAVE_LOGGING stage=rotate-files-begin logDirPath=%s\n",
+                logDirPath.toLocal8Bit().constData());
+        fflush(stderr);
         logFilePath = rotateLogFilesAndGetFilePath(logDirPath);
+        fprintf(stderr, "NRAVE_LOGGING stage=rotate-files-done logFilePath=%s\n",
+                logFilePath.toLocal8Bit().constData());
+        fflush(stderr);
     }
 
+    fprintf(stderr, "NRAVE_LOGGING stage=log-file-open-begin\n");
+    fflush(stderr);
     if (logFilePath.isEmpty()) {
         // No need to flush anything
         s_logFlushLevel = LogLevel::Critical;
@@ -412,17 +427,27 @@ void Logging::initialize(
         DEBUG_ASSERT(result);
         s_logFlushLevel = logFlushLevel;
     }
+    fprintf(stderr, "NRAVE_LOGGING stage=log-file-open-done\n");
+    fflush(stderr);
 
     s_debugAssertBreak = flags.testFlag(LogFlag::DebugAssertBreak);
 
+    fprintf(stderr, "NRAVE_LOGGING stage=set-message-pattern-begin\n");
+    fflush(stderr);
     if (CmdlineArgs::Instance().useColors()) {
         qSetMessagePattern(kDefaultMessagePatternColor);
     } else {
         qSetMessagePattern(kDefaultMessagePattern);
     }
+    fprintf(stderr, "NRAVE_LOGGING stage=set-message-pattern-done\n");
+    fflush(stderr);
 
     // Install the Qt message handler.
+    fprintf(stderr, "NRAVE_LOGGING stage=install-message-handler-begin\n");
+    fflush(stderr);
     qInstallMessageHandler(handleMessage);
+    fprintf(stderr, "NRAVE_LOGGING stage=install-message-handler-done\n");
+    fflush(stderr);
 
     // Ugly hack around distributions disabling debugging in Qt applications.
     // This restores the default Qt behavior. It is required for getting useful
@@ -431,11 +456,17 @@ void Logging::initialize(
     // Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=886437
     // Ubuntu: https://bugs.launchpad.net/ubuntu/+source/qtbase-opensource-src/+bug/1731646
 #ifdef __LINUX__
+    fprintf(stderr, "NRAVE_LOGGING stage=linux-filter-begin\n");
+    fflush(stderr);
     QLoggingCategory::setFilterRules(
             "*.debug=true\n"
             "qt.*.debug=false");
+    fprintf(stderr, "NRAVE_LOGGING stage=linux-filter-done\n");
+    fflush(stderr);
 #endif
 
+    fprintf(stderr, "NRAVE_LOGGING stage=controller-debug-begin\n");
+    fflush(stderr);
     if (CmdlineArgs::Instance().getControllerDebug()) {
         // Due to our hacky custom logging system, all debug messages are
         // discarded if the overall log level is not `Debug` - even if debug
@@ -452,8 +483,17 @@ void Logging::initialize(
         oldCategoryFilter = QLoggingCategory::installFilter(nullptr);
         QLoggingCategory::installFilter(controllerDebugCategoryFilter);
     }
+    fprintf(stderr, "NRAVE_LOGGING stage=controller-debug-done\n");
+    fflush(stderr);
 
+    fprintf(stderr, "NRAVE_LOGGING stage=log-max-file-size-begin\n");
+    fflush(stderr);
     s_logMaxFileSize = CmdlineArgs::Instance().getLogMaxFileSize();
+    fprintf(stderr, "NRAVE_LOGGING stage=log-max-file-size-done\n");
+    fflush(stderr);
+
+    fprintf(stderr, "NRAVE_LOGGING stage=initialize-exit\n");
+    fflush(stderr);
 }
 
 // static
