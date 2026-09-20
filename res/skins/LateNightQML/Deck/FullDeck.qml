@@ -12,6 +12,8 @@ Controls.Panel {
     implicitWidth: 620
 
     required property string group
+    readonly property bool isDeckA: group === "[Channel1]"
+    readonly property bool isDeckB: group === "[Channel2]"
     property bool minimized: false
     property bool editMode: false
     readonly property bool showBeatjumpControls: showBeatjumpControlsProxy.value > 0
@@ -35,6 +37,8 @@ Controls.Panel {
     signal toggleFocus
 
     color: LateNightTheme.deckPanelColor
+    border.color: root.isDeckA ? LateNightTheme.primaryVioletColor : LateNightTheme.primaryCyan
+    border.width: 1
 
     Mixxx.ControlProxy { id: selectBigSpinnyProxy; group: "[Skin]"; key: "select_big_spinny_or_cover" }
     Mixxx.ControlProxy { id: showKeyControlsProxy; group: "[Skin]"; key: "show_key_controls" }

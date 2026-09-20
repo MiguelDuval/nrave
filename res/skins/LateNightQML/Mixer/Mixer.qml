@@ -15,28 +15,61 @@ Item {
         anchors.fill: parent
         color: LateNightTheme.mixerPanelColor
     }
+
+    // Central core spine - cyan accent line
+    Rectangle {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 2
+        color: LateNightTheme.coreBorderColor
+        opacity: 0.6
+    }
+
+    // Top border - stronger
     Rectangle {
         color: LateNightTheme.mixerPanelBorderTop
-        height: 1
+        height: 2
         width: parent.width
     }
+
+    // Left border
     Rectangle {
         color: LateNightTheme.mixerPanelBorderLeft
         height: parent.height
         width: 1
     }
+
+    // Bottom border - stronger
     Rectangle {
         anchors.bottom: parent.bottom
         color: LateNightTheme.mixerPanelBorderBottom
-        height: 1
+        height: 2
         width: parent.width
     }
+
+    // Right border
     Rectangle {
         anchors.right: parent.right
         color: LateNightTheme.mixerPanelBorderRight
         height: parent.height
         width: 1
     }
+
+    // Subtle vertical technical markings on the central spine
+    Repeater {
+        model: 8
+        Rectangle {
+            x: parent.width / 2 - 1
+            y: (index + 1) * (parent.height / 9)
+            width: 4
+            height: 1
+            color: LateNightTheme.coreBorderColor
+            opacity: 0.3
+            radius: 1
+        }
+    }
+
     MixerDecks {
         id: decks
 
