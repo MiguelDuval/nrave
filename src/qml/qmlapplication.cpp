@@ -452,23 +452,17 @@ bool QmlApplication::loadQml(const QString& path) {
 
 #if defined(Q_OS_ANDROID)
     if (auto* rootObject = m_pAppEngine->rootObjects().constFirst()) {
-        __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML rootObject found, looking for skin loader");
         if (auto* skinLoader = rootObject->findChild<QObject*>(
                     QStringLiteral("nrave_selected_skin_loader"))) {
-            __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML skin loader found, connecting statusChanged signal");
             bool connected = QObject::connect(
                     skinLoader,
                     SIGNAL(statusChanged()),
                     this,
                     SLOT(logSelectedSkinLoaderStatus()));
-            __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML signal connection %s", connected ? "succeeded" : "FAILED");
             logSelectedSkinLoaderStatus();
         } else {
-            __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML skin loader NOT FOUND (findChild returned null)");
             qWarning() << "NRAVE_SKIN_LOADER_STATUS missing_loader_object";
         }
-    } else {
-        __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML rootObject is null");
     }
 #endif
 
