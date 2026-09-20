@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       apk_run_id:
-        description: "GitHub Actions run ID containing nrave-runtime-apk. Leave empty to use the newest unexpired APK artifact on this branch."
+        description: "GitHub Actions run ID containing android-build-release-signed.apk. Leave empty to use the newest unexpired APK artifact on this branch."
         required: false
         type: string
   push:
@@ -45,7 +45,7 @@ jobs:
             candidate_runs="$(gh api "/repos/$GITHUB_REPOSITORY/actions/workflows/build.yml/runs?branch=$GITHUB_REF_NAME&per_page=30" --jq '.workflow_runs[] | .id')"
             while IFS= read -r candidate; do
               [ -n "$candidate" ] || continue
-              artifact_id="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$candidate/artifacts?per_page=100" --jq '.artifacts[]? | select(.name=="nrave-runtime-apk" and .expired==false) | .id' | sed -n '1p')"
+              artifact_id="$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$candidate/artifacts?per_page=100" --jq '.artifacts[]? | select(.name=="android-build-release-signed.apk" and .expired==false) | .id' | sed -n '1p')"
               if printf '%s' "$artifact_id" | grep -Eq '^[0-9]+$'; then
                 run_id="$candidate"
                 break
@@ -53,7 +53,7 @@ jobs:
             done <<< "$candidate_runs"
           fi
           if ! printf '%s' "$run_id" | grep -Eq '^[0-9]+$'; then
-            echo "Could not resolve a run containing an unexpired nrave-runtime-apk artifact on $GITHUB_REF_NAME" >&2
+            echo "Could not resolve a run containing an unexpired android-build-release-signed.apk artifact on $GITHUB_REF_NAME" >&2
             exit 1
           fi
           echo "Using APK artifact from Android APK run: $run_id"
@@ -70,7 +70,7 @@ jobs:
       - name: Download existing runtime APK
         uses: actions/download-artifact@v8
         with:
-          name: nrave-runtime-apk
+          name: android-build-release-signed.apk
           path: runtime-apk
           repository: ${{ github.repository }}
           run-id: ${{ needs.resolve-apk.outputs.run_id }}
