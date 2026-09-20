@@ -9,7 +9,7 @@ QtObject {
             ? classicScheme
             : paleMoonScheme
 
-    readonly property color accentColor: activeScheme.accentColor
+    readonly property color accentColor: "#00D9FF"
     readonly property string displayName: activeScheme.displayName
     readonly property string name: activeScheme.name
 
