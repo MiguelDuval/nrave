@@ -732,6 +732,25 @@ def current_app_logcat() -> str:
     return run_adb("logcat", "--pid", pid[0], "-d", timeout=30)
 
 
+def parse_skin_loader_status(line: str) -> tuple[str, int, str] | None:
+    """Parse either the legacy qWarning marker or the Android-native marker."""
+    native = re.search(
+        r"NRAVE_SKIN_LOADER_NATIVE\\s+skin=(\\S+)\\s+status=(-?\\d+)\\s+source=(.*)$",
+        line,
+    )
+    if native:
+        return native.group(1), int(native.group(2)), native.group(3)
+
+    qt = re.search(
+        r'NRAVE_SKIN_LOADER_STATUS.*?skin=\\s*"([^"]*)".*?status=\\s*(-?\\d+).*?source=\\s*"([^"]*)"',
+        line,
+    )
+    if qt:
+        return qt.group(1), int(qt.group(2)), qt.group(3)
+
+    return None
+
+
 def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> str:
     """Wait for the application's own loader status instead of sampling logcat once."""
     deadline = time.time() + timeout
@@ -742,16 +761,20 @@ def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> st
 
         lines = [
             line for line in last_log.splitlines()
-            if "NRAVE_SKIN_LOADER_STATUS" in line
+            if "NRAVE_SKIN_LOADER_NATIVE" in line
+            or "NRAVE_SKIN_LOADER_STATUS" in line
         ]
-        matching = [
-            line for line in lines
-            if f'skin= "{expected_skin}"' in line and "status= 1" in line
-        ]
+        matching = []
+        for line in lines:
+            parsed = parse_skin_loader_status(line)
+            if parsed is None:
+                continue
+            skin, status, _ = parsed
+            if skin == expected_skin and status == 1:
+                matching.append((line, parsed))
+
         if matching:
-            line = matching[-1]
-            source_match = re.search(r'source= "([^"]*)"', line)
-            source = source_match.group(1) if source_match else ""
+            _, (_, _, source) = matching[-1]
             if expected_skin == "LateNightQML" and "LateNightQML/MainWindow.qml" not in source:
                 raise UiTestError(
                     f"LateNightQML resolved to an unexpected Loader source: {source!r}"
