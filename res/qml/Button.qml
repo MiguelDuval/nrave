@@ -84,10 +84,6 @@ AbstractButton {
                 color: root.pressedColor
                 target: label
             }
-            PropertyChanges {
-                target: labelGlow
-                visible: true
-            }
         },
         State {
             name: "active"
@@ -101,10 +97,6 @@ AbstractButton {
                 color: root.activeColor
                 target: label
             }
-            PropertyChanges {
-                target: labelGlow
-                visible: true
-            }
         },
         State {
             name: "inactive"
@@ -113,10 +105,6 @@ AbstractButton {
             PropertyChanges {
                 color: root.normalColor
                 target: label
-            }
-            PropertyChanges {
-                target: labelGlow
-                visible: false
             }
         }
     ]
