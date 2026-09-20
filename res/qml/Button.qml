@@ -1,4 +1,3 @@
-import Qt5Compat.GraphicalEffects
 import QtQuick 2
 import QtQuick.Controls 2
 import "Theme"
@@ -7,8 +6,8 @@ AbstractButton {
     id: root
 
     property color activeColor: Theme.buttonActiveColor
-    property color activeBackgroundColor: "#2D4EA1"
-    property color normalBackgroundColor: "#2B2B2B"
+    property color activeBackgroundColor: Theme.buttonActiveBackgroundColor
+    property color normalBackgroundColor: Theme.buttonNormalBackgroundColor
     property bool highlight: false
     property color normalColor: Theme.buttonNormalColor
     property color pressedColor: activeColor
@@ -16,45 +15,29 @@ AbstractButton {
     implicitHeight: 26
     implicitWidth: 52
 
-    background: Item {
+    background: Rectangle {
+        id: backgroundImage
+
         anchors.fill: parent
+        color: root.normalBackgroundColor
+        radius: 4
+        border.width: 1
+        border.color: root.pressed
+                ? Theme.buttonPressedBorderColor
+                : (root.highlight || root.checked
+                        ? Theme.buttonActiveBorderColor
+                        : Theme.buttonBorderColor)
 
         Rectangle {
-            id: backgroundImage
-
-            anchors.fill: parent
-            color: root.normalBackgroundColor
-            radius: 2
-        }
-        DropShadow {
-            id: effect1
-
-            anchors.fill: backgroundImage
-            color: "#80000000"
-            horizontalOffset: 0
-            radius: 1.0
-            source: backgroundImage
-            verticalOffset: 0
-        }
-        InnerShadow {
-            id: effect2
-
-            anchors.fill: backgroundImage
-            color: "#353535"
-            horizontalOffset: 1
-            radius: 1
-            samples: 16
-            source: effect1
-            verticalOffset: 1
-        }
-        InnerShadow {
-            anchors.fill: backgroundImage
-            color: "#353535"
-            horizontalOffset: -1
-            radius: 1
-            samples: 16
-            source: effect2
-            verticalOffset: -1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 1
+            radius: 0.5
+            color: Qt.alpha(root.pressed ? Theme.buttonPressedBorderColor
+                                         : (root.highlight || root.checked
+                                                 ? Theme.buttonActiveBorderColor
+                                                 : Theme.buttonBorderColor), 0.42)
         }
     }
     contentItem: Item {
