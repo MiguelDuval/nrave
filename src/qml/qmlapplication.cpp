@@ -14,6 +14,7 @@
 #include <QQmlEngineExtensionPlugin>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QQuickItem>
 #include <QTextDocument>
 #include <QUrl>
 #include <memory>
@@ -463,13 +464,15 @@ bool QmlApplication::loadQml(const QString& path) {
                     SLOT(logSelectedSkinLoaderStatus()));
             __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML signal connection %s", connected ? "succeeded" : "FAILED");
             if (!connected) {
-                // Try new-style connect
-                connected = QObject::connect(
-                        skinLoader,
-                        &QObject::statusChanged,
-                        this,
-                        &QmlApplication::logSelectedSkinLoaderStatus);
-                __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML new-style connection %s", connected ? "succeeded" : "FAILED");
+                // Try new-style connect with qobject_cast to QQuickItem
+                if (auto* item = qobject_cast<QQuickItem*>(skinLoader)) {
+                    connected = QObject::connect(
+                            item,
+                            &QQuickItem::statusChanged,
+                            this,
+                            &QmlApplication::logSelectedSkinLoaderStatus);
+                    __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_LOADQML new-style connection (QQuickItem) %s", connected ? "succeeded" : "FAILED");
+                }
             }
             logSelectedSkinLoaderStatus();
         } else {
