@@ -43,15 +43,6 @@ AbstractButton {
     contentItem: Item {
         anchors.fill: parent
 
-        Glow {
-            id: labelGlow
-
-            anchors.fill: parent
-            color: label.color
-            radius: 1
-            source: label
-            spread: 0.1
-        }
         Label {
             id: label
 
@@ -64,8 +55,9 @@ AbstractButton {
             horizontalAlignment: Text.AlignHCenter
             text: root.text
             verticalAlignment: Text.AlignVCenter
-            visible: root.text != null
+            visible: root.text != null && root.text !== ""
         }
+
         Image {
             id: image
 
@@ -74,15 +66,9 @@ AbstractButton {
             fillMode: Image.PreserveAspectFit
             height: icon.height
             source: icon.source
-            visible: false
+            visible: icon.source != null && icon.source !== ""
             width: icon.width
-        }
-        ColorOverlay {
-            anchors.fill: image
-            antialiasing: true
-            color: root.normalColor
-            source: image
-            visible: icon.source != null
+            opacity: root.enabled ? 1.0 : 0.55
         }
     }
     states: [
