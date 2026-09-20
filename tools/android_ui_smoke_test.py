@@ -733,23 +733,14 @@ def current_app_logcat() -> str:
 
 
 def parse_skin_loader_status(line: str) -> tuple[str, int, str] | None:
-    """Parse either the legacy qWarning marker or the Android-native marker."""
+    """Parse the Android-native skin loader marker visible in adb logcat."""
     native = re.search(
         r"NRAVE_SKIN_LOADER_NATIVE\s+skin=(\S+)\s+status=(-?\d+)\s+source=(.*)$",
         line,
     )
     if native:
         return native.group(1), int(native.group(2)), native.group(3)
-
-    qt = re.search(
-        r'NRAVE_SKIN_LOADER_STATUS.*?skin=\\s*"([^"]*)".*?status=\\s*(-?\\d+).*?source=\\s*"([^"]*)"',
-        line,
-    )
-    if qt:
-        return qt.group(1), int(qt.group(2)), qt.group(3)
-
     return None
-
 
 def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> str:
     """Wait for the application's own loader status instead of sampling logcat once."""
