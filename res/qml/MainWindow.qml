@@ -200,21 +200,21 @@ Item {
                 Skin.Button {
                     id: showEffectsButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryVioletColor
                     checkable: true
                     text: "Effects"
                 }
                 Skin.Button {
                     id: showAuxButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryCyan
                     checkable: true
                     text: "Aux"
                 }
                 Skin.Button {
                     id: showSamplersButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryVioletColor
                     checkable: true
                     text: "Sampler"
                 }
@@ -222,7 +222,7 @@ Item {
                     id: recordButton
 
                     activeBackgroundColor: Theme.red
-                    activeColor: Theme.white
+                    activeColor: Theme.backgroundColor
                     group: "[Recording]"
                     highlight: recordingStatus.value >= 2
                     key: "toggle_recording"
@@ -234,27 +234,27 @@ Item {
 
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 0
-                    Layout.preferredWidth: recordingStatus.value >= 2 ? 72 : 0
-                    implicitHeight: 26
+                    Layout.preferredWidth: recordingStatus.value >= 2 ? 80 : 0
+                    implicitHeight: 28
                     visible: recordingStatus.value >= 2
 
                     Row {
                         anchors.centerIn: parent
-                        spacing: 5
+                        spacing: 6
 
                         Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             color: Theme.red
-                            height: 7
-                            radius: 3.5
-                            width: 7
+                            height: 8
+                            radius: 4
+                            width: 8
                         }
                         Label {
                             anchors.verticalCenter: parent.verticalCenter
                             color: Theme.red
                             font.bold: true
                             font.family: Theme.fontFamily
-                            font.pixelSize: Theme.buttonFontPixelSize
+                            font.pixelSize: 12
                             text: "REC " + root.formatRecordingDuration(root.recordingElapsedSeconds)
                         }
                     }
@@ -265,14 +265,14 @@ Item {
                 Skin.Button {
                     id: editDeckButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryVioletColor
                     checkable: true
                     text: "Edit"
                 }
                 Skin.Button {
                     id: showDevToolsButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryCyan
                     checkable: false
                     checked: settingsPopup.opened
                     icon.height: 18
@@ -409,7 +409,8 @@ Item {
                 id: waveforms
 
                 SplitView.fillHeight: !library.active
-                SplitView.preferredHeight: library.active ? 150 : undefined
+                SplitView.preferredHeight: library.active ? 190 : undefined
+                SplitView.minimumHeight: library.active ? 160 : 150
                 visible: !root.maximizeLibrary
 
                 FadeBehavior on visible {

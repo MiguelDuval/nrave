@@ -15,13 +15,18 @@ Item {
     }
 
     required property string group
+    required property bool isDeckA: false
+    required property bool isDeckB: false
     property bool splitStemTracks: false
     readonly property string zoomGroup: Mixxx.Config.waveformZoomSynchronization ? "[Channel1]" : group
 
-    readonly property bool isPrimaryDeck: group === "[Channel1]" || group === "[Channel2]"
-    readonly property color waveformBgColor: isPrimaryDeck
+    readonly property color waveformBgColor: isDeckA
             ? LateNightTheme.waveformPrimaryBackgroundColor
             : LateNightTheme.waveformSecondaryBackgroundColor
+
+    readonly property color waveformSignalColor: isDeckA
+            ? LateNightTheme.waveformVioletColor
+            : LateNightTheme.waveformCyanColor
 
     readonly property color cueColor: LateNightTheme.waveformCueColor
     readonly property color loopColor: LateNightTheme.waveformLoopColor
@@ -83,7 +88,7 @@ Item {
         }
         Mixxx.WaveformRendererFiltered {
             axesColor: root.beatAxesColor
-            gainAll: 2.0
+            gainAll: 2.4
             gainHigh: 1.0
             gainLow: 1.0
             gainMid: 1.0
@@ -92,8 +97,12 @@ Item {
             midColor: LateNightTheme.waveformFilteredMidColor
         }
         Mixxx.WaveformRendererStem {
-            gainAll: root.splitStemTracks ? 2.0 : 1.0
+            gainAll: root.splitStemTracks ? 2.4 : 1.0
             splitStemTracks: root.splitStemTracks
+            highColor: LateNightTheme.waveformFilteredHighColor
+            lowColor: LateNightTheme.waveformFilteredLowColor
+            midColor: LateNightTheme.waveformFilteredMidColor
+            vocalColor: root.waveformSignalColor
         }
         Mixxx.WaveformRendererBeat {
             color: root.beatAxesColor

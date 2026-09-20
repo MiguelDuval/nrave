@@ -26,11 +26,11 @@ Skin.Button {
     activeColor: {
         switch (mode) {
             case SyncButton.SyncMode.ImplicitLeader:
-                return Theme.yellow;
+                return Theme.amber;
             case SyncButton.SyncMode.ExplicitLeader:
                 return Theme.red;
             default:
-                return Theme.deckActiveColor;
+                return Theme.primaryCyan;
         }
     }
     text: {
