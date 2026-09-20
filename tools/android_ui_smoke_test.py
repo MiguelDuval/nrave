@@ -735,7 +735,7 @@ def current_app_logcat() -> str:
 def parse_skin_loader_status(line: str) -> tuple[str, int, str] | None:
     """Parse either the legacy qWarning marker or the Android-native marker."""
     native = re.search(
-        r"NRAVE_SKIN_LOADER_NATIVE\\s+skin=(\\S+)\\s+status=(-?\\d+)\\s+source=(.*)$",
+        r"NRAVE_SKIN_LOADER_NATIVE\s+skin=(\S+)\s+status=(-?\d+)\s+source=(.*)$",
         line,
     )
     if native:
