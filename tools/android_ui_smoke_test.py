@@ -797,7 +797,16 @@ def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> st
         line for line in last_log.splitlines()
         if "NRAVE_ANDROID_STARTUP" in line
     ]
+    # Include all raw loader-related lines for debugging
+    raw_loader_lines = [
+        line for line in last_log.splitlines()
+        if "NRAVE_SKIN_LOADER_NATIVE" in line
+        or "NRAVE_SKIN_LOADER_STATUS" in line
+    ]
     recent = "\n".join(stage_lines[-12:] + lines[-12:])
+    # Add raw loader lines if different from parsed lines
+    if raw_loader_lines != lines:
+        recent += "\n[RAW LOADER LINES]\n" + "\n".join(raw_loader_lines[-12:])
     raise UiTestError(
         f"Resolved QML skin loader did not reach Ready for {expected_skin!r} "
         f"within {timeout:.0f}s. Observed startup/loader diagnostics:\n{recent}"
