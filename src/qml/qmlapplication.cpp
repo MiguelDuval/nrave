@@ -1,6 +1,10 @@
 #include "qmlapplication.h"
 
 #include <QCoreApplication>
+
+#ifdef Q_OS_ANDROID
+#include <android/log.h>
+#endif
 #include <QEventLoop>
 #include <QFileInfo>
 #include <QLocale>
@@ -485,6 +489,8 @@ void QmlApplication::logSelectedSkinLoaderStatus() {
             QStringLiteral("nrave_selected_skin_loader"));
     if (!skinLoader) {
         qWarning() << "NRAVE_SKIN_LOADER_STATUS missing_loader_object";
+        __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_SKIN_LOADER_NATIVE skin=%s status=-1 source=missing_loader_object",
+                            m_selectedSkinName.toLocal8Bit().constData());
         return;
     }
 
@@ -494,6 +500,10 @@ void QmlApplication::logSelectedSkinLoaderStatus() {
                << "skin=" << m_selectedSkinName
                << "status=" << status
                << "source=" << source;
+    __android_log_print(ANDROID_LOG_WARN, "NRAVE", "NRAVE_SKIN_LOADER_NATIVE skin=%s status=%d source=%s",
+                        m_selectedSkinName.toLocal8Bit().constData(),
+                        status,
+                        source.toLocal8Bit().constData());
 }
 #endif
 

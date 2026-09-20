@@ -3,6 +3,10 @@
 #include <signal.h>
 #include <stdio.h>
 
+#ifdef Q_OS_ANDROID
+#include <android/log.h>
+#endif
+
 #include <QByteArray>
 #include <QDateTime>
 #include <QFile>
@@ -24,6 +28,14 @@ namespace {
 
 /// Mutex guarding s_logfile.
 QMutex s_mutexLogfile;
+
+#ifdef Q_OS_ANDROID
+// Helper for Android native logcat output (bypasses Qt message handler)
+#define NRAVE_ANDROID_LOG(fmt, ...) \
+    __android_log_print(ANDROID_LOG_WARN, "NRAVE", fmt, ##__VA_ARGS__)
+#else
+#define NRAVE_ANDROID_LOG(fmt, ...) ((void)0)
+#endif
 
 /// Mutex guarding stderr.
 QMutex s_mutexStdErr;
@@ -389,6 +401,7 @@ void Logging::initialize(
         LogLevel logLevel,
         LogLevel logFlushLevel,
         LogFlags flags) {
+    NRAVE_ANDROID_LOG("stage=initialize-enter");
     fprintf(stderr, "NRAVE_LOGGING stage=initialize-enter\n");
     fflush(stderr);
 
@@ -397,23 +410,28 @@ void Logging::initialize(
         return;
     }
 
+    NRAVE_ANDROID_LOG("stage=set-log-level-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=set-log-level-begin\n");
     fflush(stderr);
     setLogLevel(logLevel);
+    NRAVE_ANDROID_LOG("stage=set-log-level-done");
     fprintf(stderr, "NRAVE_LOGGING stage=set-log-level-done\n");
     fflush(stderr);
 
     QString logFilePath;
     if (flags.testFlag(LogFlag::LogToFile)) {
+        NRAVE_ANDROID_LOG("stage=rotate-files-begin logDirPath=%s", logDirPath.toLocal8Bit().constData());
         fprintf(stderr, "NRAVE_LOGGING stage=rotate-files-begin logDirPath=%s\n",
                 logDirPath.toLocal8Bit().constData());
         fflush(stderr);
         logFilePath = rotateLogFilesAndGetFilePath(logDirPath);
+        NRAVE_ANDROID_LOG("stage=rotate-files-done logFilePath=%s", logFilePath.toLocal8Bit().constData());
         fprintf(stderr, "NRAVE_LOGGING stage=rotate-files-done logFilePath=%s\n",
                 logFilePath.toLocal8Bit().constData());
         fflush(stderr);
     }
 
+    NRAVE_ANDROID_LOG("stage=log-file-open-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=log-file-open-begin\n");
     fflush(stderr);
     if (logFilePath.isEmpty()) {
@@ -427,11 +445,13 @@ void Logging::initialize(
         DEBUG_ASSERT(result);
         s_logFlushLevel = logFlushLevel;
     }
+    NRAVE_ANDROID_LOG("stage=log-file-open-done");
     fprintf(stderr, "NRAVE_LOGGING stage=log-file-open-done\n");
     fflush(stderr);
 
     s_debugAssertBreak = flags.testFlag(LogFlag::DebugAssertBreak);
 
+    NRAVE_ANDROID_LOG("stage=set-message-pattern-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=set-message-pattern-begin\n");
     fflush(stderr);
     if (CmdlineArgs::Instance().useColors()) {
@@ -439,13 +459,16 @@ void Logging::initialize(
     } else {
         qSetMessagePattern(kDefaultMessagePattern);
     }
+    NRAVE_ANDROID_LOG("stage=set-message-pattern-done");
     fprintf(stderr, "NRAVE_LOGGING stage=set-message-pattern-done\n");
     fflush(stderr);
 
     // Install the Qt message handler.
+    NRAVE_ANDROID_LOG("stage=install-message-handler-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=install-message-handler-begin\n");
     fflush(stderr);
     qInstallMessageHandler(handleMessage);
+    NRAVE_ANDROID_LOG("stage=install-message-handler-done");
     fprintf(stderr, "NRAVE_LOGGING stage=install-message-handler-done\n");
     fflush(stderr);
 
@@ -456,15 +479,18 @@ void Logging::initialize(
     // Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=886437
     // Ubuntu: https://bugs.launchpad.net/ubuntu/+source/qtbase-opensource-src/+bug/1731646
 #ifdef __LINUX__
+    NRAVE_ANDROID_LOG("stage=linux-filter-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=linux-filter-begin\n");
     fflush(stderr);
     QLoggingCategory::setFilterRules(
             "*.debug=true\n"
             "qt.*.debug=false");
+    NRAVE_ANDROID_LOG("stage=linux-filter-done");
     fprintf(stderr, "NRAVE_LOGGING stage=linux-filter-done\n");
     fflush(stderr);
 #endif
 
+    NRAVE_ANDROID_LOG("stage=controller-debug-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=controller-debug-begin\n");
     fflush(stderr);
     if (CmdlineArgs::Instance().getControllerDebug()) {
@@ -483,15 +509,19 @@ void Logging::initialize(
         oldCategoryFilter = QLoggingCategory::installFilter(nullptr);
         QLoggingCategory::installFilter(controllerDebugCategoryFilter);
     }
+    NRAVE_ANDROID_LOG("stage=controller-debug-done");
     fprintf(stderr, "NRAVE_LOGGING stage=controller-debug-done\n");
     fflush(stderr);
 
+    NRAVE_ANDROID_LOG("stage=log-max-file-size-begin");
     fprintf(stderr, "NRAVE_LOGGING stage=log-max-file-size-begin\n");
     fflush(stderr);
     s_logMaxFileSize = CmdlineArgs::Instance().getLogMaxFileSize();
+    NRAVE_ANDROID_LOG("stage=log-max-file-size-done");
     fprintf(stderr, "NRAVE_LOGGING stage=log-max-file-size-done\n");
     fflush(stderr);
 
+    NRAVE_ANDROID_LOG("stage=initialize-exit");
     fprintf(stderr, "NRAVE_LOGGING stage=initialize-exit\n");
     fflush(stderr);
 }
