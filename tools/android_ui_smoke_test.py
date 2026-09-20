@@ -567,27 +567,61 @@ def skin_selector_region() -> tuple[int, int, int, int]:
 
 
 def select_latenight_skin() -> tuple[bytes, bytes]:
-    # Pixel-measured from the actual 3120x1440 Settings frame:
-    # "Android Default" occupies x=1755..1885, y=462..476.
-    # The proven passing harness used this same control area.
-    x = 1818
-    y = 469
+    """Select LateNightQML skin using semantic UI interaction instead of hardcoded coordinates.
+
+    This replaces the hardcoded coordinate approach with semantic UI interaction
+    using UIAutomator to find and click the ComboBox and dropdown items by text.
+    """
     before = skin_text_signature("skin-before-selection")
 
-    # The popup opens directly below the ComboBox. Delegate row height is
-    # roughly 36px at the test density; try a few nearby centers for the second
-    # row because Qt font metrics can shift it slightly.
+    # Open the skin selector ComboBox by clicking on "Android Default" text.
+    # Use occurrence=0 to click the ComboBox itself (first occurrence),
+    # not the dropdown item (which would be the second occurrence after dropdown opens).
+    print("=== OPENING SKIN SELECTOR ===", flush=True)
+    click_value("Android Default", exact=True, occurrence=0)
+    time.sleep(1.0)
+
+    # Wait for the dropdown to open and "Late Night QML" item to appear
+    print("=== WAITING FOR DROPDOWN ===", flush=True)
+    try:
+        wait_for_value("Late Night QML", timeout=10, exact=True)
+    except UiTestError:
+        # Take a screenshot for debugging
+        screenshot("skin-dropdown-timeout.png")
+        raise
+
+    # Click on "Late Night QML" in the dropdown
+    print("=== SELECTING LATE NIGHT QML ===", flush=True)
+    click_value("Late Night QML", exact=True)
+    time.sleep(1.0)
+
+    # Verify the selection changed by comparing skin text signatures
+    after = skin_text_signature("skin-after-selection")
+    difference = skin_signature_difference(before, after)
+    print(
+        f"=== SKIN SELECTION: text-difference={difference:.4f} ===",
+        flush=True,
+    )
+
+    if difference > 0.015:
+        return before, after
+
+    # Fallback: if text signature didn't change, try coordinate-based fallback
+    # for backward compatibility with older emulator configurations
+    print("=== FALLBACK: COORDINATE-BASED ATTEMPT ===", flush=True)
+    x = 1818
+    y = 469
     tried_offsets = (72, 88, 104, 120)
     for attempt, offset in enumerate(tried_offsets, start=1):
         run_shell("input", "tap", str(x), str(y), timeout=10)
         time.sleep(0.5)
-        screenshot(f"skin-popup-open-{attempt}.png")
+        screenshot(f"skin-popup-open-fallback-{attempt}.png")
         run_shell("input", "tap", str(x), str(y + offset), timeout=10)
         time.sleep(1.0)
-        after = skin_text_signature(f"skin-after-selection-{attempt}")
+        after = skin_text_signature(f"skin-after-selection-fallback-{attempt}")
         difference = skin_signature_difference(before, after)
         print(
-            f"=== SKIN SELECTION ATTEMPT {attempt}: offset={offset}, "
+            f"=== FALLBACK ATTEMPT {attempt}: offset={offset}, "
             f"text-difference={difference:.4f} ===",
             flush=True,
         )
@@ -595,8 +629,8 @@ def select_latenight_skin() -> tuple[bytes, bytes]:
             return before, after
 
     raise UiTestError(
-        "Skin selector did not change to a different rendered value after "
-        f"trying second-row offsets {tried_offsets}"
+        "Skin selector did not change to a different rendered value. "
+        "Semantic UI interaction and coordinate fallback both failed."
     )
 
 
