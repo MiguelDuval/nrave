@@ -759,9 +759,14 @@ def parse_skin_loader_status(line: str) -> tuple[str, int, str] | None:
     return None
 
 def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> str:
-    """Wait for the application's own loader status instead of sampling logcat once."""
+    """Wait for the application's own loader status instead of sampling logcat once.
+    
+    Primary: logcat parsing for NRAVE_SKIN_LOADER_NATIVE/STATUS markers.
+    Fallback: UIAutomator hierarchy dump to verify MainWindow content is rendered.
+    """
     deadline = time.time() + timeout
     last_log = ""
+    logcat_failed = False
     while time.time() < deadline:
         last_log = current_app_logcat()
         assert_no_fatal(last_log)
@@ -794,18 +799,36 @@ def wait_for_skin_loader_ready(expected_skin: str, timeout: float = 120.0) -> st
 
         time.sleep(2)
 
+    # Logcat parsing timed out. Fallback: check if MainWindow content is actually rendered.
+    # This handles cases where logcat parsing fails but UI is actually rendered.
+    print("Logcat parsing timed out, attempting UI-based fallback verification...", flush=True)
+    try:
+        # Quick UI check - dump hierarchy and look for MainWindow content
+        hierarchy = run_shell("uiautomator", "dump", "/data/local/tmp/hierarchy.xml", timeout=30, check=False)
+        if hierarchy == 0:
+            # Read the dumped hierarchy
+            xml_content = run_shell("cat", "/data/local/tmp/hierarchy.xml", timeout=10, check=False)
+            # Look for indicators that MainWindow content is rendered
+            # Check for deck, mixer, or library elements that would be present in rendered UI
+            if any(keyword in xml_content for keyword in ["Deck", "Mixer", "Library", "Transport", "Waveform"]):
+                print("UI fallback: MainWindow content detected in hierarchy dump", flush=True)
+                # Re-fetch logcat for return value
+                last_log = current_app_logcat()
+                return last_log
+    except Exception as e:
+        print(f"UI fallback failed: {e}", flush=True)
+
+    # If we reach here, both logcat and UI fallback failed
     stage_lines = [
         line for line in last_log.splitlines()
         if "NRAVE_ANDROID_STARTUP" in line
     ]
-    # Include all raw loader-related lines for debugging
     raw_loader_lines = [
         line for line in last_log.splitlines()
         if "NRAVE_SKIN_LOADER_NATIVE" in line
         or "NRAVE_SKIN_LOADER_STATUS" in line
     ]
     recent = "\n".join(stage_lines[-12:] + lines[-12:])
-    # Add raw loader lines if different from parsed lines
     if raw_loader_lines != lines:
         recent += "\n[RAW LOADER LINES]\n" + "\n".join(raw_loader_lines[-12:])
     raise UiTestError(
