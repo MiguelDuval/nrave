@@ -740,20 +740,21 @@ def parse_skin_loader_status(line: str) -> tuple[str, int, str] | None:
     - NRAVE_SKIN_LOADER_STATUS skin=<name> status=<int> source=<url>
     """
     # Try native format first (from __android_log_print)
+    # Source URL may contain :// and other special chars, so match everything after source=
     native = re.search(
-        r"NRAVE_SKIN_LOADER_NATIVE\s+skin=(\S+)\s+status=(-?\d+)\s+source=(\S+)",
+        r"NRAVE_SKIN_LOADER_NATIVE\s+skin=(\S+)\s+status=(-?\d+)\s+source=(.+)",
         line,
     )
     if native:
-        return native.group(1), int(native.group(2)), native.group(3)
+        return native.group(1), int(native.group(2)), native.group(3).strip()
     
     # Fallback: qWarning format (from Qt message handler)
     qwarn = re.search(
-        r"NRAVE_SKIN_LOADER_STATUS\s+skin=(\S+)\s+status=(-?\d+)\s+source=(\S+)",
+        r"NRAVE_SKIN_LOADER_STATUS\s+skin=(\S+)\s+status=(-?\d+)\s+source=(.+)",
         line,
     )
     if qwarn:
-        return qwarn.group(1), int(qwarn.group(2)), qwarn.group(3)
+        return qwarn.group(1), int(qwarn.group(2)), qwarn.group(3).strip()
     
     return None
 
