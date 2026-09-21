@@ -200,21 +200,21 @@ Item {
                 Skin.Button {
                     id: showEffectsButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryViolet
                     checkable: true
                     text: "Effects"
                 }
                 Skin.Button {
                     id: showAuxButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryCyan
                     checkable: true
                     text: "Aux"
                 }
                 Skin.Button {
                     id: showSamplersButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryViolet
                     checkable: true
                     text: "Sampler"
                 }
@@ -222,7 +222,7 @@ Item {
                     id: recordButton
 
                     activeBackgroundColor: Theme.red
-                    activeColor: Theme.white
+                    activeColor: Theme.backgroundColor
                     group: "[Recording]"
                     highlight: recordingStatus.value >= 2
                     key: "toggle_recording"
@@ -265,14 +265,14 @@ Item {
                 Skin.Button {
                     id: editDeckButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryViolet
                     checkable: true
                     text: "Edit"
                 }
                 Skin.Button {
                     id: showDevToolsButton
 
-                    activeColor: Theme.white
+                    activeColor: Theme.primaryCyan
                     checkable: false
                     checked: settingsPopup.opened
                     icon.height: 18
