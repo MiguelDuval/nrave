@@ -5,7 +5,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Shapes
-import Qt5Compat.GraphicalEffects
 import "Theme"
 
 Item {
@@ -843,12 +842,10 @@ Item {
             Repeater {
                 model: hasHardwareAcceleration ? 1 : 0
 
-                GaussianBlur {
+                Rectangle {
                     anchors.fill: overlayModal
-                    deviation: 4
-                    radius: Math.max(0, overlayModal.radius)
-                    samples: 16
-                    source: content
+                    color: Qt.alpha("#000000", 0.3)
+                    radius: overlayModal.radius
                 }
             }
         }

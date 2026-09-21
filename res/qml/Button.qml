@@ -12,7 +12,6 @@ AbstractButton {
     property bool highlight: false
     property color normalColor: Theme.primaryText
     property color pressedColor: Theme.brightCyan
-    property var icon: null
     property int cornerRadius: 2
     property int borderWidth: 1
 
@@ -41,17 +40,17 @@ AbstractButton {
             horizontalAlignment: Text.AlignHCenter
             text: root.text
             verticalAlignment: Text.AlignVCenter
-            visible: root.text != null && root.text !== "" && (root.icon === null || root.icon.source === "")
+            visible: root.text != null && root.text != ""
         }
         Image {
             id: image
             anchors.centerIn: parent
             asynchronous: true
             fillMode: Image.PreserveAspectFit
-            height: root.icon && root.icon.height ? root.icon.height : 20
-            source: root.icon && root.icon.source ? root.icon.source : ""
-            visible: root.icon && root.icon.source != ""
-            width: root.icon && root.icon.width ? root.icon.width : 20
+            height: icon.height
+            source: icon.source
+            visible: icon.source != null && icon.source != ""
+            width: icon.width
             opacity: root.enabled ? 1.0 : 0.5
         }
     }
