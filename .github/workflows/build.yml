@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - experimental/modern-indicator-skin
+      - experimental/modern-indicator-skin-2
 permissions:
   contents: write
 env:
