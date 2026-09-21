@@ -70,7 +70,7 @@ QtObject {
     property color eqMidColor: white
     property string fontFamily: "Open Sans"
     property color gainKnobColor: primaryCyan
-    property color green: green
+    property color green: "#42E6A4"
     property string imgBpmSliderBackground: "images/slider_bpm.svg"
     property string imgButton: "images/button.svg"
     property string imgButtonPressed: "images/button_pressed.svg"
@@ -91,8 +91,10 @@ QtObject {
     property color libraryPanelSplitterHandle: strongBorder
     property color libraryPanelSplitterHandleActive: primaryCyan
     property color lightGray: mutedText
+    property color lightGray1: Qt.rgba(255, 255, 255, 0.1)
     property color lightGray2: primaryText
     property color lightGray3: technicalLabel
+    property color lightGray4: Qt.rgba(255, 255, 255, 0.05)
     property color midGray: strongBorder
     property color midGray2: softBorder
     property color midGray3: panelGraphite
@@ -100,7 +102,7 @@ QtObject {
     property color panelSplitterHandle: strongBorder
     property color panelSplitterHandleActive: primaryCyan
     property color pflActiveButtonColor: primaryCyan
-    property color red: red
+    property color red: "#FF5364"
     property color samplerColor: primaryViolet
     property color sunkenBackgroundColor: nearBlack
     property color textColor: primaryText
