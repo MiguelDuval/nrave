@@ -70,7 +70,6 @@ QtObject {
     property color eqMidColor: white
     property string fontFamily: "Open Sans"
     property color gainKnobColor: primaryCyan
-    property color green: "#42E6A4"
     property string imgBpmSliderBackground: "images/slider_bpm.svg"
     property string imgButton: "images/button.svg"
     property string imgButtonPressed: "images/button_pressed.svg"
@@ -102,7 +101,6 @@ QtObject {
     property color panelSplitterHandle: strongBorder
     property color panelSplitterHandleActive: primaryCyan
     property color pflActiveButtonColor: primaryCyan
-    property color red: "#FF5364"
     property color samplerColor: primaryViolet
     property color sunkenBackgroundColor: nearBlack
     property color textColor: primaryText
@@ -126,6 +124,5 @@ QtObject {
     property color waveformMarkerLoopColorDisabled: white
     property color waveformPostrollColor: midGray
     property color waveformPrerollColor: midGray
-    property color white: white
     property color yellow: amber
 }
