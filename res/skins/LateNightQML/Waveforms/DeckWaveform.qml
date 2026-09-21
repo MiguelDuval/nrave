@@ -11,8 +11,6 @@ Item {
     readonly property real beatgridControlsX: beatgridControls.x
     readonly property real beatgridControlsWidth: beatgridControls.width
     readonly property bool beatgridControlsVisible: beatgridControls.visible
-    readonly property bool isDeckA: group === "[Channel1]"
-    readonly property bool isDeckB: group === "[Channel2]"
 
     // Access per-deck beatgrid visibility from parent FullDeck
     readonly property bool showBeatgridControls: root.showBeatgridControls
@@ -22,8 +20,6 @@ Item {
 
         anchors.fill: parent
         group: root.group
-        isDeckA: root.isDeckA
-        isDeckB: root.isDeckB
     }
 
     BeatgridControls {

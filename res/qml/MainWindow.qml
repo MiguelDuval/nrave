@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Shapes
+import Qt5Compat.GraphicalEffects
 import "Theme"
 
 Item {
@@ -199,21 +200,21 @@ Item {
                 Skin.Button {
                     id: showEffectsButton
 
-                    activeColor: Theme.primaryVioletColor
+                    activeColor: Theme.white
                     checkable: true
                     text: "Effects"
                 }
                 Skin.Button {
                     id: showAuxButton
 
-                    activeColor: Theme.primaryCyan
+                    activeColor: Theme.white
                     checkable: true
                     text: "Aux"
                 }
                 Skin.Button {
                     id: showSamplersButton
 
-                    activeColor: Theme.primaryVioletColor
+                    activeColor: Theme.white
                     checkable: true
                     text: "Sampler"
                 }
@@ -221,7 +222,7 @@ Item {
                     id: recordButton
 
                     activeBackgroundColor: Theme.red
-                    activeColor: Theme.backgroundColor
+                    activeColor: Theme.white
                     group: "[Recording]"
                     highlight: recordingStatus.value >= 2
                     key: "toggle_recording"
@@ -233,27 +234,27 @@ Item {
 
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 0
-                    Layout.preferredWidth: recordingStatus.value >= 2 ? 80 : 0
-                    implicitHeight: 28
+                    Layout.preferredWidth: recordingStatus.value >= 2 ? 72 : 0
+                    implicitHeight: 26
                     visible: recordingStatus.value >= 2
 
                     Row {
                         anchors.centerIn: parent
-                        spacing: 6
+                        spacing: 5
 
                         Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             color: Theme.red
-                            height: 8
-                            radius: 4
-                            width: 8
+                            height: 7
+                            radius: 3.5
+                            width: 7
                         }
                         Label {
                             anchors.verticalCenter: parent.verticalCenter
                             color: Theme.red
                             font.bold: true
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.buttonFontPixelSize
                             text: "REC " + root.formatRecordingDuration(root.recordingElapsedSeconds)
                         }
                     }
@@ -264,14 +265,14 @@ Item {
                 Skin.Button {
                     id: editDeckButton
 
-                    activeColor: Theme.primaryVioletColor
+                    activeColor: Theme.white
                     checkable: true
                     text: "Edit"
                 }
                 Skin.Button {
                     id: showDevToolsButton
 
-                    activeColor: Theme.primaryCyan
+                    activeColor: Theme.white
                     checkable: false
                     checked: settingsPopup.opened
                     icon.height: 18
@@ -408,8 +409,7 @@ Item {
                 id: waveforms
 
                 SplitView.fillHeight: !library.active
-                SplitView.preferredHeight: library.active ? 190 : undefined
-                SplitView.minimumHeight: library.active ? 160 : 150
+                SplitView.preferredHeight: library.active ? 150 : undefined
                 visible: !root.maximizeLibrary
 
                 FadeBehavior on visible {
@@ -842,10 +842,12 @@ Item {
             Repeater {
                 model: hasHardwareAcceleration ? 1 : 0
 
-                Rectangle {
+                GaussianBlur {
                     anchors.fill: overlayModal
-                    color: Qt.alpha("#000000", 0.3)
-                    radius: overlayModal.radius
+                    deviation: 4
+                    radius: Math.max(0, overlayModal.radius)
+                    samples: 16
+                    source: content
                 }
             }
         }

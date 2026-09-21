@@ -2,7 +2,7 @@ pragma Singleton
 import QtQuick 2.12
 
 QtObject {
-    property color accentColor: "#00DFFF"
+    property color accentColor: "#00D9FF"
     property color backgroundColor: "#0A0E14"
     property color blue: "#00D9FF"
     property color bpmSliderBarColor: blue
