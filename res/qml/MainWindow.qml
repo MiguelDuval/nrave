@@ -409,9 +409,9 @@ Item {
                 id: waveforms
 
                 SplitView.fillHeight: !library.active
-                SplitView.preferredHeight: 165
-                SplitView.minimumHeight: 96
-                SplitView.maximumHeight: 175
+                SplitView.preferredHeight: 160
+                SplitView.minimumHeight: 0
+                SplitView.maximumHeight: 168
                 visible: !root.maximizeLibrary
 
                 FadeBehavior on visible {
