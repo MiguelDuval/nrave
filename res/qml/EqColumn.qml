@@ -36,28 +36,4 @@ Column {
         knob.arcStylePattern: [2, 2]
         knob.color: Theme.eqFxColor
     }
-    Mixxx.ControlProxy {
-        id: fxSelect
-
-        group: "[QuickEffectRack1_" + root.group + "]"
-        key: "loaded_chain_preset"
-    }
-    Skin.ComboBox {
-        id: effectSelector
-
-        clip: true
-        currentIndex: fxSelect.value == -1 ? 0 : fxSelect.value
-        font.pixelSize: 10
-        indicator.width: 0
-        model: Mixxx.EffectsManager.quickChainPresetModel
-        popupMaxItem: 8
-        popupWidth: 100
-        spacing: 2
-        textRole: "display"
-        width: parent.width
-
-        onActivated: index => {
-            fxSelect.value = index;
-        }
-    }
 }
