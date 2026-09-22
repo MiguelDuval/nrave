@@ -11,7 +11,7 @@ Item {
     property bool showEqKnobs: true
     property bool showXfader: true
 
-    implicitHeight: 195
+    implicitHeight: 203
     implicitWidth: root.showEqKnobs ? (root.showEqKillButtons ? 109 : 91) : 42
 
     Item {
@@ -49,7 +49,7 @@ Item {
             rightStyle: root.mirror ? "default" : "warning"
             visible: root.showXfader
             x: root.showEqKnobs ? (root.mirror ? 46 : 22) : (root.mirror ? 18 : 57)
-            y: 169
+            y: 180
         }
     }
 }
