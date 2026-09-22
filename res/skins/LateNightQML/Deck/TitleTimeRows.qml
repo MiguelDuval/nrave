@@ -120,5 +120,4 @@ Item {
             onDoubleClicked: root.cyclePositionDisplay()
         }
     }
-    }
 }
