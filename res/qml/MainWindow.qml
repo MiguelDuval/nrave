@@ -36,8 +36,7 @@ Item {
     }
 
     function pulseRecordingToggle() {
-        recordingToggle.value = 1;
-        recordingToggleReset.restart();
+        recordingToggle.trigger();
     }
 
     function handleRecordButtonClicked() {
@@ -83,15 +82,6 @@ Item {
         key: "toggle_recording"
     }
 
-    Timer {
-        id: recordingToggleReset
-
-        interval: 75
-        repeat: false
-        onTriggered: {
-            recordingToggle.value = 0;
-        }
-    }
 
     Timer {
         id: recordingTimer
