@@ -12,7 +12,7 @@ Item {
     property bool showEqKnobs: true
     property bool showXfader: true
 
-    implicitHeight: root.show4decks ? (root.showXfader ? 405 : root.fourDeckChannelHeight + 8) : (root.showXfader ? 203 : (root.showEqKnobs ? 182 : 164))
+    implicitHeight: root.show4decks ? (root.showXfader ? 405 : root.fourDeckChannelHeight + 8) : (root.showXfader ? 195 : (root.showEqKnobs ? 182 : 164))
     implicitWidth: root.show4decks ? 278 : (root.showEqKnobs ? (root.showEqKillButtons ? 278 : 242) : (root.showXfader ? 163 : 151))
 
     Item {
@@ -44,11 +44,19 @@ Item {
             x: 140 - width / 2
             y: 17
 
-            PflButton {
+            QuickEffectSelector {
+                id: leftFilterSelector
+                arrowOnRight: false
                 group: root.groups[0]
+                visible: root.showEqKnobs
+                width: root.showEqKillButtons ? 62 : 40
             }
-            PflButton {
+            QuickEffectSelector {
+                id: rightFilterSelector
+                arrowOnRight: true
                 group: root.groups[1]
+                visible: root.showEqKnobs
+                width: root.showEqKillButtons ? 62 : 40
             }
         }
         LateNightControls.Knob {
