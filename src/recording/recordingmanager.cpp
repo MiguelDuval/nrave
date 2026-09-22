@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QMutex>
 #include <QStorageInfo>
+#include <QStandardPaths>
 
 #include "control/controlpushbutton.h"
 #include "engine/enginemixer.h"
@@ -173,22 +174,61 @@ void RecordingManager::stopRecording() {
 }
 
 void RecordingManager::setRecordingDir() {
-    QDir recordDir(m_pConfig->getValueString(
-        ConfigKey(RECORDING_PREF_KEY, "Directory")));
-    // Note: the default ConfigKey for recordDir is set in DlgPrefRecord::DlgPrefRecord.
+    QString configuredPath = m_pConfig->getValueString(
+            ConfigKey(RECORDING_PREF_KEY, "Directory"));
 
-    if (!recordDir.exists()) {
-        if (recordDir.mkpath(recordDir.absolutePath())) {
-            qDebug() << "Created folder" << recordDir.absolutePath() << "for recordings";
-        } else {
-            // Using qt_error_string() since QDir has not yet a wrapper for error strings.
-            // https://bugreports.qt.io/browse/QTBUG-1483
-            qDebug() << "Failed to create folder" << recordDir.absolutePath()
-                     << "for recordings:" << qt_error_string();
+    auto ensureWritableDirectory = [](const QString& path) {
+        if (path.isEmpty()) {
+            return false;
+        }
+        QDir dir(path);
+        if (!dir.exists() && !dir.mkpath(dir.absolutePath())) {
+            qWarning() << "Failed to create recording directory" << dir.absolutePath()
+                       << ":" << qt_error_string();
+            return false;
+        }
+        if (!QFileInfo(dir.absolutePath()).isWritable()) {
+            qWarning() << "Recording directory is not writable:" << dir.absolutePath();
+            return false;
+        }
+        return true;
+    };
+
+    // On Android the historic MusicLocation may be unavailable under scoped
+    // storage. Prefer a private app-writable directory whenever the configured
+    // location is empty or inaccessible. This guarantees that the Record control
+    // can actually transition from READY (1) to ON (2).
+    QString recordPath = configuredPath;
+#if defined(Q_OS_ANDROID)
+    if (!ensureWritableDirectory(recordPath)) {
+        const QString appDataPath = QStandardPaths::writableLocation(
+                QStandardPaths::AppDataLocation);
+        recordPath = QDir(appDataPath).filePath(QStringLiteral("Recordings"));
+    }
+#else
+    if (!ensureWritableDirectory(recordPath)) {
+        const QString musicDir = QStandardPaths::writableLocation(
+                QStandardPaths::MusicLocation);
+        if (!musicDir.isEmpty()) {
+            recordPath = QDir(musicDir).filePath(QStringLiteral("Mixxx/Recordings"));
         }
     }
-    m_recordingDir = recordDir.absolutePath();
-    qDebug() << "Recordings folder set to" << m_recordingDir;
+#endif
+
+    if (!ensureWritableDirectory(recordPath)) {
+        qCritical() << "No writable recording directory available. Configured path:"
+                    << configuredPath;
+        m_recordingDir.clear();
+        return;
+    }
+
+    m_recordingDir = QDir(recordPath).absolutePath();
+    if (m_pConfig->getValueString(ConfigKey(RECORDING_PREF_KEY, "Directory"))
+            != m_recordingDir) {
+        m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "Directory"),
+                ConfigValue(m_recordingDir));
+    }
+    qInfo() << "Recordings folder set to" << m_recordingDir;
 }
 
 QString& RecordingManager::getRecordingDir() {
