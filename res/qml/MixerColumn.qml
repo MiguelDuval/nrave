@@ -1,4 +1,5 @@
 import "." as Skin
+import Mixxx 1.0 as Mixxx
 import QtQuick 2.12
 import "Theme"
 
@@ -29,7 +30,7 @@ Item {
         }
     }
     Item {
-        anchors.bottom: pflButton.top
+        anchors.bottom: filterSelector.top
         anchors.bottomMargin: 5
         anchors.left: parent.left
         anchors.right: parent.right
@@ -66,16 +67,31 @@ Item {
             }
         }
     }
-    Skin.ControlButton {
-        id: pflButton
+    Mixxx.ControlProxy {
+        id: fxSelect
 
-        activeColor: Theme.pflActiveButtonColor
+        group: "[QuickEffectRack1_" + root.group + "]"
+        key: "loaded_chain_preset"
+    }
+    Skin.ComboBox {
+        id: filterSelector
+
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        group: root.group
-        key: "pfl"
-        text: "PFL"
-        toggleable: true
+        clip: true
+        height: 22
+        currentIndex: fxSelect.value == -1 ? 0 : fxSelect.value
+        font.pixelSize: 10
+        indicator.width: 0
+        model: Mixxx.EffectsManager.quickChainPresetModel
+        popupMaxItem: 8
+        popupWidth: 100
+        spacing: 2
+        textRole: "display"
+
+        onActivated: index => {
+            fxSelect.value = index;
+        }
     }
 }
