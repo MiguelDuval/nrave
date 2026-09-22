@@ -6,6 +6,9 @@ on:
       - main
       - experimental/modern-indicator-skin
       - experimental/modern-indicator-skin-2
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: write
 env:
