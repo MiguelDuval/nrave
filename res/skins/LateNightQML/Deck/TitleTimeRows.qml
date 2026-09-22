@@ -21,7 +21,7 @@ Item {
     readonly property bool hasVisibleTrackColor: isLoaded && trackColor?.valid &&
             trackColorText !== "#ffffff" && trackColorText !== "#ffffffff"
 
-    implicitHeight: 48
+    implicitHeight: 24
 
     function formatDuration(value) {
         if (!Number.isFinite(value) || value <= 0) {
@@ -83,100 +83,42 @@ Item {
         key: "playposition"
     }
 
-    ColumnLayout {
+    RowLayout {
         anchors.fill: parent
         spacing: 0
 
-        // Row 1: Title and Elapsed/Remaining Time
-        RowLayout {
+        LateNightTrackPropertyText {
+            id: titleText
             Layout.fillWidth: true
-            Layout.preferredHeight: 24
-            spacing: 0
-
-            LateNightTrackPropertyText {
-                id: titleText
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                group: root.group
-                track: root.currentTrack
-                text: root.isLoaded ? (root.currentTrack?.title || "Unknown Title") : ""
-                displayProperty: "titleInfo"
-                editProperty: "title"
-                editable: true
-                pixelSize: 18
-                textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
-            }
-
-            LateNightTrackPropertyText {
-                id: trackTimeDisplay
-                Layout.fillHeight: true
-                contextMenuEnabled: false
-                displayProperty: "durationTextCentiseconds"
-                editable: false
-                group: root.group
-                horizontalAlignment: Text.AlignRight
-                horizontalPadding: 6
-                pixelSize: 16
-                showTrackPropertiesOnDoubleClick: false
-                textColor: root.isLoaded ? LateNightTheme.deckTimeTextColor : LateNightTheme.textColorMuted
-                track: root.currentTrack
-                text: root.formatPositionTime()
-                visible: root.isLoaded
-
-                onDoubleClicked: root.cyclePositionDisplay()
-            }
+            Layout.fillHeight: true
+            group: root.group
+            track: root.currentTrack
+            text: root.isLoaded ? (root.currentTrack?.title || "Unknown Title") : ""
+            displayProperty: "titleInfo"
+            editProperty: "title"
+            editable: true
+            pixelSize: 16
+            textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
+            elide: Text.ElideRight
         }
 
-        // Row 2: 2px Track Color Strip
-        Rectangle {
-            id: trackColorStrip
-            Layout.fillWidth: true
-            Layout.preferredHeight: 2
-            color: root.hasVisibleTrackColor ? root.trackColor : "transparent"
-            visible: root.hasVisibleTrackColor
+        LateNightTrackPropertyText {
+            id: trackTimeDisplay
+            Layout.fillHeight: true
+            contextMenuEnabled: false
+            displayProperty: "durationTextCentiseconds"
+            editable: false
+            group: root.group
+            horizontalAlignment: Text.AlignRight
+            horizontalPadding: 6
+            pixelSize: 14
+            showTrackPropertiesOnDoubleClick: false
+            textColor: root.isLoaded ? LateNightTheme.deckTimeTextColor : LateNightTheme.textColorMuted
+            track: root.currentTrack
+            text: root.formatPositionTime()
+            visible: root.isLoaded
+            onDoubleClicked: root.cyclePositionDisplay()
         }
-
-        // Spacer when color strip is invisible to keep height stable
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 2
-            color: LateNightTheme.deckPanelColor
-            visible: !trackColorStrip.visible
-        }
-
-        // Row 3: Artist and Duration
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 20
-            spacing: 0
-
-            LateNightTrackPropertyText {
-                id: artistText
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                group: root.group
-                track: root.currentTrack
-                text: root.isLoaded ? (root.currentTrack?.artist || "Unknown Artist") : ""
-                displayProperty: "artist"
-                editProperty: "artist"
-                editable: true
-                pixelSize: 18
-                textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
-            }
-
-            LateNightTrackPropertyText {
-                id: durationText
-                Layout.fillHeight: true
-                group: root.group
-                track: root.currentTrack
-                text: root.isLoaded ? root.formatDuration(durationProxy.value) : ""
-                displayProperty: "durationTextSeconds"
-                editable: false
-                pixelSize: 14
-                textColor: root.isLoaded ? LateNightTheme.deckTimeTextColor : LateNightTheme.textColorMuted
-                horizontalAlignment: Text.AlignRight
-                horizontalPadding: 6
-            }
-        }
+    }
     }
 }
