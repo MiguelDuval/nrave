@@ -222,7 +222,7 @@ Item {
                     id: recordButton
 
                     activeBackgroundColor: Theme.red
-                    activeColor: Theme.backgroundColor
+                    activeColor: Theme.white
                     group: "[Recording]"
                     highlight: recordingStatus.value >= 2
                     key: "toggle_recording"

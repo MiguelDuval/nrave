@@ -14,7 +14,7 @@ Skin.Button {
     }
 
     highlight: controlBehavior.isActive
-    normalBackgroundColor: root.isRecordingControl && controlBehavior.isActive ? Theme.buttonActiveBackgroundColor : Theme.buttonControlNormalBackgroundColor
+    normalBackgroundColor: root.isRecordingControl && controlBehavior.isActive ? "#2D4EA1" : "#2B2B2B"
     onPressed: {
         controlBehavior.pressPrimary();
     }
