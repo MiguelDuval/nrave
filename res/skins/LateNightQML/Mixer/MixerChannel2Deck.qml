@@ -11,7 +11,7 @@ Item {
     property bool showEqKnobs: true
     property bool showXfader: true
 
-    implicitHeight: 203
+    implicitHeight: 195
     implicitWidth: root.showEqKnobs ? (root.showEqKillButtons ? 109 : 91) : 42
 
     Item {
@@ -43,21 +43,13 @@ Item {
             x: root.mirror ? 3 : 64
             y: 49
         }
-        QuickEffectSelector {
-            arrowOnRight: root.mirror
-            group: root.group
-            visible: root.showEqKnobs
-            width: root.showEqKillButtons ? 62 : 40
-            x: root.mirror ? 42 : (root.showEqKillButtons ? 5 : 18)
-            y: 156
-        }
         CrossfaderAssignButton {
             group: root.group
             leftStyle: root.mirror ? "warning" : "default"
             rightStyle: root.mirror ? "default" : "warning"
             visible: root.showXfader
             x: root.showEqKnobs ? (root.mirror ? 46 : 22) : (root.mirror ? 18 : 57)
-            y: 180
+            y: 169
         }
     }
 }
