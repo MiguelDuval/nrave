@@ -21,7 +21,7 @@ Item {
     readonly property bool hasVisibleTrackColor: isLoaded && trackColor?.valid &&
             trackColorText !== "#ffffff" && trackColorText !== "#ffffffff"
 
-    implicitHeight: 55
+    implicitHeight: 48
 
     function formatDuration(value) {
         if (!Number.isFinite(value) || value <= 0) {
@@ -90,7 +90,7 @@ Item {
         // Row 1: Title and Elapsed/Remaining Time
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 25
+            Layout.preferredHeight: 24
             spacing: 0
 
             LateNightTrackPropertyText {
