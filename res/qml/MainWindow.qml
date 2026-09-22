@@ -26,12 +26,34 @@ Item {
     property alias showEffects: showEffectsButton.checked
     property alias showSamplers: showSamplersButton.checked
     property alias showAuxiliaries: showAuxButton.checked
+    property bool recordArmed: false
     property int recordingElapsedSeconds: 0
 
     function formatRecordingDuration(totalSeconds) {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         return String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
+
+    function pulseRecordingToggle() {
+        recordingToggle.value = 1;
+        recordingToggleReset.restart();
+    }
+
+    function handleRecordButtonClicked() {
+        if (recordingStatus.value >= 2) {
+            root.recordArmed = false;
+            root.pulseRecordingToggle();
+            return;
+        }
+
+        if (!root.recordArmed) {
+            root.recordArmed = true;
+            return;
+        }
+
+        root.recordArmed = false;
+        root.pulseRecordingToggle();
     }
 
     Mixxx.ControlProxy {
@@ -42,6 +64,7 @@ Item {
 
         onValueChanged: {
             if (value >= 2) {
+                root.recordArmed = false;
                 if (!recordingTimer.running) {
                     root.recordingElapsedSeconds = 0;
                     recordingTimer.start();
@@ -50,6 +73,23 @@ Item {
                 recordingTimer.stop();
                 root.recordingElapsedSeconds = 0;
             }
+        }
+    }
+
+    Mixxx.ControlProxy {
+        id: recordingToggle
+
+        group: "[Recording]"
+        key: "toggle_recording"
+    }
+
+    Timer {
+        id: recordingToggleReset
+
+        interval: 75
+        repeat: false
+        onTriggered: {
+            recordingToggle.value = 0;
         }
     }
 
@@ -218,16 +258,19 @@ Item {
                     checkable: true
                     text: "Sampler"
                 }
-                Skin.ControlButton {
+                Skin.Button {
                     id: recordButton
 
-                    activeBackgroundColor: Theme.red
+                    activeBackgroundColor: recordingStatus.value >= 2
+                            ? Theme.red
+                            : (root.recordArmed ? "#2D4EA1" : Theme.buttonActiveBackgroundColor)
                     activeColor: Theme.white
-                    group: "[Recording]"
-                    highlight: recordingStatus.value >= 2
-                    key: "toggle_recording"
+                    highlight: root.recordArmed || recordingStatus.value >= 2
                     text: "Record"
-                    toggleable: true
+
+                    onClicked: {
+                        root.handleRecordButtonClicked();
+                    }
                 }
                 Item {
                     id: recordingIndicator
