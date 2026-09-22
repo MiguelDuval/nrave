@@ -158,9 +158,9 @@ Controls.Panel {
                     TitleTimeRows {
                         id: titleTimeRows
                         Layout.fillWidth: true
-                        Layout.minimumHeight: root.minimized ? 48 : 55
-                        Layout.preferredHeight: root.minimized ? 48 : 55
-                        Layout.maximumHeight: root.minimized ? 48 : 55
+                        Layout.minimumHeight: root.minimized ? 48 : 48
+                        Layout.preferredHeight: root.minimized ? 48 : 48
+                        Layout.maximumHeight: root.minimized ? 48 : 48
                         group: root.group
                         TapHandler { onDoubleTapped: root.toggleFocus() }
                     }
@@ -169,9 +169,9 @@ Controls.Panel {
                         id: overviewAndSpinnyRow
                         Layout.fillWidth: true
                         Layout.fillHeight: false
-                        Layout.minimumHeight: root.minimized ? 20 : 55
-                        Layout.preferredHeight: root.minimized ? 20 : 55
-                        Layout.maximumHeight: root.minimized ? 20 : 55
+                        Layout.minimumHeight: root.minimized ? 20 : 52
+                        Layout.preferredHeight: root.minimized ? 20 : 52
+                        Layout.maximumHeight: root.minimized ? 20 : 52
                         spacing: 1
 
                         // Explicit unique local component, first in the layout so it cannot be pushed off-screen.
@@ -188,7 +188,7 @@ Controls.Panel {
                             z: 20
                         }
 
-                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 55; Layout.preferredWidth: 55; group: root.group; visible: root.showSmallSpinnyOrCover }
+                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 50; Layout.preferredWidth: 50; group: root.group; visible: root.showSmallSpinnyOrCover }
                         OverviewRow { id: overviewRow; Layout.fillWidth: true; Layout.fillHeight: true; group: root.group }
                     }
                 }
