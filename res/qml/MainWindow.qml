@@ -408,10 +408,10 @@ Item {
             Item {
                 id: waveforms
 
-                SplitView.fillHeight: !library.active
-                SplitView.preferredHeight: 160
-                SplitView.minimumHeight: 0
-                SplitView.maximumHeight: 168
+                SplitView.fillHeight: false
+                SplitView.preferredHeight: 180
+                SplitView.minimumHeight: 128
+                SplitView.maximumHeight: 188
                 visible: !root.maximizeLibrary
 
                 FadeBehavior on visible {
@@ -520,8 +520,7 @@ Item {
                 }
             }
             Item {
-                SplitView.fillHeight: library.active
-                SplitView.maximumHeight: library.active ? undefined : mixer.height
+                SplitView.fillHeight: true
                 SplitView.minimumHeight: mixer.height
 
                 Deck {
