@@ -50,7 +50,7 @@ Rectangle {
         asynchronous: true
         source: root.currentTrack?.coverArtUrl
         visible: false
-        width: height
+        width: 0
     }
     Rectangle {
         id: coverArtCircle
@@ -83,7 +83,11 @@ Rectangle {
             Cell {
                 item.font.bold: false
                 item.font.weight: root.deckPlayer?.isLoaded ? Font.DemiBold : Font.Thin
-                item.text: root.deckPlayer?.isLoaded ? root.currentTrack?.title : "No track loaded"
+                item.text: root.deckPlayer?.isLoaded
+                    ? ((root.currentTrack?.artist || "").length > 0
+                        ? (root.currentTrack?.title || "Unknown Title") + " • " + root.currentTrack.artist
+                        : (root.currentTrack?.title || "Unknown Title"))
+                    : "No track loaded"
                 item.visible: true
             }
         }
@@ -266,24 +270,11 @@ Rectangle {
             type: "title"
         }
         ListElement {
-            type: "year"
-        }
-        ListElement {
             type: "time"
         }
     }
     ListModel {
         id: bottomRowModel
-
-        ListElement {
-            type: "artist"
-        }
-        ListElement {
-            type: "none"
-        }
-        ListElement {
-            type: "rating"
-        }
     }
     Component {
         id: editCellDelegate
@@ -329,7 +320,7 @@ Rectangle {
             Layout.fillWidth: true
             color: root.lineColor
             height: 2
-            visible: !root.minimized
+            visible: false
         }
         RowLayout {
             id: bottomRow
