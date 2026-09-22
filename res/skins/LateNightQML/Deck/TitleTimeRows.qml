@@ -21,7 +21,7 @@ Item {
     readonly property bool hasVisibleTrackColor: isLoaded && trackColor?.valid &&
             trackColorText !== "#ffffff" && trackColorText !== "#ffffffff"
 
-    implicitHeight: 24
+    implicitHeight: 20
 
     function formatDuration(value) {
         if (!Number.isFinite(value) || value <= 0) {
@@ -101,7 +101,7 @@ Item {
             displayProperty: "titleInfo"
             editProperty: "title"
             editable: true
-            pixelSize: 15
+            pixelSize: 14
             textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
             elide: Text.ElideRight
         }
