@@ -146,24 +146,14 @@ Controls.Panel {
                 Layout.maximumHeight: root.minimized ? 68 : 24
                 spacing: 8
 
-                ColumnLayout {
-                    id: titleOverviewColumn
+                TitleTimeRows {
+                    id: titleTimeRows
                     Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    Layout.preferredHeight: root.minimized ? 68 : 24
-                    spacing: 0
-
-                    TitleTimeRows {
-                        id: titleTimeRows
-                        Layout.fillWidth: true
-                        Layout.minimumHeight: root.minimized ? 48 : 48
-                        Layout.preferredHeight: root.minimized ? 48 : 48
-                        Layout.maximumHeight: root.minimized ? 48 : 48
-                        group: root.group
-                        TapHandler { onDoubleTapped: root.toggleFocus() }
-                    }
-
-                    }
+                    Layout.minimumHeight: root.minimized ? 24 : 24
+                    Layout.preferredHeight: root.minimized ? 24 : 24
+                    Layout.maximumHeight: root.minimized ? 24 : 24
+                    group: root.group
+                    TapHandler { onDoubleTapped: root.toggleFocus() }
                 }
             }
 
