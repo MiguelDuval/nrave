@@ -141,19 +141,57 @@ Controls.Panel {
                 id: middleDeckRow
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                Layout.minimumHeight: root.minimized ? 68 : 24
-                Layout.preferredHeight: root.minimized ? 68 : 24
-                Layout.maximumHeight: root.minimized ? 68 : 24
+                Layout.minimumHeight: root.minimized ? 68 : 74
+                Layout.preferredHeight: root.minimized ? 68 : 74
+                Layout.maximumHeight: root.minimized ? 68 : 74
                 spacing: 8
 
-                TitleTimeRows {
-                    id: titleTimeRows
+                ColumnLayout {
+                    id: titleOverviewColumn
                     Layout.fillWidth: true
-                    Layout.minimumHeight: root.minimized ? 24 : 24
-                    Layout.preferredHeight: root.minimized ? 24 : 24
-                    Layout.maximumHeight: root.minimized ? 24 : 24
-                    group: root.group
-                    TapHandler { onDoubleTapped: root.toggleFocus() }
+                    Layout.fillHeight: false
+                    Layout.preferredHeight: root.minimized ? 68 : 74
+                    spacing: 2
+
+                    TitleTimeRows {
+                        id: titleTimeRows
+                        Layout.fillWidth: true
+                        Layout.minimumHeight: root.minimized ? 24 : 24
+                        Layout.preferredHeight: root.minimized ? 24 : 24
+                        Layout.maximumHeight: root.minimized ? 24 : 24
+                        group: root.group
+                        TapHandler { onDoubleTapped: root.toggleFocus() }
+                    }
+
+                    RowLayout {
+                        id: overviewAndSpinnyRow
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+                        Layout.minimumHeight: root.minimized ? 20 : 48
+                        Layout.preferredHeight: root.minimized ? 20 : 48
+                        Layout.maximumHeight: root.minimized ? 20 : 48
+                        spacing: 1
+
+                        DeckBeatgridEditor {
+                            id: beatgridControls
+                            Layout.preferredWidth: root.showBeatgridControls ? root.beatgridControlsWidth : 0
+                            Layout.minimumWidth: root.showBeatgridControls ? root.beatgridControlsWidth : 0
+                            Layout.maximumWidth: root.beatgridControlsWidth
+                            Layout.preferredHeight: 46
+                            Layout.maximumHeight: 46
+                            Layout.alignment: Qt.AlignVCenter
+                            group: root.group
+                            visible: root.showBeatgridControls
+                            z: 20
+                        }
+
+                        OverviewRow {
+                            id: overviewRow
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            group: root.group
+                        }
+                    }
                 }
             }
 
