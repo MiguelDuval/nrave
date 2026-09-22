@@ -279,6 +279,7 @@ Item {
                     icon.source: "images/gear.svg"
                     icon.width: 18
                     implicitWidth: 76
+                    normalColor: Theme.white
 
                     onClicked: {
                         if (!settingsPopup.opened) {

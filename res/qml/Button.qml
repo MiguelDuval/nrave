@@ -1,5 +1,6 @@
 import QtQuick 2
 import QtQuick.Controls 2
+import Qt5Compat.GraphicalEffects
 import "Theme"
 
 AbstractButton {
@@ -66,9 +67,17 @@ AbstractButton {
             fillMode: Image.PreserveAspectFit
             height: icon.height
             source: icon.source
-            visible: icon.source != null && icon.source !== ""
+            visible: false
             width: icon.width
             opacity: root.enabled ? 1.0 : 0.55
+        }
+
+        ColorOverlay {
+            anchors.fill: image
+            antialiasing: true
+            color: root.normalColor
+            source: image
+            visible: icon.source != null && icon.source !== ""
         }
     }
     states: [

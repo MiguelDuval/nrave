@@ -23,7 +23,7 @@ Skin.Button {
         rangeControl.value = root.modes[(currentIdx + 1) % root.modes.length];
     }
 
-    text: "Range"
+    text: "Range " + Math.round(rangeControl.value * 100) + "%"
 
     onClicked: nextRange()
 

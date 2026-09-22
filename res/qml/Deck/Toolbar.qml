@@ -68,7 +68,7 @@ Item {
         anchors.left: reverseButton.right
         anchors.leftMargin: 5
         height: 22
-        width: 22
+        width: 24
         enabled: quantizeControl.initialized
         highlight: quantizeControl.initialized && quantizeControl.value > 0.5
         text: "Q"
@@ -102,9 +102,9 @@ Item {
         anchors.rightMargin: 5
         group: root.group
         implicitHeight: 22
-        implicitWidth: 46
+        implicitWidth: 24
         key: "keylock"
-        text: "Key Lock"
+        text: "KLO"
         toggleable: true
     }
     Skin.ControlButton {
