@@ -8,7 +8,7 @@ import "../Waveforms"
 Controls.Panel {
     id: root
 
-    implicitHeight: root.minimized ? 80 : 206
+    implicitHeight: root.minimized ? 80 : 202
     implicitWidth: 620
 
     required property string group
@@ -141,18 +141,18 @@ Controls.Panel {
                 id: middleDeckRow
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                Layout.minimumHeight: root.minimized ? 68 : 122
-                Layout.preferredHeight: root.minimized ? 68 : 122
-                Layout.maximumHeight: root.minimized ? 68 : 122
+                Layout.minimumHeight: root.minimized ? 68 : 108
+                Layout.preferredHeight: root.minimized ? 68 : 108
+                Layout.maximumHeight: root.minimized ? 68 : 108
                 spacing: 8
 
-                SpinnyCoverSlot { id: leftSpinnyBig; Layout.preferredHeight: 114; Layout.preferredWidth: 114; group: root.group; visible: root.showBigSpinnyOrCover && !root.minimized }
+                SpinnyCoverSlot { id: leftSpinnyBig; Layout.preferredHeight: 96; Layout.preferredWidth: 96; group: root.group; visible: root.showBigSpinnyOrCover && !root.minimized }
 
                 ColumnLayout {
                     id: titleOverviewColumn
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    Layout.preferredHeight: root.minimized ? 68 : 122
+                    Layout.preferredHeight: root.minimized ? 68 : 108
                     spacing: 2
 
                     TitleTimeRows {
@@ -169,9 +169,9 @@ Controls.Panel {
                         id: overviewAndSpinnyRow
                         Layout.fillWidth: true
                         Layout.fillHeight: false
-                        Layout.minimumHeight: root.minimized ? 20 : 63
-                        Layout.preferredHeight: root.minimized ? 20 : 63
-                        Layout.maximumHeight: root.minimized ? 20 : 63
+                        Layout.minimumHeight: root.minimized ? 20 : 55
+                        Layout.preferredHeight: root.minimized ? 20 : 55
+                        Layout.maximumHeight: root.minimized ? 20 : 55
                         spacing: 1
 
                         // Explicit unique local component, first in the layout so it cannot be pushed off-screen.
@@ -180,15 +180,15 @@ Controls.Panel {
                             Layout.preferredWidth: root.showBeatgridControls ? root.beatgridControlsWidth : 0
                             Layout.minimumWidth: root.showBeatgridControls ? root.beatgridControlsWidth : 0
                             Layout.maximumWidth: root.beatgridControlsWidth
-                            Layout.preferredHeight: 52
-                            Layout.maximumHeight: 52
+                            Layout.preferredHeight: 50
+                            Layout.maximumHeight: 50
                             Layout.alignment: Qt.AlignVCenter
                             group: root.group
                             visible: root.showBeatgridControls
                             z: 20
                         }
 
-                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 63; Layout.preferredWidth: 63; group: root.group; visible: root.showSmallSpinnyOrCover }
+                        SpinnyCoverSlot { id: leftSpinnySmall; Layout.preferredHeight: 55; Layout.preferredWidth: 55; group: root.group; visible: root.showSmallSpinnyOrCover }
                         OverviewRow { id: overviewRow; Layout.fillWidth: true; Layout.fillHeight: true; group: root.group }
                     }
                 }
