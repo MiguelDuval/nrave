@@ -119,10 +119,17 @@ jobs:
         run: |
           test -f build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           ls -lh build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
+      - name: Print source and APK identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SOURCE_COMMIT=${GITHUB_SHA}"
+          sha256sum build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
-          name: android-build-release-signed.apk
+          name: nrave-android-${{ github.sha }}
           path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           archive: false
           if-no-files-found: error
