@@ -61,53 +61,58 @@ Item {
 
     Component.onCompleted: {
         itemModel.append({
-            "type": "column",
+            "type": "row",
             "items": [
                 {
-                    "type": "info"
-                },
-                {
-                    "type": "row",
+                    "type": "column",
                     "items": [
                         {
-                            "type": "column",
+                            "type": "info"
+                        },
+                        {
+                            "type": "row",
                             "items": [
                                 {
-                                    "type": "waveformOverview"
-                                },
-                                {
-                                    "type": "row",
+                                    "type": "column",
                                     "items": [
                                         {
-                                            "type": "column",
-                                            "items": [
-                                                {
-                                                    "type": "play"
-                                                },
-                                                {
-                                                    "type": "cue"
-                                                }
-                                            ]
+                                            "type": "waveformOverview"
                                         },
                                         {
-                                            "type": "column",
+                                            "type": "row",
                                             "items": [
                                                 {
-                                                    "type": "toolbar"
-                                                },
-                                                {
-                                                    "type": "row",
+                                                    "type": "column",
                                                     "items": [
                                                         {
-                                                            "type": "hotcueAndStem",
-                                                            "minWidth": 520
+                                                            "type": "play"
                                                         },
                                                         {
-                                                            "type": "beatjump",
-                                                            "minWidth": 650
+                                                            "type": "cue"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "column",
+                                                    "items": [
+                                                        {
+                                                            "type": "toolbar"
                                                         },
                                                         {
-                                                            "type": "loop"
+                                                            "type": "row",
+                                                            "items": [
+                                                                {
+                                                                    "type": "hotcueAndStem",
+                                                                    "minWidth": 520
+                                                                },
+                                                                {
+                                                                    "type": "beatjump",
+                                                                    "minWidth": 650
+                                                                },
+                                                                {
+                                                                    "type": "loop"
+                                                                }
+                                                            ]
                                                         }
                                                     ]
                                                 }
@@ -116,24 +121,24 @@ Item {
                                     ]
                                 }
                             ]
-                        },
-                        {
-                            "type": "column",
-                            "minWidth": 800,
-                            "items": [
-                                {
-                                    "type": "spinny"
-                                },
-                                {
-                                    "type": "fxAssign"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "tempo",
-                            "minWidth": 270
                         }
                     ]
+                },
+                {
+                    "type": "column",
+                    "minWidth": 800,
+                    "items": [
+                        {
+                            "type": "spinny"
+                        },
+                        {
+                            "type": "fxAssign"
+                        }
+                    ]
+                },
+                {
+                    "type": "tempo",
+                    "minWidth": 270
                 }
             ]
         });
