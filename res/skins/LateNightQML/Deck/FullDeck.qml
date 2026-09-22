@@ -141,9 +141,9 @@ Controls.Panel {
                 id: middleDeckRow
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                Layout.minimumHeight: root.minimized ? 68 : 74
-                Layout.preferredHeight: root.minimized ? 68 : 74
-                Layout.maximumHeight: root.minimized ? 68 : 74
+                Layout.minimumHeight: root.minimized ? 68 : 70
+                Layout.preferredHeight: root.minimized ? 68 : 70
+                Layout.maximumHeight: root.minimized ? 68 : 70
                 spacing: 8
 
                 ColumnLayout {
@@ -156,9 +156,9 @@ Controls.Panel {
                     TitleTimeRows {
                         id: titleTimeRows
                         Layout.fillWidth: true
-                        Layout.minimumHeight: root.minimized ? 24 : 24
-                        Layout.preferredHeight: root.minimized ? 24 : 24
-                        Layout.maximumHeight: root.minimized ? 24 : 24
+                        Layout.minimumHeight: root.minimized ? 20 : 20
+                        Layout.preferredHeight: root.minimized ? 20 : 20
+                        Layout.maximumHeight: root.minimized ? 20 : 20
                         group: root.group
                         TapHandler { onDoubleTapped: root.toggleFocus() }
                     }
@@ -167,9 +167,9 @@ Controls.Panel {
                         id: overviewAndSpinnyRow
                         Layout.fillWidth: true
                         Layout.fillHeight: false
-                        Layout.minimumHeight: root.minimized ? 20 : 48
-                        Layout.preferredHeight: root.minimized ? 20 : 48
-                        Layout.maximumHeight: root.minimized ? 20 : 48
+                        Layout.minimumHeight: root.minimized ? 20 : 46
+                        Layout.preferredHeight: root.minimized ? 20 : 46
+                        Layout.maximumHeight: root.minimized ? 20 : 46
                         spacing: 1
 
                         DeckBeatgridEditor {
