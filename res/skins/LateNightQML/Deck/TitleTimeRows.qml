@@ -93,11 +93,15 @@ Item {
             Layout.fillHeight: true
             group: root.group
             track: root.currentTrack
-            text: root.isLoaded ? (root.currentTrack?.title || "Unknown Title") : ""
+            text: root.isLoaded
+                ? ((root.currentTrack?.artist || "").length > 0
+                    ? (root.currentTrack?.title || "Unknown Title") + " • " + root.currentTrack.artist
+                    : (root.currentTrack?.title || "Unknown Title"))
+                : ""
             displayProperty: "titleInfo"
             editProperty: "title"
             editable: true
-            pixelSize: 16
+            pixelSize: 15
             textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
             elide: Text.ElideRight
         }
