@@ -521,7 +521,7 @@ Item {
             }
             Item {
                 SplitView.fillHeight: true
-                SplitView.minimumHeight: mixer.height
+                SplitView.minimumHeight: Math.max(mixer.height, 206)
 
                 Deck {
                     id: deck1
