@@ -253,9 +253,11 @@ Item {
 
                     activeBackgroundColor: recordingStatus.value >= 2
                             ? Theme.red
-                            : (root.recordArmed ? "#2D4EA1" : Theme.buttonActiveBackgroundColor)
+                            : ((root.recordArmed || recordingStatus.value === 1)
+                                    ? "#2D4EA1"
+                                    : Theme.buttonActiveBackgroundColor)
                     activeColor: Theme.white
-                    highlight: root.recordArmed || recordingStatus.value >= 2
+                    highlight: root.recordArmed || recordingStatus.value >= 1
                     text: "Record"
 
                     onClicked: {
