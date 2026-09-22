@@ -208,7 +208,7 @@ Item {
 
             LayoutItem {
                 Layout.fillWidth: true
-                Layout.preferredHeight: root.minimized ? 28 : 56
+                Layout.preferredHeight: 28
                 editOverlay.visible: false
 
                 DeckComponent.InfoBar {
