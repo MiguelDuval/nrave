@@ -85,4 +85,45 @@ ApplicationWindow {
     // Samplers are rendered by MainWindow.qml through the Android-safe
     // SamplerRow adapter. Do not create a second root-level sampler instance.
 
+
+    // NRave launch curtain: this is the first QML layer on Android and stays
+    // above the UI until the real MainWindow has finished loading.
+    Rectangle {
+        id: nraveSplashCurtain
+        objectName: "nraveSplashCurtain"
+        anchors.fill: parent
+        color: "#000000"
+        opacity: root.isMobile ? 1 : 0
+        visible: opacity > 0
+        z: 200000
+
+        Image {
+            id: nraveSplashArtwork
+            objectName: "nraveSplashArtwork"
+            anchors.fill: parent
+            fillMode: Image.PreserveAspectFit
+            asynchronous: false
+            cache: true
+            smooth: true
+            source: "qrc:/images/nrave_splash.webp"
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutQuad
+            }
+        }
+
+        states: [
+            State {
+                when: content.status === Loader.Ready && content.active
+                PropertyChanges {
+                    target: nraveSplashCurtain
+                    opacity: 0
+                }
+            }
+        ]
+    }
+
 }
