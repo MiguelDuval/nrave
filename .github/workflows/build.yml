@@ -75,44 +75,24 @@ jobs:
           PY
 
           # --- NRave full-screen QML artwork ---
-          SPLASH_DST_ANDROID="packaging/android/res/drawable/nrave_splash.webp"
-          SPLASH_DST_QML="res/qml/nrave_splash.webp"
-          mkdir -p "$(dirname "$SPLASH_DST_ANDROID")" "$(dirname "$SPLASH_DST_QML")"
-
+          # The production splash is a committed Qt resource. Keeping the
+          # artwork inside the application resource system avoids the Android
+          # external-storage timing window that previously produced a black
+          # frame after the permission dialog.
+          SPLASH="res/images/nrave_splash.webp"
+          test -f "$SPLASH"
           python3 - <<'PY'
           from pathlib import Path
-          import base64, hashlib
+          import hashlib
 
-          src_dir = Path("packaging/android/icon-source")
-          dst_android = Path("packaging/android/res/drawable/nrave_splash.webp")
-          dst_qml = Path("res/qml/nrave_splash.webp")
-
-          parts = sorted(
-              src_dir.glob("nrave_splash.webp.b64.part*"),
-              key=lambda p: int(p.name.rsplit("part", 1)[1]),
-          )
-          if len(parts) != 6:
-              raise SystemExit(f"Expected 6 NRave splash chunks, found {len(parts)}")
-
-          out = bytearray()
-          for part in parts:
-              encoded = "".join(part.read_text().split())
-              encoded += "=" * ((-len(encoded)) % 4)
-              try:
-                  out.extend(base64.b64decode(encoded, validate=True))
-              except Exception as exc:
-                  raise SystemExit(f"Invalid NRave splash base64 chunk {part.name}: {exc}")
-
-          data = bytes(out)
+          p = Path("res/images/nrave_splash.webp")
+          data = p.read_bytes()
           expected = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
           actual = hashlib.sha256(data).hexdigest()
           if actual != expected:
               raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
           if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
               raise SystemExit("Invalid NRave splash WebP signature")
-
-          dst_android.write_bytes(data)
-          dst_qml.write_bytes(data)
           print(f"Validated NRave splash artwork: {len(data)} bytes, SHA-256 {expected}")
           PY
 

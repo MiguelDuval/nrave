@@ -98,11 +98,11 @@ ApplicationWindow {
         Image {
             id: nraveSplashArtwork
             anchors.fill: parent
-            fillMode: Image.PreserveAspectFit
+            fillMode: Image.PreserveAspectCrop
             asynchronous: false
             cache: true
             smooth: true
-            source: root.isMobile ? "nrave_splash.webp" : ""
+            source: root.isMobile ? "qrc:/images/nrave_splash.webp" : ""
         }
 
         Behavior on opacity {
@@ -114,7 +114,7 @@ ApplicationWindow {
 
         states: [
             State {
-                when: content.status === Loader.Ready && content.active
+                when: content.status === Loader.Ready && content.active && nraveSplashArtwork.status === Image.Ready
                 PropertyChanges {
                     splash.opacity: 0
                 }

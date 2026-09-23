@@ -8,6 +8,6 @@
 
         <!-- Android 12+: use the NRave launcher artwork for the system starting window. -->
         <item name="android:windowSplashScreenBackground">@android:color/black</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/nrave_icon</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/nrave_splash_transparent_icon</item>
     </style>
 </resources>
