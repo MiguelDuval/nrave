@@ -9,6 +9,7 @@ LateNightIconButton {
     required property string key
     property string rightClickKey: ""
     property string pressAndHoldKey: ""
+    property real pressAndHoldValue: -1
     property string displayKey: ""
     property bool toggleable: false
     property bool activateOnClick: false
@@ -75,6 +76,7 @@ LateNightIconButton {
         key: root.key
         rightClickKey: root.rightClickKey
         pressAndHoldKey: root.pressAndHoldKey
+        pressAndHoldValue: root.pressAndHoldValue
         displayKey: root.displayKey
         toggleable: root.toggleable
         activateOnClick: root.activateOnClick
