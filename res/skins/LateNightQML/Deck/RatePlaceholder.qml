@@ -183,12 +183,51 @@ Item {
                 group: root.group
                 key: "sync_enabled"
                 rightClickKey: "sync_leader"
-                pressAndHoldKey: "sync_leader"
-                pressAndHoldValue: 1
+                handlePointerInput: false
                 toggleable: true
                 activateOnClick: true
                 longPressLatching: false
                 numberStates: 2
+
+                // Android-safe explicit Sync gesture handling.
+                // Short press: toggle sync_enabled.
+                // Long press: force this deck to sync leader.
+                MouseArea {
+                    id: syncGestureArea
+                    anchors.fill: parent
+                    z: 100
+                    acceptedButtons: Qt.LeftButton
+                    preventStealing: true
+
+                    property bool longPressTriggered: false
+
+                    onPressed: {
+                        longPressTriggered = false;
+                        syncLongPressTimer.restart();
+                    }
+
+                    onReleased: {
+                        syncLongPressTimer.stop();
+                        if (!longPressTriggered) {
+                            syncEnabledProxy.value = syncEnabledProxy.value > 0 ? 0 : 1;
+                        }
+                    }
+
+                    onCanceled: {
+                        syncLongPressTimer.stop();
+                        longPressTriggered = false;
+                    }
+
+                    Timer {
+                        id: syncLongPressTimer
+                        interval: 500
+                        repeat: false
+                        onTriggered: {
+                            syncGestureArea.longPressTriggered = true;
+                            syncLeaderProxy.value = 1;
+                        }
+                    }
+                }
                 longPressLatchOverlayColor: LateNightTheme.syncInactiveBackgroundColor
                 longPressLatchOverlayBackgroundSource: LateNightTheme.assetDeckSyncBackground
                 longPressLatchOverlayIconSource: LateNightTheme.assetDeckSyncButton
