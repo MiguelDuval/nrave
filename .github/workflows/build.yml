@@ -25,12 +25,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SRC="packaging/android/icon-source/ic_launcher.png.b64"
-          DST_DIR="packaging/android/res/mipmap-xxxhdpi"
-          DST="$DST_DIR/nrave_icon.png"
-          mkdir -p "$DST_DIR"
-          find "$DST_DIR" -type f -delete
-          python3 - <<'PY'
+          cat > /tmp/decode_launcher.py << 'PYEOF'
           from pathlib import Path
           import base64
 
@@ -42,8 +37,9 @@ jobs:
           dst = Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
           dst.write_bytes(data)
           print(f"Decoded NRave launcher artwork: {len(data)} bytes")
-          PY
-          python3 - <<'PY'
+          PYEOF
+          python3 /tmp/decode_launcher.py
+          cat > /tmp/validate_launcher.py << 'PYEOF'
           from pathlib import Path
           import hashlib, struct, zlib
 
@@ -83,7 +79,8 @@ jobs:
           if not seen_ihdr or not seen_iend:
               raise SystemExit("PNG missing IHDR or IEND")
           print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
-          PY
+          PYEOF
+          python3 /tmp/validate_launcher.py
           if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' -o -name '*.webp' \) | grep -q .; then
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
