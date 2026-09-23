@@ -100,11 +100,11 @@ ApplicationWindow {
             id: nraveSplashArtwork
             objectName: "nraveSplashArtwork"
             anchors.fill: parent
-            fillMode: Image.PreserveAspectCrop
+            fillMode: Image.PreserveAspectFit
             asynchronous: false
             cache: true
             smooth: true
-            source: "qrc:/images/nrave_splash.webp"
+            source: "qrc:/IMG_20260915_104111.png"
         }
 
         Behavior on opacity {
