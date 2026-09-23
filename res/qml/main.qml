@@ -85,40 +85,4 @@ ApplicationWindow {
     // Samplers are rendered by MainWindow.qml through the Android-safe
     // SamplerRow adapter. Do not create a second root-level sampler instance.
 
-    // Android launch branding: the full NRave artwork is the first QML frame.
-    // No Mixxx logo, slogan, or legacy splash asset is used here.
-    Rectangle {
-        id: splash
-        anchors.fill: parent
-        color: "#000000"
-        visible: opacity > 0
-        opacity: 1
-        z: 200000
-
-        Image {
-            id: nraveSplashArtwork
-            anchors.fill: parent
-            fillMode: Image.PreserveAspectFit
-            asynchronous: false
-            cache: true
-            smooth: true
-            source: root.isMobile ? "qrc:/images/nrave_splash.webp" : ""
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 450
-                easing.type: Easing.InOutQuad
-            }
-        }
-
-        states: [
-            State {
-                when: content.status === Loader.Ready && content.active
-                PropertyChanges {
-                    splash.opacity: 0
-                }
-            }
-        ]
-    }
 }
