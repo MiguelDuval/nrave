@@ -66,6 +66,7 @@ class RecordingManager : public QObject {
     qint64 getFreeSpace();
 
     UserSettingsPointer m_pConfig;
+    EngineSideChain* m_pEngineSideChain;
     QString m_recordingDir;
     // the base file
     QString m_recording_base_file;
