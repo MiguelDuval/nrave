@@ -85,66 +85,43 @@ ApplicationWindow {
     // Samplers are rendered by MainWindow.qml through the Android-safe
     // SamplerRow adapter. Do not create a second root-level sampler instance.
 
+    // NRave launch curtain: this is the first QML layer on Android and stays
+    // above the UI until the real MainWindow has finished loading.
     Rectangle {
-        id: splash
-        visible: opacity > 0
-        color: Theme.backgroundColor
+        id: nraveSplashCurtain
+        objectName: "nraveSplashCurtain"
         anchors.fill: parent
-
-        property bool ready: false
-
-        Component.onCompleted: ready = true
-
-        states: [
-            State {
-                when: splash.ready && content.status != Loader.Ready
-                PropertyChanges {
-                    text.opacity: 1
-                    logo.opacity: 1
-                    logo.y: root.height / 2 - logo.height / 2
-                }
-            },
-            State {
-                when: content.status === Loader.Ready && content.active
-                PropertyChanges {
-                    splash.opacity: 0
-                }
-            }
-        ]
+        color: "#000000"
+        opacity: root.isMobile ? 1 : 0
+        visible: opacity > 0
+        z: 200000
 
         Image {
-            id: logo
-            anchors.horizontalCenter: parent.horizontalCenter
-            source: "qrc:/images/mixxx-icon-logo-symbolic.svg"
-            opacity: 0
-            y: root.height / 2
-            Behavior on opacity {
-                NumberAnimation { duration: 1500; easing.type: Easing.InOutQuad }
-            }
-            Behavior on y {
-                NumberAnimation { duration: 1500; easing.type: Easing.InOutQuad }
-            }
-        }
-
-        Text {
-            id: text
-            opacity: 0
-            y: logo.y + logo.height * 2
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.topMargin: 20
-            font.pixelSize: 12
-            color: Theme.lightGray3
-            text: "DJ your way"
-            Behavior on opacity {
-                SequentialAnimation {
-                    PauseAnimation { duration: 1000 }
-                    NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
-                }
-            }
+            id: nraveSplashArtwork
+            objectName: "nraveSplashArtwork"
+            anchors.fill: parent
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: false
+            cache: true
+            smooth: true
+            source: "qrc:/images/nrave_splash.webp"
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutQuad
+            }
         }
+
+        states: [
+            State {
+                when: content.status === Loader.Ready && content.active && nraveSplashArtwork.status === Image.Ready
+                PropertyChanges {
+                    target: nraveSplashCurtain
+                    opacity: 0
+                }
+            }
+        ]
     }
 }

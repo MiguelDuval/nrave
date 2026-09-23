@@ -34,7 +34,7 @@
         android:icon="@mipmap/nrave_icon"
         android:roundIcon="@mipmap/nrave_icon"
         android:label="NRave"
-        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        android:theme="@style/NRaveTheme"
         android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
         android:fullBackupOnly="false"
@@ -60,9 +60,18 @@
                 android:name="android.app.background_running"
                 android:value="true" />
 
+            <!-- Keep Qt's native NRave splash visible until QML reports MainWindow ready. -->
             <meta-data
                 android:name="android.app.splash_screen_drawable"
-                android:value="@drawable/ic_launcher_foreground" />
+                android:resource="@drawable/nrave_splash" />
+
+            <meta-data
+                android:name="android.app.splash_screen_drawable_landscape"
+                android:resource="@drawable/nrave_splash" />
+
+            <meta-data
+                android:name="android.app.splash_screen_sticky"
+                android:value="true" />
 
             <meta-data
                 android:name="android.app.arguments"

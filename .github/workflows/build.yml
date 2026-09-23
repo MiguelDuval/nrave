@@ -6,6 +6,7 @@ on:
       - main
       - experimental/modern-indicator-skin
       - experimental/modern-indicator-skin-2
+      - Splash-Screen
 concurrency:
   group: android-apk-${{ github.ref }}
   cancel-in-progress: true
@@ -74,6 +75,27 @@ jobs:
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
           fi
+      - name: Validate NRave splash artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          SPLASH_ANDROID="packaging/android/res/drawable-nodpi/nrave_splash.webp"
+          SPLASH_QML="res/images/nrave_splash.webp"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          for p_str in [SPLASH_ANDROID, SPLASH_QML]:
+              p = Path(p_str)
+              data = p.read_bytes()
+              expected = "300735fe739180a8779f75c80a9ec2c8fc5a10e13efe9414302325d8475fd69d"
+              actual = hashlib.sha256(data).hexdigest()
+              if actual != expected:
+                  raise SystemExit(f"NRave splash SHA-256 mismatch in {p_str}: {actual} != {expected}")
+              if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
+                  raise SystemExit(f"Invalid NRave splash WebP signature in {p_str}")
+              print(f"Validated NRave splash artwork: {len(data)} bytes, SHA-256 {expected}")
+          PY
       - name: Prepare Android build environment
         shell: bash
         run: |
