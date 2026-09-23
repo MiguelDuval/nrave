@@ -60,8 +60,9 @@
                 android:name="android.app.background_running"
                 android:value="true" />
 
-            <!-- Qt native splash is used only until the first top-level Qt window appears.
-                 The QML launch curtain below owns the remaining startup transition. -->
+            <!-- Keep the native splash visible across Android's external-storage permission
+                 handoff. QmlApplication explicitly hides it once core initialization is complete,
+                 while the QML launch curtain covers the remaining asynchronous MainWindow load. -->
             <meta-data
                 android:name="android.app.splash_screen_drawable"
                 android:resource="@drawable/nrave_splash" />
@@ -69,6 +70,10 @@
             <meta-data
                 android:name="android.app.splash_screen_drawable_landscape"
                 android:resource="@drawable/nrave_splash" />
+
+            <meta-data
+                android:name="android.app.splash_screen_sticky"
+                android:value="true" />
 
             <meta-data
                 android:name="android.app.arguments"
