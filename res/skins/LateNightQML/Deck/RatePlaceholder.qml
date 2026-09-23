@@ -172,7 +172,7 @@ Item {
             Layout.preferredHeight: 22
             spacing: 0
 
-            // Sync button: short click performs momentary sync, hold latches sync, right-click toggles leader.
+            // Sync button: short click toggles sync; long press forces this deck to LeaderSoft; right-click keeps direct leader control.
             LateNightControlButton {
                 id: syncBtn
                 Layout.preferredWidth: 40
@@ -183,7 +183,11 @@ Item {
                 group: root.group
                 key: "sync_enabled"
                 rightClickKey: "sync_leader"
-                longPressLatching: true
+                pressAndHoldKey: "sync_leader"
+                pressAndHoldValue: 1
+                toggleable: true
+                activateOnClick: true
+                longPressLatching: false
                 numberStates: 2
                 longPressLatchOverlayColor: LateNightTheme.syncInactiveBackgroundColor
                 longPressLatchOverlayBackgroundSource: LateNightTheme.assetDeckSyncBackground
