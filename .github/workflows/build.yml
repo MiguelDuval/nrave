@@ -30,10 +30,23 @@ jobs:
           DST="$DST_DIR/nrave_icon.png"
           mkdir -p "$DST_DIR"
           find "$DST_DIR" -type f -delete
-          tr -d '\r\n\t ' < "$SRC" | base64 --decode > "$DST"
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+
+          src = Path("packaging/android/icon-source/ic_launcher.png.b64")
+          encoded = "".join(src.read_text().split())
+          encoded += "=" * ((-len(encoded)) % 4)
+          data = base64.b64decode(encoded, validate=True)
+
+          dst = Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
+          dst.write_bytes(data)
+          print(f"Decoded NRave launcher artwork: {len(data)} bytes")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, struct, zlib
+
           p = Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
           d = p.read_bytes()
           if not d.startswith(b"\x89PNG\r\n\x1a\n"):
