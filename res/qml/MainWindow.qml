@@ -36,7 +36,8 @@ Item {
     }
 
     function pulseRecordingToggle() {
-        recordingToggle.trigger();
+        recordingToggle.value = 1;
+        recordingPulseTimer.restart();
     }
 
     function handleRecordButtonClicked() {
@@ -82,6 +83,17 @@ Item {
         key: "toggle_recording"
     }
 
+
+    Timer {
+        id: recordingPulseTimer
+
+        interval: 120
+        repeat: false
+
+        onTriggered: {
+            recordingToggle.value = 0;
+        }
+    }
 
     Timer {
         id: recordingTimer
@@ -260,8 +272,14 @@ Item {
                     highlight: root.recordArmed || recordingStatus.value >= 1
                     text: "Record"
 
-                    onClicked: {
-                        root.handleRecordButtonClicked();
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.LeftButton
+                        z: 100
+
+                        onClicked: {
+                            root.handleRecordButtonClicked();
+                        }
                     }
                 }
                 Item {
