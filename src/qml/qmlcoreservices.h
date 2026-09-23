@@ -49,6 +49,8 @@ class QmlCoreServices : public QObject, public Singleton<QmlCoreServices> {
     void setReady();
     void setInitializationProgress(int progress, const QString& service);
 
+    Q_INVOKABLE void hideAndroidSplashScreen(int duration = 0);
+
   signals:
     void readyChanged();
     void initializationProgressChanged();
