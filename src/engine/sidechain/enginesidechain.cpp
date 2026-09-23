@@ -9,6 +9,7 @@
 #include "engine/sidechain/enginesidechain.h"
 
 #include <QtDebug>
+#include <array>
 
 #include "engine/engine.h"
 #include "engine/sidechain/sidechainworker.h"
@@ -74,6 +75,12 @@ void EngineSideChain::receiveBuffer(const AudioInput& input,
     SampleUtil::copy(m_pSidechainMix, pBuffer, iFrames * mixxx::kEngineChannelOutputCount);
 }
 
+void EngineSideChain::requestSilentProcessing() {
+    QMutexLocker locker(&m_waitLock);
+    m_silentProcessingRequested = true;
+    m_waitForSamples.wakeAll();
+}
+
 void EngineSideChain::writeSamples(const CSAMPLE* pBuffer, int iFrames) {
     Trace sidechain("EngineSideChain::writeSamples");
     // TODO: remove assumption of stereo buffer
@@ -103,9 +110,25 @@ void EngineSideChain::run() {
         m_waitLock.lock();
 
         Event::end(tag);
-        m_waitForSamples.wait(&m_waitLock);
+        while (!m_bStopThread && !m_silentProcessingRequested) {
+            m_waitForSamples.wait(&m_waitLock);
+        }
+        const bool processSilentBuffer = m_silentProcessingRequested;
+        m_silentProcessingRequested = false;
         m_waitLock.unlock();
         Event::start(tag);
+
+        if (processSilentBuffer) {
+            static constexpr int kSilentFrames = 1024;
+            static const std::array<CSAMPLE,
+                    kSilentFrames * mixxx::kEngineChannelOutputCount> kSilence{};
+            Trace process("EngineSideChain::processSilentBuffer");
+            MMutexLocker locker(&m_workerLock);
+            foreach (SideChainWorker* pWorker, m_workers) {
+                pWorker->process(kSilence.data(),
+                        kSilentFrames * mixxx::kEngineChannelOutputCount);
+            }
+        }
 
         int samples_read;
         while ((samples_read = m_sampleFifo.read(m_pWorkBuffer,
