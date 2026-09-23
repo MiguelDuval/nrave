@@ -87,7 +87,10 @@ jobs:
           from pathlib import Path
           import hashlib
 
-          for p_str in [SPLASH_ANDROID, SPLASH_QML]:
+          for p_str in [
+              "packaging/android/res/drawable-nodpi/nrave_splash.webp",
+              "res/images/nrave_splash.webp",
+          ]:
               p = Path(p_str)
               data = p.read_bytes()
               expected = "300735fe739180a8779f75c80a9ec2c8fc5a10e13efe9414302325d8475fd69d"
