@@ -78,10 +78,7 @@ void RecordingManager::slotSetRecording(bool recording) {
 void RecordingManager::slotToggleRecording(double value) {
     bool toggle = static_cast<bool>(value);
     if (toggle) {
-        // A recording request is already in progress while status == READY.
-        // Treat another toggle as an explicit stop instead of rebuilding the
-        // pending recording session forever.
-        if (isRecordingActive() || m_pCoRecStatus->get() != RECORD_OFF) {
+        if (isRecordingActive()) {
             stopRecording();
         } else {
             startRecording();
