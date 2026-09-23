@@ -14,7 +14,9 @@ Item {
     required property ApplicationWindow applicationWindow
     property alias menuBar: nativeApplicationMenuLoader.item
 
-    property alias editDeck: editDeckButton.checked
+    // Deck edit mode is intentionally disabled in this UI; the former Edit button
+    // is now reserved for the future Help button.
+    property bool editDeck: false
     property var focusedDeck: null
     property alias maximizeLibrary: maximizeLibraryButton.checked
     readonly property int numDecks: 4
@@ -340,11 +342,23 @@ Item {
                     Layout.fillWidth: true
                 }
                 Skin.Button {
-                    id: editDeckButton
+                    id: supportUsButton
 
-                    activeColor: Theme.primaryViolet
-                    checkable: true
-                    text: "Edit"
+                    activeColor: Theme.primaryCyan
+                    checkable: false
+                    enabled: false
+                    implicitWidth: 78
+                    normalColor: Theme.buttonNormalColor
+                    opacity: 0.55
+                    text: "Support Us"
+                }
+                Skin.Button {
+                    id: helpButton
+
+                    activeColor: Theme.primaryCyan
+                    checkable: false
+                    implicitWidth: 50
+                    text: "Help"
                 }
                 Skin.Button {
                     id: showDevToolsButton
