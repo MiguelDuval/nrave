@@ -35,7 +35,18 @@ jobs:
               raise SystemExit("NRave splash SHA-256 mismatch")
           if data[:4] != b"RIFF" or data[8:12] != b"WEBP":
               raise SystemExit("Invalid NRave splash WebP signature")
-          print(f"PASS: canonical NRave splash validated ({len(data)} bytes)")
+
+          qml = Path("res/qml/main.qml").read_text()
+          required = [
+              'objectName: "nraveSplashCurtain"',
+              'source: "qrc:/images/nrave_splash.webp"',
+              'content.status === Loader.Ready && content.active',
+          ]
+          missing = [value for value in required if value not in qml]
+          if missing:
+              raise SystemExit("Missing QML splash curtain contract: " + ", ".join(missing))
+
+          print(f"PASS: canonical NRave splash and QML curtain validated ({len(data)} bytes)")
           PY
 
   android-apk:
@@ -98,10 +109,8 @@ jobs:
           print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
           PY
 
-          # --- NRave full-screen Qt splash artwork ---
-          # Qt's native Android splash loader consumes this exact drawable.
-          mkdir -p packaging/android/res/drawable
-          cp res/images/nrave_splash.webp packaging/android/res/drawable/nrave_splash.webp
+          # The branded splash is a QML launch curtain backed by the canonical Qt resource.
+          # Do not create a second native drawable splash here.
       - name: Prepare Android build environment
         shell: bash
         run: |
@@ -151,20 +160,22 @@ jobs:
           test -f build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           ls -lh build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
 
-      - name: Test NRave native splash package
+      - name: Test NRave QML splash curtain package
         shell: bash
         run: |
           set -euo pipefail
           APK="build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk"
-          grep -q 'android.app.splash_screen_drawable' packaging/android/AndroidManifest.xml
-          ENTRY="$(unzip -Z1 "$APK" | grep '/nrave_splash\.webp$' | head -n 1)"
-          test -n "$ENTRY"
-          unzip -p "$APK" "$ENTRY" > "$RUNNER_TEMP/nrave_splash_from_apk.webp"
-          EXPECTED="5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
-          ACTUAL="$(sha256sum "$RUNNER_TEMP/nrave_splash_from_apk.webp" | cut -d ' ' -f1)"
-          test "$ACTUAL" = "$EXPECTED"
-          echo "PASS: APK contains the exact NRave splash drawable"
+          unzip -p "$APK" "assets/qml/main.qml" > "$RUNNER_TEMP/nrave_main.qml"
+          grep -q 'objectName: "nraveSplashCurtain"' "$RUNNER_TEMP/nrave_main.qml"
+          grep -q 'source: "qrc:/images/nrave_splash.webp"' "$RUNNER_TEMP/nrave_main.qml"
+          grep -q 'content.status === Loader.Ready && content.active' "$RUNNER_TEMP/nrave_main.qml"
 
+          unzip -p "$APK" "assets/images/nrave_splash.webp" > "$RUNNER_TEMP/nrave_splash_from_assets.webp"
+          EXPECTED="5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
+          ACTUAL="$(sha256sum "$RUNNER_TEMP/nrave_splash_from_assets.webp" | cut -d ' ' -f1)"
+          test "$ACTUAL" = "$EXPECTED"
+
+          echo "PASS: Android APK contains the NRave QML curtain and canonical splash artwork"
       - name: Print source and APK identity
         shell: bash
         run: |
