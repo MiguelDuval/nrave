@@ -14,6 +14,7 @@ LateNightIconButton {
     property bool toggleable: false
     property bool activateOnClick: false
     property bool ignoreActivePresses: false
+    property bool handlePointerInput: true
     property bool releaseToZero: true
     property bool longPressLatching: false
     property int numberStates: 2
@@ -81,6 +82,7 @@ LateNightIconButton {
         toggleable: root.toggleable
         activateOnClick: root.activateOnClick
         ignoreActivePresses: root.ignoreActivePresses
+        handlePointerInput: root.handlePointerInput
         releaseToZero: root.releaseToZero
         longPressLatching: root.longPressLatching
         numberStates: root.numberStates
