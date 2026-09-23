@@ -157,7 +157,15 @@ jobs:
           set -euo pipefail
           APK="build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk"
           grep -q 'android.app.splash_screen_drawable' packaging/android/AndroidManifest.xml
-          ENTRY="$(unzip -Z1 "$APK" | grep '/nrave_splash\\.webp      - name: Print source and APK identity
+          ENTRY="$(unzip -Z1 "$APK" | grep '/nrave_splash\.webp$' | head -n 1)"
+          test -n "$ENTRY"
+          unzip -p "$APK" "$ENTRY" > "$RUNNER_TEMP/nrave_splash_from_apk.webp"
+          EXPECTED="5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
+          ACTUAL="$(sha256sum "$RUNNER_TEMP/nrave_splash_from_apk.webp" | cut -d ' ' -f1)"
+          test "$ACTUAL" = "$EXPECTED"
+          echo "PASS: APK contains the exact NRave splash drawable"
+
+      - name: Print source and APK identity
         shell: bash
         run: |
           set -euo pipefail
