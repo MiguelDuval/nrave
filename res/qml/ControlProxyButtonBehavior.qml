@@ -8,6 +8,7 @@ Item {
     required property string key
     property string rightClickKey: ""
     property string pressAndHoldKey: ""
+    property real pressAndHoldValue: -1
     property string displayKey: ""
     property bool toggleable: false
     property bool activateOnClick: false
@@ -48,7 +49,14 @@ Item {
     }
 
     function triggerPressAndHoldAction() {
-        holdControl.value = !holdControl.value;
+        // A configured pressAndHoldValue is a one-way action, which is
+        // important for controls such as sync_leader where long press
+        // must force a state rather than toggle it.
+        if (root.pressAndHoldValue >= 0) {
+            holdControl.value = root.pressAndHoldValue;
+        } else {
+            holdControl.value = !holdControl.value;
+        }
     }
 
     function nextState(value) {
