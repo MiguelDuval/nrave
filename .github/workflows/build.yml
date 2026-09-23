@@ -190,21 +190,8 @@ jobs:
           APK="build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk"
           EXPECTED="5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
 
-          SPLASH_ENTRY=""
-          while read -r entry; do
-            actual="$(unzip -p "$APK" "$entry" | sha256sum | cut -d ' ' -f1)"
-            if [ "$actual" = "$EXPECTED" ]; then
-              SPLASH_ENTRY="$entry"
-              break
-            fi
-          done < <(unzip -Z1 "$APK" | grep -E '^res/[^/]+/[^/]+\\.(webp|png)$')
-
-          if [ -z "$SPLASH_ENTRY" ]; then
-            echo "Exact NRave splash artwork was not found in APK resources"
-            exit 1
-          fi
-          echo "Found canonical NRave splash artwork at $SPLASH_ENTRY"
-
+          SPLASH_ENTRY="$(unzip -Z1 "$APK" | grep -E '^res/[^/]+\\.(webp|png)$' | head -n 1)"
+          test -n "$SPLASH_ENTRY"
           unzip -p "$APK" "$SPLASH_ENTRY" > "$RUNNER_TEMP/nrave_splash_from_apk.webp"
           ACTUAL="$(sha256sum "$RUNNER_TEMP/nrave_splash_from_apk.webp" | cut -d ' ' -f1)"
           test "$ACTUAL" = "$EXPECTED"
@@ -213,7 +200,7 @@ jobs:
           ! grep -q 'nraveSplashCurtain' "$RUNNER_TEMP/nrave_main.qml"
           grep -q 'Mixxx.Core.hideAndroidSplashScreen(250)' "$RUNNER_TEMP/nrave_main.qml"
 
-          echo "PASS: Android APK contains the exact NRave native splash and only the native release path"
+          echo "PASS: exact NRave splash resource and native release path are packaged"
 
       - name: Print source and APK identity
         shell: bash
