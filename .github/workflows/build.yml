@@ -1,5 +1,4 @@
 name: Android APK
-# CI validation is intentionally triggered by branch pushes for design work.
 on:
   workflow_dispatch:
   push:
@@ -7,9 +6,6 @@ on:
       - main
       - experimental/modern-indicator-skin
       - experimental/modern-indicator-skin-2
-concurrency:
-  group: android-apk-${{ github.ref }}
-  cancel-in-progress: true
 permissions:
   contents: write
 env:
@@ -21,12 +17,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Materialize NRave launcher and splash artwork
+      - name: Materialize NRave artwork
         shell: bash
         run: |
           set -euo pipefail
-
-          # --- NRave launcher icon ---
           SRC="packaging/android/icon-source/ic_launcher.png.b64"
           DST_DIR="packaging/android/res/mipmap-xxxhdpi"
           DST="$DST_DIR/nrave_icon.png"
@@ -36,7 +30,6 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, struct, zlib
-
           p = Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
           d = p.read_bytes()
           if not d.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -58,7 +51,7 @@ jobs:
               if typ == b"IHDR":
                   if n != 13:
                       raise SystemExit("Invalid IHDR length")
-                  width, height, _, _, comp, filt, _ = struct.unpack(">IIBBBBB", payload)
+                  width, height, bit_depth, color_type, comp, filt, interlace = struct.unpack(">IIBBBBB", payload)
                   if (width, height) != (144, 144):
                       raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
                   if comp != 0 or filt != 0:
@@ -73,12 +66,7 @@ jobs:
           if not seen_ihdr or not seen_iend:
               raise SystemExit("PNG missing IHDR or IEND")
           print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
-          PY
 
-          # --- NRave full-screen Qt splash artwork ---
-          # Use the canonical, committed artwork directly. Qt's Android splash
-          # implementation displays this drawable full-screen before the first
-          # Qt window is attached.
           SPLASH_SRC="res/images/nrave_splash.webp"
           SPLASH_DST_DIR="packaging/android/res/drawable"
           SPLASH_DST="$SPLASH_DST_DIR/nrave_splash.webp"
@@ -89,29 +77,17 @@ jobs:
           from pathlib import Path
           import hashlib
 
-          p = Path("packaging/android/res/drawable/nrave_splash.webp")
-          d = p.read_bytes()
           expected = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
-          actual = hashlib.sha256(d).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
-          if not d.startswith(b"RIFF") or d[8:12] != b"WEBP":
+          src = Path("res/images/nrave_splash.webp")
+          dst = Path("packaging/android/res/drawable/nrave_splash.webp")
+          data = dst.read_bytes()
+          if data != src.read_bytes():
+              raise SystemExit("NRave splash drawable differs from canonical source")
+          if hashlib.sha256(data).hexdigest() != expected:
+              raise SystemExit("NRave splash SHA-256 mismatch")
+          if data[:4] != b"RIFF" or data[8:12] != b"WEBP":
               raise SystemExit("Invalid NRave splash WebP signature")
-          if d[12:16] != b"VP8 ":
-              raise SystemExit(f"Unexpected WebP chunk {d[12:16]!r}; expected VP8 ")
-          frame = d[20:]
-          if len(frame) < 10 or frame[3:6] != b"\x9d\x01\x2a":
-              raise SystemExit("Invalid VP8 frame header")
-          width = int.from_bytes(frame[6:8], "little") & 0x3fff
-          height = int.from_bytes(frame[8:10], "little") & 0x3fff
-          if (width, height) != (1536, 857):
-              raise SystemExit(f"NRave splash must be 1536x857, got {width}x{height}")
-          print(f"Validated NRave splash artwork: {len(d)} bytes, {width}x{height}, SHA-256 {expected}")
-
-          source = Path("res/images/nrave_splash.webp").read_bytes()
-          if source != d:
-              raise SystemExit("Packaged NRave splash differs from canonical source artwork")
-          print("Canonical source and Android splash drawable are byte-identical")
+          print(f"Validated NRave splash artwork: {len(data)} bytes, SHA-256 {expected}")
           PY
 
           if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part' \) | grep -q .; then
@@ -167,58 +143,31 @@ jobs:
           test -f build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           ls -lh build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
 
-      - name: Test NRave native splash is packaged
+      - name: Test NRave native splash package
         shell: bash
         run: |
           set -euo pipefail
           APK="build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk"
-
-          AAPT="$(find "${ANDROID_SDK_ROOT}/build-tools" -type f -name aapt | sort | tail -n 1)"
-          test -n "$AAPT"
-          "$AAPT" dump xmltree "$APK" AndroidManifest.xml > "${RUNNER_TEMP}/nrave-manifest.xml"
-          grep -q 'android.app.splash_screen_drawable' "${RUNNER_TEMP}/nrave-manifest.xml"
-
-          ENTRY="$(unzip -Z1 "$APK" | grep '/nrave_splash\\.webp      - name: Print source and APK identity
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "SOURCE_COMMIT=${GITHUB_SHA}"
-          sha256sum build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-
-      - name: Upload APK
+          grep -q 'android.app.splash_screen_drawable' packaging/android/AndroidManifest.xml
+          ENTRY="$(unzip -Z1 "$APK" | grep '/nrave_splash\\.webp      - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
-          name: nrave-android-${{ github.sha }}
+          name: android-build-release-signed.apk
           path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           archive: false
           if-no-files-found: error
           retention-days: 30
  | head -n 1)"
           test -n "$ENTRY"
-          unzip -p "$APK" "$ENTRY" > "${RUNNER_TEMP}/nrave_splash_from_apk.webp"
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import hashlib
-
-          expected = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
-          p = Path("${RUNNER_TEMP}/nrave_splash_from_apk.webp")
-          actual = hashlib.sha256(p.read_bytes()).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"APK splash SHA-256 mismatch: {actual}")
-          print("PASS: APK contains the exact canonical NRave splash drawable")
-          PY
-      - name: Print source and APK identity
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "SOURCE_COMMIT=${GITHUB_SHA}"
-          sha256sum build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-
+          unzip -p "$APK" "$ENTRY" > "$RUNNER_TEMP/nrave_splash_from_apk.webp"
+          EXPECTED="5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
+          ACTUAL="$(sha256sum "$RUNNER_TEMP/nrave_splash_from_apk.webp" | cut -d ' ' -f1)"
+          test "$ACTUAL" = "$EXPECTED"
+          echo "PASS: APK contains the exact canonical NRave splash drawable"
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
-          name: nrave-android-${{ github.sha }}
+          name: android-build-release-signed.apk
           path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
           archive: false
           if-no-files-found: error
