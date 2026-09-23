@@ -410,80 +410,81 @@ Item {
                     }
                 }
             }
-        }
 
-        // NRAVE product identity: centered precisely in the real top toolbar,
-        // between the Ableton Link Sync button (right edge 520 px) and the
-        // right-side Support Us / Help / Preferences cluster.
-        Item {
-            id: nraveBrand
+                // NRAVE product identity — an absolute visual layer INSIDE the
+                // 36 px toolbar. It is deliberately outside RowLayout so it has
+                // zero influence on toolbar height or the position of the UI below.
+                Item {
+                    id: nraveBrand
 
-            z: 20
-            x: 528
-            y: 0
-            width: Math.max(0, supportUsButton.x - x - 8)
-            height: toolbar.height
+                    clip: false
+                    height: toolbar.height
+                    x: 528
+                    y: 0
+                    width: Math.max(0, supportUsButton.x - x - 8)
+                    z: 50
 
-            Text {
-                id: nraveBrandShadow
+                    Text {
+                        id: nraveBrandShadow
 
-                anchors.centerIn: parent
-                color: Theme.deepCyan
-                font.bold: true
-                font.family: Theme.fontFamily
-                font.letterSpacing: 2.2
-                font.pixelSize: Math.min(25, Math.max(21, toolbar.height * 0.69))
-                horizontalAlignment: Text.AlignHCenter
-                opacity: 0.95
-                renderType: Text.NativeRendering
-                text: "NRAVE"
-                verticalAlignment: Text.AlignVCenter
-                x: 2
-                y: 2
-            }
+                        anchors.centerIn: parent
+                        color: Theme.deepCyan
+                        font.bold: true
+                        font.family: Theme.fontFamily
+                        font.letterSpacing: 2.0
+                        font.pixelSize: 24
+                        horizontalAlignment: Text.AlignHCenter
+                        opacity: 0.95
+                        renderType: Text.NativeRendering
+                        text: "NRAVE"
+                        verticalAlignment: Text.AlignVCenter
+                        x: 2
+                        y: 2
+                    }
 
-            Glow {
-                id: nraveBrandGlow
+                    Glow {
+                        id: nraveBrandGlow
 
-                anchors.fill: nraveBrandText
-                cached: true
-                color: Theme.primaryCyan
-                opacity: 0.82
-                radius: 10
-                samples: 21
-                source: nraveBrandText
-                spread: 0.24
-            }
+                        anchors.fill: nraveBrandText
+                        cached: true
+                        color: Theme.primaryCyan
+                        opacity: 0.78
+                        radius: 8
+                        samples: 17
+                        source: nraveBrandText
+                        spread: 0.20
+                    }
 
-            Text {
-                id: nraveBrandText
+                    Text {
+                        id: nraveBrandText
 
-                anchors.centerIn: parent
-                color: Theme.primaryCyan
-                font.bold: true
-                font.family: Theme.fontFamily
-                font.letterSpacing: 2.2
-                font.pixelSize: Math.min(25, Math.max(21, toolbar.height * 0.69))
-                horizontalAlignment: Text.AlignHCenter
-                renderType: Text.NativeRendering
-                text: "NRAVE"
-                verticalAlignment: Text.AlignVCenter
-            }
+                        anchors.centerIn: parent
+                        color: Theme.primaryCyan
+                        font.bold: true
+                        font.family: Theme.fontFamily
+                        font.letterSpacing: 2.0
+                        font.pixelSize: 24
+                        horizontalAlignment: Text.AlignHCenter
+                        renderType: Text.NativeRendering
+                        text: "NRAVE"
+                        verticalAlignment: Text.AlignVCenter
+                    }
 
-            Text {
-                anchors.centerIn: parent
-                color: Theme.brightCyan
-                font.bold: true
-                font.family: Theme.fontFamily
-                font.letterSpacing: 2.2
-                font.pixelSize: Math.min(25, Math.max(21, toolbar.height * 0.69))
-                horizontalAlignment: Text.AlignHCenter
-                opacity: 0.38
-                renderType: Text.NativeRendering
-                text: "NRAVE"
-                verticalAlignment: Text.AlignVCenter
-                y: -1
-            }
+                    Text {
+                        anchors.centerIn: parent
+                        color: Theme.brightCyan
+                        font.bold: true
+                        font.family: Theme.fontFamily
+                        font.letterSpacing: 2.0
+                        font.pixelSize: 24
+                        horizontalAlignment: Text.AlignHCenter
+                        opacity: 0.30
+                        renderType: Text.NativeRendering
+                        text: "NRAVE"
+                        verticalAlignment: Text.AlignVCenter
+                        y: -1
+                    }
+                }
         }
 
         Loader {
