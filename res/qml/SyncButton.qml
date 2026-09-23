@@ -19,10 +19,27 @@ Skin.Button {
         enabledControl.value = !enabledControl.value;
     }
 
+    function otherDeckGroup() {
+        switch (root.group) {
+        case "[Channel1]":
+            return "[Channel2]";
+        case "[Channel2]":
+            return "[Channel1]";
+        case "[Channel3]":
+            return "[Channel4]";
+        case "[Channel4]":
+            return "[Channel3]";
+        default:
+            return "";
+        }
+    }
+
     function makeLeader() {
-        // Force this deck to become the leader. Mixxx's sync engine
-        // automatically demotes the previous leader to Follower.
-        leaderControl.value = 1;
+        // Explicitly select this deck as leader and the paired deck as follower.
+        if (otherSyncModeControl.valid) {
+            otherSyncModeControl.value = SyncButton.SyncMode.Follower;
+        }
+        modeControl.value = SyncButton.SyncMode.ExplicitLeader;
     }
 
     activeColor: {
@@ -67,5 +84,12 @@ Skin.Button {
 
         group: root.group
         key: "sync_leader"
+    }
+
+    Mixxx.ControlProxy {
+        id: otherSyncModeControl
+
+        group: root.otherDeckGroup()
+        key: "sync_mode"
     }
 }
