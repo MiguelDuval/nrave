@@ -1,7 +1,7 @@
 #include "qmlapplication.h"
 
 #include <QCoreApplication>
-#include <QNativeInterface>
+#include <QtCore/qnativeinterface.h>
 #include <QEventLoop>
 #include <QLocale>
 #include <QMessageBox>
