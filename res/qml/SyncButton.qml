@@ -19,8 +19,10 @@ Skin.Button {
         enabledControl.value = !enabledControl.value;
     }
 
-    function toggleLeader() {
-        leaderControl.value = !leaderControl.value;
+    function makeLeader() {
+        // Force this deck to become the leader. Mixxx's sync engine
+        // automatically demotes the previous leader to Follower.
+        leaderControl.value = 1;
     }
 
     activeColor: {
@@ -44,7 +46,7 @@ Skin.Button {
     }
     highlight: enabledControl.value
     onClicked: toggleSync()
-    onPressAndHold: toggleLeader()
+    onPressAndHold: makeLeader()
 
     Mixxx.ControlProxy {
         id: enabledControl
