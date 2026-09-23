@@ -4,10 +4,22 @@
 #include <QEventLoop>
 #include <QtGlobal>
 
+#if defined(Q_OS_ANDROID)
+#include <QNativeInterface>
+#endif
+
 #include "moc_qmlcoreservices.cpp"
 
 namespace mixxx {
 namespace qml {
+
+void QmlCoreServices::hideAndroidSplashScreen(int duration) {
+#if defined(Q_OS_ANDROID)
+    QNativeInterface::QAndroidApplication::hideSplashScreen(duration);
+#else
+    Q_UNUSED(duration);
+#endif
+}
 
 void QmlCoreServices::setReady() {
     if (m_ready) {
