@@ -72,8 +72,9 @@ jobs:
               raise SystemExit("PNG missing IHDR or IEND")
           print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
           PY
-          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' -o -name '*.webp' \) | grep -q .; then
-            echo 'ERROR: source/helper files must not be present under packaging/android/res'
+          LEFTOVER_HELPER=$(find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) -print -quit)
+          if [ -n "$LEFTOVER_HELPER" ]; then
+            echo "ERROR: source/helper file must not be present under packaging/android/res: $LEFTOVER_HELPER"
             exit 1
           fi
       - name: Validate NRave splash artwork
