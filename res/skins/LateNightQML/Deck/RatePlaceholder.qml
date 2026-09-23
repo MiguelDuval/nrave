@@ -20,6 +20,30 @@ Item {
     readonly property color rateTextColor: useSecondaryDeckText ? LateNightTheme.secondaryDeckTextColor : LateNightTheme.primaryDeckTextColor
     readonly property bool hasLegacyRateCenterAsset: LateNightTheme.optionalDeckRateCenterInactive.toString().length > 0
 
+    readonly property string otherDeckGroup: {
+        switch (root.group) {
+        case "[Channel1]":
+            return "[Channel2]";
+        case "[Channel2]":
+            return "[Channel1]";
+        case "[Channel3]":
+            return "[Channel4]";
+        case "[Channel4]":
+            return "[Channel3]";
+        default:
+            return "";
+        }
+    }
+
+    function forceSyncLeader() {
+        // Force the selected deck to LeaderExplicit and its paired deck to Follower.
+        // sync_leader intentionally requests LeaderSoft in the engine.
+        if (root.otherDeckGroup.length > 0) {
+            otherDeckSyncModeProxy.value = 1;
+        }
+        syncModeProxy.value = 3;
+    }
+
     function syncLeaderIconSource() {
         switch (Math.round(syncLeaderProxy.value)) {
         case 1:
@@ -82,6 +106,18 @@ Item {
         id: syncLeaderProxy
         group: root.group
         key: "sync_leader"
+    }
+
+    Mixxx.ControlProxy {
+        id: syncModeProxy
+        group: root.group
+        key: "sync_mode"
+    }
+
+    Mixxx.ControlProxy {
+        id: otherDeckSyncModeProxy
+        group: root.otherDeckGroup.length > 0 ? root.otherDeckGroup : root.group
+        key: "sync_mode"
     }
 
     Item {
@@ -172,14 +208,21 @@ Item {
             Layout.preferredHeight: 22
             spacing: 0
 
-            // Sync button: short click toggles sync; long press forces this deck to LeaderSoft; right-click keeps direct leader control.
+            // Sync button:
+            //   short press = toggle normal sync
+            //   long press = force this deck to LeaderExplicit and the paired deck to Follower
+            //   right-click = keep the legacy direct sync_leader control
             LateNightControlButton {
                 id: syncBtn
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 22
                 backgroundSource: LateNightTheme.assetDeckSyncBackground
                 activeBackgroundSuffix: "active"
-                iconSource: syncEnabledProxy.value > 0 ? LateNightTheme.assetDeckSyncActiveButton : LateNightTheme.assetDeckSyncButton
+                iconSource: syncModeProxy.value >= 2
+                        ? ""
+                        : (syncEnabledProxy.value > 0
+                                ? LateNightTheme.assetDeckSyncActiveButton
+                                : LateNightTheme.assetDeckSyncButton)
                 group: root.group
                 key: "sync_enabled"
                 rightClickKey: "sync_leader"
@@ -189,27 +232,32 @@ Item {
                 longPressLatching: false
                 numberStates: 2
 
-                // Android-safe explicit Sync gesture handling.
-                // Short press: toggle sync_enabled.
-                // Long press: force this deck to sync leader.
+                // Dedicated touch handling so Android long-press cannot fall through
+                // the generic button behavior.
                 MouseArea {
                     id: syncGestureArea
                     anchors.fill: parent
                     z: 100
-                    acceptedButtons: Qt.LeftButton
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
                     preventStealing: true
 
                     property bool longPressTriggered: false
 
-                    onPressed: {
+                    onPressed: function(mouse) {
+                        if (mouse.button === Qt.RightButton) {
+                            syncLeaderProxy.value = 1;
+                            return;
+                        }
                         longPressTriggered = false;
                         syncLongPressTimer.restart();
                     }
 
-                    onReleased: {
-                        syncLongPressTimer.stop();
-                        if (!longPressTriggered) {
-                            syncEnabledProxy.value = syncEnabledProxy.value > 0 ? 0 : 1;
+                    onReleased: function(mouse) {
+                        if (mouse.button === Qt.LeftButton) {
+                            syncLongPressTimer.stop();
+                            if (!longPressTriggered) {
+                                syncEnabledProxy.value = syncEnabledProxy.value > 0 ? 0 : 1;
+                            }
                         }
                     }
 
@@ -224,25 +272,24 @@ Item {
                         repeat: false
                         onTriggered: {
                             syncGestureArea.longPressTriggered = true;
-                            syncLeaderProxy.value = 1;
+                            root.forceSyncLeader();
                         }
                     }
                 }
-                longPressLatchOverlayColor: LateNightTheme.syncInactiveBackgroundColor
-                longPressLatchOverlayBackgroundSource: LateNightTheme.assetDeckSyncBackground
-                longPressLatchOverlayIconSource: LateNightTheme.assetDeckSyncButton
-                activeOpacity: 1.0
-                inactiveOpacity: 1.0
-                activeColor: LateNightTheme.syncExplicitLeaderColor
-                fillMargin: 0
-                iconBottomPadding: LateNightTheme.isPaleMoon ? 2 : 0
-                iconLeftPadding: LateNightTheme.isPaleMoon ? 2 : LateNightTheme.syncButtonHorizontalPadding
-                iconRightPadding: LateNightTheme.isPaleMoon ? 2 : LateNightTheme.syncButtonHorizontalPadding
-                iconTopPadding: LateNightTheme.isPaleMoon ? 2 : 0
-                rasterizeIconAtPaintedSize: LateNightTheme.isPaleMoon
-                stretchIcon: LateNightTheme.isPaleMoon
-            }
 
+                Text {
+                    anchors.fill: parent
+                    z: 200
+                    visible: syncModeProxy.value >= 2
+                    text: "Leader"
+                    color: "#ffffff"
+                    font.family: "Open Sans"
+                    font.pixelSize: 8
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                }
             // Leader button: press = request leader state; display follows sync_leader light.
             LateNightControlButton {
                 id: leaderBtn
