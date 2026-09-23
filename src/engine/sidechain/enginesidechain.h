@@ -23,6 +23,10 @@ class EngineSideChain : public QThread, public AudioDestination {
     // processing. Should only be called from a single writer thread (typically
     // the engine callback).
     void writeSamples(const CSAMPLE* pBuffer, int iFrames);
+    // Request one short silent processing pass on the sidechain thread.
+    // This is used to transition recording from READY to ON even when the
+    // Android audio callback has not delivered a buffer yet.
+    void requestSilentProcessing();
 
     // Thin wrapper around writeSamples that is used by SoundManager when receiving
     // from a sound card input instead of the engine
@@ -50,6 +54,9 @@ class EngineSideChain : public QThread, public AudioDestination {
     QMutex m_waitLock;
     // Allows sleeping until we have samples to process.
     QWaitCondition m_waitForSamples;
+    // Protected by m_waitLock. When set, the sidechain thread performs one
+    // silent worker pass immediately after waking.
+    bool m_silentProcessingRequested{false};
 
     // Sidechain workers registered with EngineSideChain.
     MMutex m_workerLock;
