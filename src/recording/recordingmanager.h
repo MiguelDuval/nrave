@@ -8,6 +8,7 @@
 #include "preferences/usersettings.h"
 
 class EngineMixer;
+class EngineSideChain;
 class ControlPushButton;
 class ControlProxy;
 class QDateTime;
