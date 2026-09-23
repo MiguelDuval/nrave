@@ -75,6 +75,7 @@ class QmlApplication : public QObject {
     // drops
     PerformanceTimer m_frameTimer;
     APerformanceHintSession* m_perfSession;
+    bool m_androidSplashHidden{false};
 #endif
 };
 
