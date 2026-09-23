@@ -116,7 +116,7 @@ ApplicationWindow {
 
         states: [
             State {
-                when: content.status === Loader.Ready && content.active && nraveSplashArtwork.status === Image.Ready
+                when: content.status === Loader.Ready && content.active && (nraveSplashArtwork.status === Image.Ready || nraveSplashArtwork.status === Image.Error)
                 PropertyChanges {
                     target: nraveSplashCurtain
                     opacity: 0
