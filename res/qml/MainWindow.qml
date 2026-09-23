@@ -36,8 +36,7 @@ Item {
     }
 
     function pulseRecordingToggle() {
-        recordingToggle.value = 1;
-        recordingPulseTimer.restart();
+        recordingToggle.trigger();
     }
 
     function handleRecordButtonClicked() {
@@ -83,17 +82,6 @@ Item {
         key: "toggle_recording"
     }
 
-
-    Timer {
-        id: recordingPulseTimer
-
-        interval: 120
-        repeat: false
-
-        onTriggered: {
-            recordingToggle.value = 0;
-        }
-    }
 
     Timer {
         id: recordingTimer
@@ -260,22 +248,50 @@ Item {
                     checkable: true
                     text: "Sampler"
                 }
-                Skin.Button {
+                Item {
                     id: recordButton
 
-                    activeBackgroundColor: recordingStatus.value >= 2
-                            ? Theme.red
-                            : ((root.recordArmed || recordingStatus.value === 1)
-                                    ? "#2D4EA1"
-                                    : Theme.buttonActiveBackgroundColor)
-                    activeColor: Theme.white
-                    highlight: root.recordArmed || recordingStatus.value >= 1
-                    text: "Record"
+                    implicitHeight: 26
+                    implicitWidth: 52
+                    Layout.alignment: Qt.AlignVCenter
+
+                    Rectangle {
+                        id: recordButtonBackground
+
+                        anchors.fill: parent
+                        color: mouseArea.pressed
+                                ? Theme.darkGray3
+                                : (recordingStatus.value >= 2
+                                        ? Theme.red
+                                        : ((root.recordArmed || recordingStatus.value === 1)
+                                                ? "#2D4EA1"
+                                                : Theme.buttonNormalBackgroundColor))
+                        radius: 4
+                        border.width: 1
+                        border.color: mouseArea.pressed
+                                ? Theme.buttonPressedBorderColor
+                                : ((root.recordArmed || recordingStatus.value >= 1)
+                                        ? Theme.buttonActiveBorderColor
+                                        : Theme.buttonBorderColor)
+                    }
+
+                    Label {
+                        anchors.fill: parent
+                        color: recordingStatus.value >= 1 ? Theme.white : Theme.buttonNormalColor
+                        font.bold: true
+                        font.capitalization: Font.AllUppercase
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.buttonFontPixelSize
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Record"
+                        verticalAlignment: Text.AlignVCenter
+                    }
 
                     MouseArea {
+                        id: mouseArea
+
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton
-                        z: 100
 
                         onClicked: {
                             root.handleRecordButtonClicked();
