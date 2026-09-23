@@ -19,6 +19,7 @@
 
 RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMixer* pEngine)
         : m_pConfig(pConfig),
+          m_pEngineSideChain(nullptr),
           m_recordingDir(""),
           m_recording_base_file(""),
           m_recordingFile(""),
@@ -40,8 +41,8 @@ RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMixer* pEn
     m_pCoRecStatus = std::make_unique<ControlObject>(ConfigKey(RECORDING_PREF_KEY, "status"));
 
     // Register EngineRecord with the engine sidechain.
-    EngineSideChain* pSidechain = pEngine->getSideChain();
-    if (pSidechain) {
+    m_pEngineSideChain = pEngine ? pEngine->getSideChain() : nullptr;
+    if (m_pEngineSideChain) {
         EngineRecord* pEngineRecord = new EngineRecord(m_pConfig);
         connect(pEngineRecord,
                 &EngineRecord::isRecording,
@@ -55,7 +56,7 @@ RecordingManager::RecordingManager(UserSettingsPointer pConfig, EngineMixer* pEn
                 &EngineRecord::durationRecorded,
                 this,
                 &RecordingManager::slotDurationRecorded);
-        pSidechain->addSideChainWorker(pEngineRecord);
+        m_pEngineSideChain->addSideChainWorker(pEngineRecord);
     }
 }
 
@@ -77,7 +78,10 @@ void RecordingManager::slotSetRecording(bool recording) {
 void RecordingManager::slotToggleRecording(double value) {
     bool toggle = static_cast<bool>(value);
     if (toggle) {
-        if (isRecordingActive()) {
+        // A recording request is already in progress while status == READY.
+        // Treat another toggle as an explicit stop instead of rebuilding the
+        // pending recording session forever.
+        if (isRecordingActive() || m_pCoRecStatus->get() != RECORD_OFF) {
             stopRecording();
         } else {
             startRecording();
@@ -139,6 +143,17 @@ void RecordingManager::startRecording() {
     m_pConfig->set(ConfigKey(RECORDING_PREF_KEY, "CuePath"), ConfigValue(m_recording_base_file + QStringLiteral(".cue")));
 
     m_pCoRecStatus->set(RECORD_READY);
+
+    // EngineRecord normally advances READY -> ON when the audio callback feeds
+    // the sidechain. On Android there can be a short period with no callback
+    // buffer yet. Prime the sidechain thread with one silent processing pass so
+    // the recording file is opened immediately and status reliably reaches ON.
+    if (m_pEngineSideChain) {
+        m_pEngineSideChain->requestSilentProcessing();
+    } else {
+        qCritical() << "RecordingManager: EngineSideChain is unavailable";
+        m_pCoRecStatus->set(RECORD_OFF);
+    }
 }
 
 void RecordingManager::splitContinueRecording()
