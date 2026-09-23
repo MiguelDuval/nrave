@@ -81,25 +81,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SPLASH_ANDROID="packaging/android/res/drawable-nodpi/nrave_splash.webp"
-          SPLASH_QML="res/images/nrave_splash.webp"
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
+          import struct
 
-          for p_str in [
-              "packaging/android/res/drawable-nodpi/nrave_splash.webp",
-              "res/images/nrave_splash.webp",
-          ]:
-              p = Path(p_str)
-              data = p.read_bytes()
-              expected = "300735fe739180a8779f75c80a9ec2c8fc5a10e13efe9414302325d8475fd69d"
-              actual = hashlib.sha256(data).hexdigest()
-              if actual != expected:
-                  raise SystemExit(f"NRave splash SHA-256 mismatch in {p_str}: {actual} != {expected}")
-              if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
-                  raise SystemExit(f"Invalid NRave splash WebP signature in {p_str}")
-              print(f"Validated NRave splash artwork: {len(data)} bytes, SHA-256 {expected}")
+          android = Path("packaging/android/res/drawable-nodpi/nrave_splash.webp").read_bytes()
+          expected_webp = "300735fe739180a8779f75c80a9ec2c8fc5a10e13efe9414302325d8475fd69d"
+          actual_webp = hashlib.sha256(android).hexdigest()
+          if actual_webp != expected_webp:
+              raise SystemExit(f"NRave Android splash SHA-256 mismatch: {actual_webp} != {expected_webp}")
+          if not android.startswith(b"RIFF") or android[8:12] != b"WEBP":
+              raise SystemExit("Invalid NRave Android splash WebP signature")
+          print(f"Validated NRave Android splash: {len(android)} bytes, SHA-256 {expected_webp}")
+
+          qml = Path("IMG_20260915_104111.png").read_bytes()
+          if not qml.startswith(b"\x89PNG\r\n\x1a\n"):
+              raise SystemExit("Invalid NRave QML splash PNG signature")
+          if len(qml) < 24:
+              raise SystemExit("NRave QML splash PNG is truncated")
+          width, height = struct.unpack(">II", qml[16:24])
+          if (width, height) != (1376, 768):
+              raise SystemExit(f"NRave QML splash must be 1376x768, got {width}x{height}")
+          print(f"Validated NRave QML splash source PNG: {len(qml)} bytes, {width}x{height}, SHA-256 {hashlib.sha256(qml).hexdigest()}")
           PY
       - name: Prepare Android build environment
         shell: bash
