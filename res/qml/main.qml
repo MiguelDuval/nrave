@@ -104,7 +104,7 @@ ApplicationWindow {
             asynchronous: false
             cache: true
             smooth: true
-            source: "qrc:/IMG_20260915_104111.png"
+            source: "qrc:/images/nrave_splash.png"
         }
 
         Behavior on opacity {
