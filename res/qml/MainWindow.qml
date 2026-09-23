@@ -27,6 +27,7 @@ Item {
     property alias showSamplers: showSamplersButton.checked
     property alias showAuxiliaries: showAuxButton.checked
     property bool recordArmed: false
+    property bool recordStartRequested: false
     property int recordingElapsedSeconds: 0
 
     function formatRecordingDuration(totalSeconds) {
@@ -40,8 +41,10 @@ Item {
     }
 
     function handleRecordButtonClicked() {
-        if (recordingStatus.value >= 2) {
+        if (recordingStatus.value >= 2 ||
+                (root.recordStartRequested && recordingStatus.value === 1)) {
             root.recordArmed = false;
+            root.recordStartRequested = false;
             root.pulseRecordingToggle();
             return;
         }
@@ -52,6 +55,7 @@ Item {
         }
 
         root.recordArmed = false;
+        root.recordStartRequested = true;
         root.pulseRecordingToggle();
     }
 
@@ -64,11 +68,15 @@ Item {
         onValueChanged: {
             if (value >= 2) {
                 root.recordArmed = false;
+                root.recordStartRequested = false;
                 if (!recordingTimer.running) {
                     root.recordingElapsedSeconds = 0;
                     recordingTimer.start();
                 }
             } else {
+                if (value === 0) {
+                    root.recordStartRequested = false;
+                }
                 recordingTimer.stop();
                 root.recordingElapsedSeconds = 0;
             }
