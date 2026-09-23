@@ -15,6 +15,38 @@ permissions:
 env:
   DEBIAN_FRONTEND: noninteractive
 jobs:
+  validate-nrave-splash:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Validate historical NRave splash chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, struct
+
+          src = sorted(Path("packaging/android/icon-source").glob("nrave_splash.webp.b64.part*"))
+          src = sorted(src, key=lambda p: int(p.name.rsplit("part", 1)[1]))
+          text = [p.read_text().strip() for p in src]
+
+          def decode_padded(value: str) -> bytes:
+              value = "".join(value.split())
+              value += "=" * ((-len(value)) % 4)
+              return base64.b64decode(value, validate=True)
+
+          concat = decode_padded("".join(text))
+          independent = b"".join(decode_padded(x) for x in text)
+
+          for name, data in [("concat-base64", concat), ("independent-chunks", independent)]:
+              print(name, "bytes", len(data), "sha256", hashlib.sha256(data).hexdigest(), "header", data[:16])
+              if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+                  size = struct.unpack("<I", data[4:8])[0] + 8
+                  print(name, "riff_size", size)
+          PY
+
   android-apk:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
