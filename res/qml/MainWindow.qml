@@ -411,6 +411,81 @@ Item {
                 }
             }
         }
+
+        // NRAVE product identity: centered precisely in the real top toolbar,
+        // between the Ableton Link Sync button (right edge 520 px) and the
+        // right-side Support Us / Help / Preferences cluster.
+        Item {
+            id: nraveBrand
+
+            z: 20
+            x: 528
+            y: 0
+            width: Math.max(0, supportUsButton.x - x - 8)
+            height: toolbar.height
+
+            Text {
+                id: nraveBrandShadow
+
+                anchors.centerIn: parent
+                color: Theme.deepCyan
+                font.bold: true
+                font.family: Theme.fontFamily
+                font.letterSpacing: 2.2
+                font.pixelSize: Math.min(25, Math.max(21, toolbar.height * 0.69))
+                horizontalAlignment: Text.AlignHCenter
+                opacity: 0.95
+                renderType: Text.NativeRendering
+                text: "NRAVE"
+                verticalAlignment: Text.AlignVCenter
+                x: 2
+                y: 2
+            }
+
+            Glow {
+                id: nraveBrandGlow
+
+                anchors.fill: nraveBrandText
+                cached: true
+                color: Theme.primaryCyan
+                opacity: 0.82
+                radius: 10
+                samples: 21
+                source: nraveBrandText
+                spread: 0.24
+            }
+
+            Text {
+                id: nraveBrandText
+
+                anchors.centerIn: parent
+                color: Theme.primaryCyan
+                font.bold: true
+                font.family: Theme.fontFamily
+                font.letterSpacing: 2.2
+                font.pixelSize: Math.min(25, Math.max(21, toolbar.height * 0.69))
+                horizontalAlignment: Text.AlignHCenter
+                renderType: Text.NativeRendering
+                text: "NRAVE"
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            Text {
+                anchors.centerIn: parent
+                color: Theme.brightCyan
+                font.bold: true
+                font.family: Theme.fontFamily
+                font.letterSpacing: 2.2
+                font.pixelSize: Math.min(25, Math.max(21, toolbar.height * 0.69))
+                horizontalAlignment: Text.AlignHCenter
+                opacity: 0.38
+                renderType: Text.NativeRendering
+                text: "NRAVE"
+                verticalAlignment: Text.AlignVCenter
+                y: -1
+            }
+        }
+
         Loader {
             id: effectsPanel
 
