@@ -180,23 +180,3 @@ jobs:
           archive: false
           if-no-files-found: error
           retention-days: 30
- | head -n 1)"
-          test -n "$ENTRY"
-          unzip -p "$APK" "$ENTRY" > "$RUNNER_TEMP/nrave_splash_from_apk.webp"
-          test "$(sha256sum "$RUNNER_TEMP/nrave_splash_from_apk.webp" | cut -d ' ' -f1)" = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
-          echo "PASS: APK contains the exact NRave splash drawable"
-      - name: Print source and APK identity
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "SOURCE_COMMIT=${GITHUB_SHA}"
-          sha256sum build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v7
-        with:
-          name: nrave-android-${{ github.sha }}
-          path: build-android/android-build/build/outputs/apk/release/android-build-release-signed.apk
-          archive: false
-          if-no-files-found: error
-          retention-days: 30
