@@ -85,25 +85,34 @@ ApplicationWindow {
     // Samplers are rendered by MainWindow.qml through the Android-safe
     // SamplerRow adapter. Do not create a second root-level sampler instance.
 
+    // Android launch branding: the full NRave artwork is the first QML frame.
+    // No Mixxx logo, slogan, or legacy splash asset is used here.
     Rectangle {
         id: splash
-        visible: opacity > 0
-        color: Theme.backgroundColor
         anchors.fill: parent
+        color: "#000000"
+        visible: opacity > 0
+        opacity: 1
+        z: 200000
 
-        property bool ready: false
+        Image {
+            id: nraveSplashArtwork
+            anchors.fill: parent
+            fillMode: Image.PreserveAspectFit
+            asynchronous: false
+            cache: true
+            smooth: true
+            source: root.isMobile ? "nrave_splash.webp" : ""
+        }
 
-        Component.onCompleted: ready = true
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 450
+                easing.type: Easing.InOutQuad
+            }
+        }
 
         states: [
-            State {
-                when: splash.ready && content.status != Loader.Ready
-                PropertyChanges {
-                    text.opacity: 1
-                    logo.opacity: 1
-                    logo.y: root.height / 2 - logo.height / 2
-                }
-            },
             State {
                 when: content.status === Loader.Ready && content.active
                 PropertyChanges {
@@ -111,40 +120,5 @@ ApplicationWindow {
                 }
             }
         ]
-
-        Image {
-            id: logo
-            anchors.horizontalCenter: parent.horizontalCenter
-            source: "qrc:/images/mixxx-icon-logo-symbolic.svg"
-            opacity: 0
-            y: root.height / 2
-            Behavior on opacity {
-                NumberAnimation { duration: 1500; easing.type: Easing.InOutQuad }
-            }
-            Behavior on y {
-                NumberAnimation { duration: 1500; easing.type: Easing.InOutQuad }
-            }
-        }
-
-        Text {
-            id: text
-            opacity: 0
-            y: logo.y + logo.height * 2
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.topMargin: 20
-            font.pixelSize: 12
-            color: Theme.lightGray3
-            text: "DJ your way"
-            Behavior on opacity {
-                SequentialAnimation {
-                    PauseAnimation { duration: 1000 }
-                    NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
-                }
-            }
-        }
-
-        Behavior on opacity {
-            NumberAnimation { duration: 500; easing.type: Easing.InOutQuad }
-        }
     }
 }

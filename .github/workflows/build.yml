@@ -20,10 +20,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Materialize NRave launcher artwork
+      - name: Materialize NRave launcher and splash artwork
         shell: bash
         run: |
           set -euo pipefail
+
+          # --- NRave launcher icon ---
           SRC="packaging/android/icon-source/ic_launcher.png.b64"
           DST_DIR="packaging/android/res/mipmap-xxxhdpi"
           DST="$DST_DIR/nrave_icon.png"
@@ -33,6 +35,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib, struct, zlib
+
           p = Path("packaging/android/res/mipmap-xxxhdpi/nrave_icon.png")
           d = p.read_bytes()
           if not d.startswith(b"\x89PNG\r\n\x1a\n"):
@@ -54,7 +57,7 @@ jobs:
               if typ == b"IHDR":
                   if n != 13:
                       raise SystemExit("Invalid IHDR length")
-                  width, height, bit_depth, color_type, comp, filt, interlace = struct.unpack(">IIBBBBB", payload)
+                  width, height, _, _, comp, filt, _ = struct.unpack(">IIBBBBB", payload)
                   if (width, height) != (144, 144):
                       raise SystemExit(f"Launcher PNG must be 144x144, got {width}x{height}")
                   if comp != 0 or filt != 0:
@@ -70,7 +73,51 @@ jobs:
               raise SystemExit("PNG missing IHDR or IEND")
           print(f"Validated NRave launcher artwork: {len(d)} bytes, 144x144, SHA-256 {hashlib.sha256(d).hexdigest()}")
           PY
-          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' -o -name '*.webp' \) | grep -q .; then
+
+          # --- NRave full-screen QML artwork ---
+          SPLASH_DST_ANDROID="packaging/android/res/drawable/nrave_splash.webp"
+          SPLASH_DST_QML="res/qml/nrave_splash.webp"
+          mkdir -p "$(dirname "$SPLASH_DST_ANDROID")" "$(dirname "$SPLASH_DST_QML")"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib
+
+          src_dir = Path("packaging/android/icon-source")
+          dst_android = Path("packaging/android/res/drawable/nrave_splash.webp")
+          dst_qml = Path("res/qml/nrave_splash.webp")
+
+          parts = sorted(
+              src_dir.glob("nrave_splash.webp.b64.part*"),
+              key=lambda p: int(p.name.rsplit("part", 1)[1]),
+          )
+          if len(parts) != 6:
+              raise SystemExit(f"Expected 6 NRave splash chunks, found {len(parts)}")
+
+          out = bytearray()
+          for part in parts:
+              encoded = "".join(part.read_text().split())
+              encoded += "=" * ((-len(encoded)) % 4)
+              try:
+                  out.extend(base64.b64decode(encoded, validate=True))
+              except Exception as exc:
+                  raise SystemExit(f"Invalid NRave splash base64 chunk {part.name}: {exc}")
+
+          data = bytes(out)
+          expected = "5a0b11f7243c239695adcb5c3278d636ed167c44757c0399d547f3933aff9b4b"
+          actual = hashlib.sha256(data).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"NRave splash SHA-256 mismatch: {actual}")
+          if not data.startswith(b"RIFF") or data[8:12] != b"WEBP":
+              raise SystemExit("Invalid NRave splash WebP signature")
+
+          dst_android.write_bytes(data)
+          dst_qml.write_bytes(data)
+          print(f"Validated NRave splash artwork: {len(data)} bytes, SHA-256 {expected}")
+          PY
+
+          # Only encoded/helper sources are forbidden in packaged Android resources.
+          if find packaging/android/res -type f \( -name '*.b64' -o -name '*.part*' \) | grep -q .; then
             echo 'ERROR: source/helper files must not be present under packaging/android/res'
             exit 1
           fi
