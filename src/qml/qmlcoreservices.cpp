@@ -4,9 +4,6 @@
 #include <QEventLoop>
 #include <QtGlobal>
 
-#if defined(Q_OS_ANDROID)
-#include <QNativeInterface>
-#endif
 
 #include "moc_qmlcoreservices.cpp"
 
