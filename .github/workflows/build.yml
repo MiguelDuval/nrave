@@ -1,4 +1,5 @@
 name: Android APK
+# CI validation is intentionally triggered by branch pushes for design work.
 on:
   workflow_dispatch:
   push:
