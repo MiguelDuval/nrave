@@ -1,6 +1,7 @@
 #include "qmlapplication.h"
 
 #include <QCoreApplication>
+#include <QNativeInterface>
 #include <QEventLoop>
 #include <QLocale>
 #include <QMessageBox>
@@ -303,6 +304,14 @@ QmlApplication::QmlApplication(
 
     QmlCoreServices::instance()->setInitializationProgress(65, tr("skin"));
     QmlCoreServices::instance()->setReady();
+
+#if defined(Q_OS_ANDROID)
+    // The Android native splash is intentionally sticky so it survives the
+    // external-storage permission activity. Hide it only after CoreServices
+    // is fully initialized; the QML launch curtain remains above MainWindow
+    // until its asynchronous Loader is ready.
+    QNativeInterface::QAndroidApplication::hideSplashScreen(250);
+#endif
 
     connect(&m_autoReload,
             &QmlAutoReload::triggered,
