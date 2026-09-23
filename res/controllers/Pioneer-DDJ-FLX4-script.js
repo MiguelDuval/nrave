@@ -659,6 +659,21 @@ PioneerDDJFLX4.cueLoopCallRight = function(_channel, _control, value, _status, g
 // press of the same button.
 //
 
+PioneerDDJFLX4.otherSyncDeckGroup = function(group) {
+    switch (group) {
+    case "[Channel1]":
+        return "[Channel2]";
+    case "[Channel2]":
+        return "[Channel1]";
+    case "[Channel3]":
+        return "[Channel4]";
+    case "[Channel4]":
+        return "[Channel3]";
+    default:
+        return "";
+    }
+};
+
 PioneerDDJFLX4.syncPressed = function(_channel, _control, value, _status, group) {
     if (value === 0) {
         return;
@@ -676,9 +691,13 @@ PioneerDDJFLX4.syncLongPressed = function(_channel, _control, value, _status, gr
         return;
     }
 
-    // Long press: force this deck to become the sync leader.
-    // Mixxx's EngineSync automatically moves the previous leader to Follower.
-    engine.setValue(group, "sync_leader", 1);
+    // Long press: force this deck to LeaderExplicit and the paired deck to Follower.
+    // Use sync_mode directly because sync_leader intentionally requests LeaderSoft.
+    const otherGroup = this.otherSyncDeckGroup(group);
+    if (otherGroup) {
+        engine.setValue(otherGroup, "sync_mode", 1);
+    }
+    engine.setValue(group, "sync_mode", 3);
 };
 
 PioneerDDJFLX4.cycleTempoRange = function(_channel, _control, value, _status, group) {
