@@ -1,7 +1,6 @@
 import "." as Skin
 import Mixxx 1.0 as Mixxx
 import QtQuick 2.12
-import Qt5Compat.GraphicalEffects
 import "Theme"
 
 Item {
@@ -77,68 +76,6 @@ Item {
             if (linkSync.initialized && enabled) {
                 linkSync.value = linkSync.value > 0.5 ? 0.0 : 1.0;
             }
-        }
-    }
-
-    // Product label: centered in the exact space between Ableton Link Sync
-    // and the right-side Support Us / Help / Preferences utility cluster.
-    // MainWindow uses 78 + 50 + 76 px controls with 5 px spacing.
-    Item {
-        id: productBrandSlot
-
-        readonly property int rightUtilityClusterWidth: 214
-        x: linkSyncButton.x + linkSyncButton.width + 8
-        y: 0
-        width: Math.max(0, root.width - rightUtilityClusterWidth - x - 8)
-        height: root.height
-
-        Text {
-            id: brandGlowText
-
-            anchors.centerIn: parent
-            color: Theme.primaryCyan
-            font.bold: true
-            font.family: Theme.fontFamily
-            font.letterSpacing: 1.3
-            font.pixelSize: 15
-            horizontalAlignment: Text.AlignHCenter
-            opacity: 0.9
-            text: "NRAVE"
-            verticalAlignment: Text.AlignVCenter
-            visible: text !== ""
-        }
-
-        Glow {
-            anchors.fill: brandGlowText
-            cached: true
-            color: Theme.primaryCyan
-            opacity: 0.75
-            radius: 9
-            samples: 19
-            spread: 0.22
-            source: brandGlowText
-        }
-
-        Text {
-            anchors.centerIn: parent
-            color: Theme.brightCyan
-            font.bold: true
-            font.family: Theme.fontFamily
-            font.letterSpacing: 1.3
-            font.pixelSize: 15
-            horizontalAlignment: Text.AlignHCenter
-            text: "NRAVE"
-            verticalAlignment: Text.AlignVCenter
-        }
-
-        Rectangle {
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 3
-            anchors.horizontalCenter: parent.horizontalCenter
-            color: Theme.primaryCyan
-            height: 1
-            opacity: 0.55
-            width: Math.min(64, Math.max(34, brandGlowText.implicitWidth * 0.72))
         }
     }
 }
