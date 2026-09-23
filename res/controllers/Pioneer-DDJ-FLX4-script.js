@@ -659,18 +659,26 @@ PioneerDDJFLX4.cueLoopCallRight = function(_channel, _control, value, _status, g
 // press of the same button.
 //
 
-PioneerDDJFLX4.syncPressed = function(channel, control, value, status, group) {
-    if (engine.getValue(group, "sync_enabled") && value > 0) {
-        engine.setValue(group, "sync_enabled", 0);
-    } else {
-        engine.setValue(group, "beatsync", value);
+PioneerDDJFLX4.syncPressed = function(_channel, _control, value, _status, group) {
+    if (value === 0) {
+        return;
     }
+
+    // Short press: toggle normal sync on/off.
+    // This intentionally uses sync_enabled rather than beatsync so the
+    // controller behaves like the on-screen Sync button.
+    const enabled = engine.getValue(group, "sync_enabled") > 0;
+    engine.setValue(group, "sync_enabled", enabled ? 0 : 1);
 };
 
-PioneerDDJFLX4.syncLongPressed = function(channel, control, value, status, group) {
-    if (value) {
-        engine.setValue(group, "sync_enabled", 1);
+PioneerDDJFLX4.syncLongPressed = function(_channel, _control, value, _status, group) {
+    if (value === 0) {
+        return;
     }
+
+    // Long press: force this deck to become the sync leader.
+    // Mixxx's EngineSync automatically moves the previous leader to Follower.
+    engine.setValue(group, "sync_leader", 1);
 };
 
 PioneerDDJFLX4.cycleTempoRange = function(_channel, _control, value, _status, group) {
