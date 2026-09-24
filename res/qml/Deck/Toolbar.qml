@@ -13,6 +13,10 @@ Item {
     readonly property var beatGridOverlay: Window.window ? Window.window.bitGridOverlay : null
     readonly property int beatGridDeckNumber: root.group === "[Channel1]" ? 1 : root.group === "[Channel2]" ? 2 : 0
 
+    Component.onCompleted: {
+        root.ensureDefaultKeylock();
+    }
+
     Mixxx.ControlProxy {
         id: trackLoadedControl
 
@@ -25,6 +29,26 @@ Item {
         group: root.group
         key: "quantize"
     }
+
+    Mixxx.ControlProxy {
+        id: keylockDefaultControl
+
+        group: root.group
+        key: "keylock"
+
+        onInitializedChanged: {
+            if (initialized && value <= 0.0) {
+                value = 1.0;
+            }
+        }
+    }
+
+    function ensureDefaultKeylock() {
+        if (keylockDefaultControl.initialized && keylockDefaultControl.value <= 0.0) {
+            keylockDefaultControl.value = 1.0;
+        }
+    }
+
     Skin.ControlButton {
         id: reverseButton
 

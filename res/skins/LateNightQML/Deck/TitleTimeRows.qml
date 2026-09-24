@@ -103,6 +103,7 @@ Item {
             editable: true
             pixelSize: 14
             textColor: root.isLoaded ? root.loadedDeckTextColor : LateNightTheme.textColorMuted
+            verticalAlignment: Text.AlignBottom
             elide: Text.ElideRight
         }
 

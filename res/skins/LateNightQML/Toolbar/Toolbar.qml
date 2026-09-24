@@ -841,12 +841,30 @@ Rectangle {
                 LateNightToolbarButton {
                     id: showMicAuxButton
 
-                    activeTextColor: LateNightTheme.toolbarMenuHoverTextColor
                     buttonWidth: 61
-                    text: "MIC/AUX"
+                    text: ""
 
                     onActivated: {
                         showMicAuxControl.value = checked ? 1.0 : 0.0;
+                    }
+
+                    Text {
+                        anchors.fill: parent
+                        z: 10
+                        color: showMicAuxButton.checked
+                            ? LateNightTheme.toolbarMenuHoverTextColor
+                            : LateNightTheme.toolbarButtonInactiveTextColor
+                        elide: Text.ElideRight
+                        font {
+                            family: "Open Sans"
+                            pixelSize: 11
+                            styleName: "Bold"
+                            weight: Font.Bold
+                        }
+                        horizontalAlignment: Text.AlignHCenter
+                        renderType: Text.NativeRendering
+                        text: "AUX"
+                        verticalAlignment: Text.AlignVCenter
                     }
                 }
             }
@@ -860,12 +878,33 @@ Rectangle {
 
                     buttonWidth: 58
                     checked: abletonLinkControl.initialized && abletonLinkControl.value > 0.0
-                    text: "LINK" + (abletonLinkPeersControl.initialized ? " " + Math.round(abletonLinkPeersControl.value) : "")
+                    text: "LINK"
                     enabled: abletonLinkControl.initialized
 
                     onActivated: {
                         abletonLinkControl.value = checked ? 1.0 : 0.0;
                     }
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 26
+                    Layout.preferredWidth: 28
+                    color: abletonLinkButton.checked
+                        ? LateNightTheme.toolbarButtonActiveTextColor
+                        : LateNightTheme.toolbarButtonInactiveTextColor
+                    font {
+                        family: "Open Sans"
+                        pixelSize: 20
+                        styleName: "Bold"
+                        weight: Font.Bold
+                    }
+                    horizontalAlignment: Text.AlignHCenter
+                    renderType: Text.NativeRendering
+                    text: "P" + (abletonLinkPeersControl.initialized
+                        ? Math.max(0, Math.round(abletonLinkPeersControl.value))
+                        : 0)
+                    verticalAlignment: Text.AlignVCenter
                 }
             }
             // END PAPUSHA ABLETON LINK UI
