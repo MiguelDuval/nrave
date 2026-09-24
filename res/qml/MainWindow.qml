@@ -249,7 +249,20 @@ Item {
 
                     activeColor: Theme.primaryCyan
                     checkable: true
-                    text: "Aux"
+                    text: "AUX"
+
+                    contentItem: Label {
+                        color: showAuxButton.checked || showAuxButton.highlight
+                            ? Theme.white
+                            : Theme.buttonNormalColor
+                        font.bold: true
+                        font.capitalization: Font.AllUppercase
+                        font.family: Theme.fontFamily
+                        font.pixelSize: Theme.buttonFontPixelSize
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "AUX"
+                        verticalAlignment: Text.AlignVCenter
+                    }
                 }
                 Skin.Button {
                     id: showSamplersButton

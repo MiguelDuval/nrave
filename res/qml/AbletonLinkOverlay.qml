@@ -53,7 +53,7 @@ Item {
         height: 26
         color: Theme.lightGray3
         font.family: Theme.fontFamily
-        font.pixelSize: 9
+        font.pixelSize: 20
         font.bold: true
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
