@@ -2473,6 +2473,11 @@ if(QT6)
         /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins -mindepth 1 -maxdepth 1 -type d -name "*64 Samplers*" -exec /bin/rm -rf {} +
 
       COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/LateNight/skin_preview_Classic.png
+      COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/LateNight/skin_preview_PaleMoon.png
+
+      COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/mixxx_install_logo.bmp
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/templates
