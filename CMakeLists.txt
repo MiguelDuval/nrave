@@ -4194,6 +4194,7 @@ if(QML)
     qt_import_plugins(
       mixxx
       INCLUDE_BY_TYPE sqldrivers Qt6::QSQLiteDriverPlugin
+      EXCLUDE_BY_TYPE qmltooling
     )
   endif()
 
