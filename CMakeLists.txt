@@ -2473,6 +2473,28 @@ if(QT6)
         /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins -mindepth 1 -maxdepth 1 -type d -name "*64 Samplers*" -exec /bin/rm -rf {} +
 
       COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/mixxx_install_logo.bmp
+      COMMAND
+        ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/templates
+      COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons/ic_mixxx.ico
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/32x32/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/64x64/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/128x128/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/256x256/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/512x512/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/scalable/apps/mixxx_ios.svg' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/scalable/apps/mixxx_macos.svg' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/skins/LateNight -type f \( -name '*.xcf' -o -name '*.gz' \) -delete
+      COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/shaders/CMakeLists.txt
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
