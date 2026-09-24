@@ -88,8 +88,8 @@ Rectangle {
                         ? (root.currentTrack?.title || "Unknown Title") + " • " + root.currentTrack.artist
                         : (root.currentTrack?.title || "Unknown Title"))
                     : "No track loaded"
-                item.verticalAlignment: Text.AlignBottom
-                item.anchors.bottomMargin: 1
+                item.verticalAlignment: Text.AlignVCenter
+                item.anchors.topMargin: 5
                 item.visible: true
             }
         }
