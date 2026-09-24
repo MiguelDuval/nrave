@@ -142,6 +142,17 @@ void EngineRecord::process(const CSAMPLE* pBuffer, const std::size_t bufferSize)
             emit isRecording(false, false);
         }
     } else if (recordingStatus == RECORD_READY) {
+        // If a previous stop is still waiting for a sidechain pass, the old
+        // encoder/file can still be open when a new READY request arrives.
+        // Close that stale session before opening the new recording.
+        if (fileOpen()) {
+            Event::end(tag);
+            closeFile();
+            if (m_bCueIsEnabled) {
+                closeCueFile();
+            }
+        }
+
         // If we are ready for recording, i.e, the output file has been selected, we
         // open a new file.
 
