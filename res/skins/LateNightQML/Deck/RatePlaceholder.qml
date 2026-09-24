@@ -56,7 +56,6 @@ Item {
     }
 
     function rateRangeTopLabelY(labelHeight) {
-        labelHeight;
         return 0;
     }
 
