@@ -69,45 +69,6 @@ Popup {
                         color: Theme.darkGray3
                         height: 1
                     }
-                    Rectangle {
-                        id: searchSetting
-
-                        property bool active: false
-                        property alias input: searchInput
-
-                        Layout.fillWidth: true
-                        color: Theme.midGray
-                        height: 30
-
-                        Text {
-                            id: searchInputPlaceholder
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            color: Theme.white
-                            text: 'Search...'
-                            visible: !parent.active
-                        }
-                        TextInput {
-                            id: searchInput
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: parent.active
-                            width: parent.width
-
-                            onActiveFocusChanged: {
-                                parent.active = activeFocus;
-                            }
-                            onTextEdited: {
-                                root.manager.search(text);
-                            }
-                        }
-                        TapHandler {
-                            onTapped: {
-                                parent.active = true;
-                                searchInput.forceActiveFocus();
-                            }
-                        }
-                    }
                     ListView {
                         id: categoryList
 
@@ -117,7 +78,6 @@ Popup {
                         currentIndex: 0
                         focus: true
                         model: sectionProperties
-                        visible: !searchSetting.active
 
                         delegate: Rectangle {
                             required property int index
@@ -155,56 +115,6 @@ Popup {
                             TapHandler {
                                 onTapped: {
                                     categoryList.currentIndex = index;
-                                }
-                            }
-                        }
-                    }
-                    ListView {
-                        id: settingResultList
-
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        clip: true
-                        focus: true
-                        model: root.manager.model
-                        visible: searchSetting.active
-
-                        delegate: Rectangle {
-                            required property var display
-                            required property int index
-                            required property var toolTip
-                            required property var whatsThis
-
-                            color: Theme.darkGray2
-                            height: 40
-                            width: ListView.view.width
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.margins: 4
-
-                                Text {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: implicitHeight
-                                    color: Theme.white
-                                    text: searchSetting.input.text ? display.replace(searchSetting.input.text, `<b>${searchSetting.input.text}</b>`).replace(/\bMixxx\b/g, "NRave") : display.replace(/\bMixxx\b/g, "NRave")
-                                    textFormat: Text.RichText
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: implicitHeight
-                                    color: Theme.midGray
-                                    font.pixelSize: 10
-                                    text: searchSetting.input.text ? whatsThis.replace(searchSetting.input.text, `<b>${searchSetting.input.text}</b>`).replace(/\bMixxx\b/g, "NRave") : whatsThis.replace(/\bMixxx\b/g, "NRave")
-                                    textFormat: Text.RichText
-                                }
-                            }
-                            TapHandler {
-                                onTapped: {
-                                    for (let setting of toolTip) {
-                                        setting.activated();
-                                    }
-                                    parent.forceActiveFocus();
                                 }
                             }
                         }
@@ -317,18 +227,6 @@ Popup {
                     Settings.Controller {
                     }
                     Settings.Interface {
-                    }
-                    Settings.MixerEffect {
-                    }
-                    Settings.AutoDJ {
-                    }
-                    Settings.Broadcast {
-                    }
-                    Settings.Recording {
-                    }
-                    Settings.Analyzer {
-                    }
-                    Settings.StatsPerformance {
                     }
                 }
             }
