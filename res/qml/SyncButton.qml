@@ -35,11 +35,13 @@ Skin.Button {
     }
 
     function makeLeader() {
-        // Explicitly select this deck as leader and the paired deck as follower.
+        // Select this deck as leader and the paired deck as follower.
+        // Use the established sync_leader request path; the engine publishes
+        // the resulting LeaderSoft mode back through sync_mode.
         if (otherSyncModeControl.valid) {
             otherSyncModeControl.value = SyncButton.SyncMode.Follower;
         }
-        modeControl.value = SyncButton.SyncMode.ExplicitLeader;
+        leaderControl.value = 1;
     }
 
     activeColor: {
