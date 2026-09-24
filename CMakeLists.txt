@@ -2458,17 +2458,17 @@ if(QT6)
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Deere
       COMMAND
-        ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Deere\ (64\ Samplers)
+        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Deere (64 Samplers)"
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/LateNight
       COMMAND
-        ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/LateNight\ (64\ Samplers)
+        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/LateNight (64 Samplers)"
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Shade
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Tango
       COMMAND
-        ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Tango\ (64\ Samplers)
+        ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Tango (64 Samplers)"
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/default.qss
       COMMAND
