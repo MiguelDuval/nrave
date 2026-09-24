@@ -18,6 +18,7 @@ Item {
     property color textColor: LateNightTheme.textColor
     property int pixelSize: 18
     property int horizontalAlignment: Text.AlignLeft
+    property int verticalAlignment: Text.AlignVCenter
     property int horizontalPadding: 0
     property int selectedTimeoutMs: 2000
 
@@ -147,7 +148,7 @@ Item {
         color: root.textColor
         elide: Text.ElideRight
         horizontalAlignment: root.horizontalAlignment
-        verticalAlignment: Text.AlignVCenter
+        verticalAlignment: root.verticalAlignment
         visible: !root.editing
     }
 
