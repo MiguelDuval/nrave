@@ -179,6 +179,21 @@ void RecordingManager::splitContinueRecording()
 void RecordingManager::stopRecording() {
     qDebug() << "Recording stopped";
     m_pCoRecStatus->set(RECORD_OFF);
+
+    // Clear the manager's active state immediately. EngineRecord closes the
+    // encoder on the sidechain thread; without this, a second toggle can see
+    // a stale m_bRecording=true while the UI already shows OFF.
+    if (m_bRecording) {
+        m_bRecording = false;
+        emit isRecording(false);
+    }
+
+    // Force EngineRecord to process RECORD_OFF even when no audio buffer is
+    // currently arriving. This closes the previous file before a restart.
+    if (m_pEngineSideChain) {
+        m_pEngineSideChain->requestSilentProcessing();
+    }
+
     m_recordingFile = "";
     m_recordingLocation = "";
     m_iNumberOfBytesRecorded = 0;
