@@ -4188,6 +4188,15 @@ if(QML)
 
   # qt_finalize_target takes care that the resources :/mixxx.org/imports/Mixxx/
   # and :/mixxx.org/imports/Mixxx/Controls are placed into beginning of the binary
+  if(ANDROID AND QT6)
+    # Mixxx uses SQLite for its library database on Android.
+    # Keep only the SQLite SQL driver; desktop SQL drivers are not needed.
+    qt_import_plugins(
+      mixxx
+      INCLUDE_BY_TYPE sqldrivers Qt6::QSQLiteDriverPlugin
+    )
+  endif()
+
   qt_finalize_target(mixxx)
 
   install(
