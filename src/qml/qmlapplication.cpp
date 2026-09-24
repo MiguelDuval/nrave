@@ -25,6 +25,7 @@
 #include "qml/qmldlgpreferencesproxy.h"
 #include "qml/qmlrecordingproxy.h"
 #include "soundio/soundmanager.h"
+#include "util/cmdlineargs.h"
 #include "util/versionstore.h"
 #include "waveform/guitick.h"
 #include "waveform/overviewtype.h"
@@ -125,7 +126,9 @@ QmlApplication::QmlApplication(
     QQuickStyle::setStyle("Basic");
 
 #if defined(Q_OS_ANDROID)
-    if (canWriteToExternalStorage()) {
+    // External QML mirroring is a developer-only compatibility path.
+    // Release builds load the bundled QML directly from the APK/resources.
+    if (CmdlineArgs::Instance().getDeveloper() && canWriteToExternalStorage()) {
         const QString externalQmlDir = QStringLiteral("/storage/emulated/0/Mixxx/qml");
         copyAssetDir(QStringLiteral("assets:/qml"), externalQmlDir);
         m_mainFilePath = externalQmlDir + QStringLiteral("/main.qml");

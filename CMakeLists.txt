@@ -2385,7 +2385,7 @@ if(QT6)
     set_target_properties(
       mixxx
       PROPERTIES
-        QT_ANDROID_APPLICATION_ARGUMENTS "--qml --log-level debug --developer"
+        QT_ANDROID_APPLICATION_ARGUMENTS "--new-ui --log-level info"
     )
     qt_add_android_permission(mixxx
     NAME android.permission.ACCESS_NETWORK_STATE
