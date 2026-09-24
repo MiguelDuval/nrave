@@ -2470,6 +2470,8 @@ if(QT6)
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/default-menu-styles-windows.qss
       COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins -mindepth 1 -maxdepth 1 -type d -name "* (64 Samplers)" -exec /bin/rm -rf {} +
+      COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/shaders/CMakeLists.txt
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
