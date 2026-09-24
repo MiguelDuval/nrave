@@ -2445,6 +2445,10 @@ if(QT6)
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/linux
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/Mixxx-Keyboard-Shortcuts.pdf
+      COMMAND
+        ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/keyboard
+      COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/mixxx.qrc
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
     add_dependencies(mixxx copy-resource-android)
