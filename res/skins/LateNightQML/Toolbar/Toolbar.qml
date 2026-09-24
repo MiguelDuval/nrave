@@ -841,6 +841,7 @@ Rectangle {
                 LateNightToolbarButton {
                     id: showMicAuxButton
 
+                    activeTextColor: LateNightTheme.toolbarMenuHoverTextColor
                     buttonWidth: 61
                     text: "MIC/AUX"
 
@@ -2130,6 +2131,7 @@ Rectangle {
 
         property int buttonWidth: 52
         property bool checked: false
+        property color activeTextColor: LateNightTheme.toolbarButtonActiveTextColor
         property string text: ""
 
         signal activated
@@ -2149,7 +2151,7 @@ Rectangle {
         }
         Text {
             anchors.fill: parent
-            color: toolbarButton.checked ? LateNightTheme.toolbarButtonActiveTextColor : LateNightTheme.toolbarButtonInactiveTextColor
+            color: toolbarButton.checked ? toolbarButton.activeTextColor : LateNightTheme.toolbarButtonInactiveTextColor
             elide: Text.ElideRight
             font {
                 family: "Open Sans"
