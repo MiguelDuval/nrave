@@ -2482,7 +2482,19 @@ if(QT6)
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons/ic_mixxx.ico
       COMMAND
-        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f \( -path '*/32x32/apps/mixxx.png' -o -path '*/64x64/apps/mixxx.png' -o -path '*/128x128/apps/mixxx.png' -o -path '*/256x256/apps/mixxx.png' -o -path '*/512x512/apps/mixxx.png' -o -path '*/scalable/apps/mixxx_ios.svg' -o -path '*/scalable/apps/mixxx_macos.svg' \) -delete
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/32x32/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/64x64/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/128x128/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/256x256/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/512x512/apps/mixxx.png' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/scalable/apps/mixxx_ios.svg' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/scalable/apps/mixxx_macos.svg' -delete
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/shaders/CMakeLists.txt
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
