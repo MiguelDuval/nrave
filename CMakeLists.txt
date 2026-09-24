@@ -2493,7 +2493,9 @@ if(QT6)
       COMMAND
         /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/icons -type f -path '*/scalable/apps/mixxx_macos.svg' -delete
       COMMAND
-        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/skins/LateNight -type f \( -name '*.xcf' -o -name '*.gz' \) -delete
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/skins/LateNight -type f -name '*.xcf' -delete
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/images/skins/LateNight -type f -name '*.gz' -delete
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/shaders/CMakeLists.txt
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
