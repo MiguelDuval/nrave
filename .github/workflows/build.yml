@@ -7,6 +7,7 @@ on:
       - experimental/modern-indicator-skin
       - experimental/modern-indicator-skin-2
       - Splash-Screen
+      - Optimization
 concurrency:
   group: android-apk-${{ github.ref }}
   cancel-in-progress: true
