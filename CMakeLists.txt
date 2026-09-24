@@ -2449,6 +2449,14 @@ if(QT6)
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/keyboard
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/mixxx.qrc
+      COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/translations -type f -name '*.ts' -delete
+      COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/translations/source_copy_allow_list.tsv
+      COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/controllers/README.txt
+      COMMAND
+        ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/shaders/CMakeLists.txt
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
     add_dependencies(mixxx copy-resource-android)
