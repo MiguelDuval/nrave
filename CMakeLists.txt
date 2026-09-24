@@ -2456,6 +2456,8 @@ if(QT6)
       COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/controllers/README.txt
       COMMAND
+        /usr/bin/find ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/controllers -type f -name '*.d.ts' -delete
+      COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/Deere
       COMMAND
         ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/android-build/assets/skins/LateNight
