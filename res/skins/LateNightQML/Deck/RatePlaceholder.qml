@@ -36,13 +36,12 @@ Item {
     }
 
     function forceSyncLeader() {
-        // Select this deck as leader and the paired deck as follower.
-        // Use the established sync_leader request path; the engine publishes
-        // the resulting LeaderSoft mode back through sync_mode.
+        // Force the selected deck to LeaderExplicit and its paired deck to Follower.
+        // sync_leader intentionally requests LeaderSoft in the engine.
         if (root.otherDeckGroup.length > 0) {
             otherDeckSyncModeProxy.value = 1;
         }
-        syncLeaderProxy.value = 1;
+        syncModeProxy.value = 3;
     }
 
     function syncLeaderIconSource() {
@@ -57,6 +56,7 @@ Item {
     }
 
     function rateRangeTopLabelY(labelHeight) {
+        labelHeight;
         return 0;
     }
 
