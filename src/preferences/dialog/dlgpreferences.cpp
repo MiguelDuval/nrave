@@ -19,7 +19,6 @@
 #include "preferences/dialog/dlgpreflibrary.h"
 #include "preferences/dialog/dlgprefsound.h"
 #include "util/color/color.h"
-#include "util/desktophelper.h"
 #include "util/widgethelper.h"
 
 #ifdef __VINYLCONTROL__
@@ -69,10 +68,8 @@ DlgPreferences::DlgPreferences(
     fixSliderStyle();
     contentsTreeWidget->setHeaderHidden(true);
 
-    // Add '&' to default button labels to always have Alt shortcuts, indpependent
+    // Add '&' to default button labels to always have Alt shortcuts, independent
     // of operating system.
-    //: Preferences standard buttons: consider the other buttons to choose a unique Alt hotkey (&)
-    buttonBox->button(QDialogButtonBox::Help)->setText(tr("&Help"));
     //: Preferences standard buttons: consider the other buttons to choose a unique Alt hotkey (&)
     buttonBox->button(QDialogButtonBox::RestoreDefaults)->setText(tr("&Restore Defaults"));
     //: Preferences standard buttons: consider the other buttons to choose a unique Alt hotkey (&)
@@ -506,13 +503,6 @@ void DlgPreferences::slotButtonPressed(QAbstractButton* pButton) {
         emit cancelPreferences();
         reject();
         break;
-    case QDialogButtonBox::HelpRole:
-        if (pCurrentPage) {
-            QUrl helpUrl = pCurrentPage->helpUrl();
-            DEBUG_ASSERT(helpUrl.isValid());
-            mixxx::DesktopHelper::openUrl(helpUrl);
-        }
-        break;
     default:
         break;
     }
@@ -623,16 +613,6 @@ void DlgPreferences::switchToPage(const QString& pageTitle, DlgPreferencePage* p
 #endif
     pagesWidget->setCurrentWidget(pWidget->parentWidget()->parentWidget());
 
-    QPushButton* pButton = buttonBox->button(QDialogButtonBox::Help);
-    VERIFY_OR_DEBUG_ASSERT(pButton) {
-        return;
-    }
-
-    if (pWidget->helpUrl().isValid()) {
-        pButton->show();
-    } else {
-        pButton->hide();
-    }
 }
 
 void DlgPreferences::moveEvent(QMoveEvent* e) {
