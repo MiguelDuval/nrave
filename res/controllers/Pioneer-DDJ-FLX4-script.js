@@ -691,14 +691,13 @@ PioneerDDJFLX4.syncLongPressed = function(_channel, _control, value, _status, gr
         return;
     }
 
-    // Long press: force this deck to LeaderSoft and the paired deck to Follower.
-    // Use the established sync_leader request path so the engine owns the
-    // leader transition and publishes the resulting sync_mode consistently.
+    // Long press: force this deck to LeaderExplicit and the paired deck to Follower.
+    // Use sync_mode directly because sync_leader intentionally requests LeaderSoft.
     const otherGroup = this.otherSyncDeckGroup(group);
     if (otherGroup) {
         engine.setValue(otherGroup, "sync_mode", 1);
     }
-    engine.setValue(group, "sync_leader", 1);
+    engine.setValue(group, "sync_mode", 3);
 };
 
 PioneerDDJFLX4.cycleTempoRange = function(_channel, _control, value, _status, group) {
