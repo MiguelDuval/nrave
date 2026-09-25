@@ -33,13 +33,10 @@ Rectangle {
     property string hoveredAppMenuSubmenu: ""
     property string pinnedAppMenuSubmenu: ""
     property string selectedAppMenuSection: ""
-    property bool helpOpen: false
     property bool closingApplicationMenu: false
     property ToolbarSettingsPopup recentlyClosedPopup: null
     property MouseArea recentlyClosedPopupButton: null
     property double recentlyClosedPopupTimestamp: 0
-
-    property Item helpPage: null
 
     signal focusLibrarySearchRequested
 
@@ -1147,16 +1144,11 @@ Rectangle {
                     id: helpAppMenuTab
 
                     section: "Help"
-                    selected: root.helpOpen || root.activeAppMenuSection === "Help"
+                    selected: root.activeAppMenuSection === "Help"
                     text: root.menuText(qsTranslate("WMainMenuBar", "&Help"))
 
                     onTriggered: {
                         root.selectedAppMenuSection = "Help";
-                        root.dismissApplicationMenu();
-                        if (root.helpPage) {
-                            root.helpPage.visible = !root.helpPage.visible;
-                            root.helpOpen = root.helpPage.visible;
-                        }
                     }
                 }
             }
