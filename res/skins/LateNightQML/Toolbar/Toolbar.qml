@@ -1054,7 +1054,7 @@ Rectangle {
             source: LateNightTheme.lateNightAsset("style", "mixxx_logo_small.svg")
         }
     }
-    LateNightToolbar.HelpPage {
+    HelpPage {
         id: helpPage
 
         x: 8
