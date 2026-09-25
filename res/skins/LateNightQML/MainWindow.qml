@@ -173,11 +173,8 @@ Item {
 
             onFocusLibrarySearchRequested: root.focusLegacyLibrarySearch()
             onHelpRequested: {
-                if (helpPopup.visible) {
-                    helpPopup.close();
-                } else {
-                    helpPopup.open();
-                }
+                helpPage.visible = !helpPage.visible;
+                toolbar.helpOpen = helpPage.visible;
             }
         }
         SplitView {
@@ -617,38 +614,20 @@ Item {
             }
         }
     }
-    Popup {
-        id: helpPopup
+    LateNightToolbar.HelpPage {
+        id: helpPage
 
-        x: 8
-        y: toolbar.height + 8
-        width: Math.max(320, root.width - 16)
-        height: Math.max(240, root.height - toolbar.height - 16)
-        modal: true
-        focus: true
-        padding: 0
-        closePolicy: Popup.NoAutoClose
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: toolbar.bottom
+        anchors.bottom: parent.bottom
+        anchors.margins: 8
+        visible: false
+        z: 100
 
-        background: Rectangle {
-            color: "#101318"
-            radius: 8
-            border.color: "#303640"
-            border.width: 1
-        }
-
-        onOpened: {
-            toolbar.helpOpen = true;
-        }
-
-        onClosed: {
+        onCloseRequested: {
+            visible = false;
             toolbar.helpOpen = false;
-        }
-
-        LateNightToolbar.HelpPage {
-            anchors.fill: parent
-            anchors.margins: 1
-
-            onCloseRequested: helpPopup.close()
         }
     }
 
