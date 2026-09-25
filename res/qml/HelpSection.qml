@@ -10,6 +10,7 @@ Item {
     property color accent: Theme.primaryCyan
 
     implicitHeight: sectionColumn.height + 20
+    height: implicitHeight
 
     Rectangle {
         anchors.fill: parent
