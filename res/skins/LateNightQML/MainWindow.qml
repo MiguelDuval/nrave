@@ -152,6 +152,26 @@ Item {
             value = root.numSamplers;
         }
     }
+    LateNightToolbar.HelpPage {
+        id: helpPage
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        anchors.topMargin: 34
+        anchors.bottomMargin: 8
+        visible: false
+        z: 1000
+
+        onCloseRequested: {
+            visible = false;
+            toolbar.helpOpen = false;
+        }
+    }
+
     Column {
         id: content
 
@@ -168,6 +188,7 @@ Item {
             id: toolbar
 
             applicationMenuActions: applicationMenuActions
+            helpPage: helpPage
             show4decksAvailable: root.height > 515
             width: parent.width
 
@@ -608,22 +629,6 @@ Item {
                     }
                 }
             }
-        }
-    }
-    LateNightToolbar.HelpPage {
-        id: helpPage
-
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: toolbar.bottom
-        anchors.bottom: parent.bottom
-        anchors.margins: 8
-        visible: false
-        z: 100
-
-        onCloseRequested: {
-            visible = false;
-            toolbar.helpOpen = false;
         }
     }
 
