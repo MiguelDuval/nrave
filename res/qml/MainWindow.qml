@@ -370,17 +370,8 @@ Item {
 
                     activeColor: Theme.primaryCyan
                     checkable: false
-                    highlight: helpPopup.opened
                     implicitWidth: 50
                     text: "Help"
-
-                    onClicked: {
-                        if (helpPopup.opened) {
-                            helpPopup.close();
-                        } else {
-                            helpPopup.open();
-                        }
-                    }
                 }
                 Skin.Button {
                     id: showDevToolsButton
@@ -1012,21 +1003,6 @@ Item {
             }
         }
     }
-    Skin.HelpPage {
-        id: helpPopup
-
-        height: Math.min(840, parent.height - 16)
-        modal: true
-        width: Math.max(320, parent.width - 16)
-        x: Math.round((parent.width - width) / 2)
-        y: Math.round((parent.height - height) / 2)
-
-        Overlay.modal: Rectangle {
-            anchors.fill: parent
-            color: Qt.alpha("#000000", 0.72)
-        }
-    }
-
     Skin.Settings {
         id: settingsPopup
 
