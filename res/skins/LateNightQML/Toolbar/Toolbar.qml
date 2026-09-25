@@ -39,6 +39,7 @@ Rectangle {
     property double recentlyClosedPopupTimestamp: 0
 
     signal focusLibrarySearchRequested
+    signal helpRequested
 
     function focusActiveAppMenuTab() {
         switch (root.activeAppMenuSection) {
@@ -1149,6 +1150,8 @@ Rectangle {
 
                     onTriggered: {
                         root.selectedAppMenuSection = "Help";
+                        root.dismissApplicationMenu();
+                        root.helpRequested();
                     }
                 }
             }
