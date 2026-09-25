@@ -172,6 +172,22 @@ Item {
             width: parent.width
 
             onFocusLibrarySearchRequested: root.focusLegacyLibrarySearch()
+            onHelpRequested: helpPage.visible = true
+        }
+
+        Loader {
+            id: helpPage
+
+            anchors.fill: parent
+            anchors.margins: 12
+            anchors.topMargin: 38
+            active: true
+            sourceComponent: Component {
+                LateNightToolbar.HelpPage {
+                    visible: false
+                    z: 100
+                }
+            }
         }
         SplitView {
             id: splitView
