@@ -172,10 +172,6 @@ Item {
             width: parent.width
 
             onFocusLibrarySearchRequested: root.focusLegacyLibrarySearch()
-            onHelpRequested: {
-                helpPage.visible = !helpPage.visible;
-                toolbar.helpOpen = helpPage.visible;
-            }
         }
         SplitView {
             id: splitView
