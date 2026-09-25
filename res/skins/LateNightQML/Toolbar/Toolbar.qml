@@ -33,6 +33,7 @@ Rectangle {
     property string hoveredAppMenuSubmenu: ""
     property string pinnedAppMenuSubmenu: ""
     property string selectedAppMenuSection: ""
+    property bool helpOpen: false
     property bool closingApplicationMenu: false
     property ToolbarSettingsPopup recentlyClosedPopup: null
     property MouseArea recentlyClosedPopupButton: null
@@ -1145,7 +1146,7 @@ Rectangle {
                     id: helpAppMenuTab
 
                     section: "Help"
-                    selected: root.activeAppMenuSection === "Help"
+                    selected: root.helpOpen || root.activeAppMenuSection === "Help"
                     text: root.menuText(qsTranslate("WMainMenuBar", "&Help"))
 
                     onTriggered: {
