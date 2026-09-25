@@ -39,6 +39,8 @@ Rectangle {
     property MouseArea recentlyClosedPopupButton: null
     property double recentlyClosedPopupTimestamp: 0
 
+    property Item helpPage: null
+
     signal focusLibrarySearchRequested
 
     function focusActiveAppMenuTab() {
@@ -1054,22 +1056,6 @@ Rectangle {
             source: LateNightTheme.lateNightAsset("style", "mixxx_logo_small.svg")
         }
     }
-    HelpPage {
-        id: helpPage
-
-        x: 8
-        y: root.height + 8
-        width: Math.max(280, root.width - 16)
-        height: Math.max(240, root.parent ? root.parent.height - y - 8 : 480)
-        visible: false
-        z: 1000
-
-        onCloseRequested: {
-            visible = false;
-            root.helpOpen = false;
-        }
-    }
-
     ToolbarSettingsPopup {
         id: appMenuPopup
 
@@ -1167,8 +1153,10 @@ Rectangle {
                     onTriggered: {
                         root.selectedAppMenuSection = "Help";
                         root.dismissApplicationMenu();
-                        helpPage.visible = !helpPage.visible;
-                        root.helpOpen = helpPage.visible;
+                        if (root.helpPage) {
+                            root.helpPage.visible = !root.helpPage.visible;
+                            root.helpOpen = root.helpPage.visible;
+                        }
                     }
                 }
             }
