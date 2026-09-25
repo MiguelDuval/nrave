@@ -26,8 +26,8 @@ Rectangle {
         clip: true
 
         ColumnLayout {
-            width: Math.max(scrollView.availableWidth - 24, 520)
-            anchors.horizontalCenter: parent.horizontalCenter
+            x: 12
+            width: Math.max(280, scrollView.width - 24)
             spacing: 14
             topPadding: 18
             bottomPadding: 22
