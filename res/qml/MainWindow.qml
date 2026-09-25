@@ -370,8 +370,17 @@ Item {
 
                     activeColor: Theme.primaryCyan
                     checkable: false
+                    highlight: helpPopup.opened
                     implicitWidth: 50
                     text: "Help"
+
+                    onClicked: {
+                        if (helpPopup.opened) {
+                            helpPopup.close();
+                        } else {
+                            helpPopup.open();
+                        }
+                    }
                 }
                 Skin.Button {
                     id: showDevToolsButton
@@ -1003,6 +1012,45 @@ Item {
             }
         }
     }
+    Popup {
+        id: helpPopup
+
+        closePolicy: Popup.NoAutoClose
+        height: Math.min(540, root.height - toolbar.height - 32)
+        parent: root
+        padding: 16
+        width: Math.min(900, root.width - 32)
+        x: Math.round((root.width - width) / 2)
+        y: toolbar.height + 8
+        z: 100
+
+        background: Rectangle {
+            color: Theme.darkGray
+            radius: 8
+            border.color: Theme.primaryCyan
+            border.width: 1
+        }
+
+        Loader {
+            anchors.fill: parent
+            active: helpPopup.opened
+
+            sourceComponent: Component {
+                Item {
+                    anchors.fill: parent
+
+                    Label {
+                        anchors.centerIn: parent
+                        color: Theme.white
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 24
+                        text: "Help"
+                    }
+                }
+            }
+        }
+    }
+
     Skin.Settings {
         id: settingsPopup
 
