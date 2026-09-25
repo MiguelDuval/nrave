@@ -369,8 +369,8 @@ Item {
                     id: helpButton
 
                     activeColor: Theme.primaryCyan
-                    checkable: true
-                    checked: helpPopup.opened
+                    checkable: false
+                    highlight: helpPopup.opened
                     implicitWidth: 50
                     text: "Help"
 
