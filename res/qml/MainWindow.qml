@@ -1034,20 +1034,7 @@ Item {
         Loader {
             anchors.fill: parent
             active: helpPopup.opened
-
-            sourceComponent: Component {
-                Item {
-                    anchors.fill: parent
-
-                    Label {
-                        anchors.centerIn: parent
-                        color: Theme.white
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 24
-                        text: "Help"
-                    }
-                }
-            }
+            source: "HelpPage.qml"
         }
     }
 
