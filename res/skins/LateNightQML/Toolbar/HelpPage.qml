@@ -5,6 +5,8 @@ import QtQuick.Layouts
 Rectangle {
     id: root
 
+    signal closeRequested
+
     property color accentColor: "#2D8CFF"
     property color panelColor: "#15181D"
     property color panelBorderColor: "#303640"
@@ -12,7 +14,7 @@ Rectangle {
     property color secondaryTextColor: "#9DA6B3"
     property color warningColor: "#FFB74D"
 
-    color: "transparent"
+    color: root.panelColor
     radius: 8
     border.color: panelBorderColor
     border.width: 1
@@ -68,7 +70,7 @@ Rectangle {
                     Layout.preferredWidth: 74
                     Layout.preferredHeight: 30
                     text: "CLOSE"
-                    onClicked: root.visible = false
+                    onClicked: root.closeRequested()
                 }
             }
 
