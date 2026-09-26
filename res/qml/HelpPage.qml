@@ -67,7 +67,7 @@ Item {
             HelpSection {
                 title: "1  ANDROID: FIRST LAUNCH"
                 accent: Theme.primaryCyan
-                body: "Start NRAVE once before connecting the controller. When Android asks for access to music, files, microphone, or USB hardware, allow the permissions needed by your setup.\n\nFor reliable DJ use, keep NRAVE allowed to run in the background and disable aggressive battery optimization for the app when your Android device offers that option. This helps prevent audio or USB communication from being interrupted while performing."
+                body: "Connect your USB MIDI controller to the Android device before starting NRAVE. NRAVE may not detect a controller that is connected after the application has already started.\n\nStart NRAVE after the controller is connected. When Android asks for access to music, files, microphone, or USB hardware, allow the permissions needed by your setup.\n\nFor reliable DJ use, keep NRAVE allowed to run in the background and disable aggressive battery optimization for the app when your Android device offers that option. This helps prevent audio or USB communication from being interrupted while performing."
             }
 
             HelpSection {
@@ -91,7 +91,7 @@ Item {
             HelpSection {
                 title: "5  FINAL CHECK"
                 accent: Theme.green
-                body: "Before you start mixing:\n\n1. Load a track onto a deck.\n2. Confirm the track plays and the waveform moves.\n3. Move a control on the MIDI controller and check that NRAVE reacts.\n4. Confirm you can hear the Master output.\n5. If your setup uses headphones, press Cue/PFL and verify the headphone output."
+                body: "Before you start mixing:\n\n1. Load a track onto a deck.\n2. Confirm the track plays and the waveform moves.\n3. Move a control on the MIDI controller and check that NRAVE reacts.\n4. Confirm you can hear the Master output.\n5. If your setup uses headphones, press Cue/PFL and verify the headphone output.\n\nABLETON LINK\nAbleton Link works when the Android device running NRAVE and the other Ableton Link-enabled device are connected to the same Wi-Fi network. Once they are on the same network, Link can synchronize tempo and phase between the participating devices."
             }
 
             Rectangle {
