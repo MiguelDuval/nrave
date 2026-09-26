@@ -1,6 +1,6 @@
-# Pioneer DDJ-FLX4 — MIDI Mapping Reference for the Android Mixxx fork
+# Pioneer DDJ-FLX4 — MIDI Mapping Reference for NRave
 
-> **Purpose:** persistent project reference for future FLX4 mapping work. This document is a design/reference artifact, not executable code. It must be consulted before changing `res/controllers/Pioneer-DDJ-FLX4.midi.xml`, `Pioneer-DDJ-FLX4-script.js`, or FLX4-specific controller behavior.
+> **Purpose:** persistent project reference for future FLX4 mapping work in NRave. This document is a design/reference artifact, not executable code. It must be consulted before changing `res/controllers/Pioneer-DDJ-FLX4.midi.xml`, `Pioneer-DDJ-FLX4-script.js`, or FLX4-specific controller behavior.
 >
 > **Known-good Android MIDI baseline:** commit `ff3be2101cb0b1308be68936e027c5138baf25ee` (`android midi: use UsbDeviceConnection for MIDI transport`). At that point DDJ-FLX4 MIDI input was verified on Android and the built-in FLX4 audio interface was verified by the user. Do not regress this transport while changing mappings.
 
@@ -16,7 +16,7 @@ Use sources in this order:
 
 ### Important distinction
 
-The **physical controller protocol** and the **application mapping** are different layers. A MIDI message does not intrinsically mean "load track" or "play". The FLX4 sends a message; the application decides what that message means. Therefore our goal is to make the Mixxx mapping express the FLX4 workflow without hard-coding controller behavior into Android UI code unless there is no viable mapping/control-object route.
+NRave preserves the distinction between the **physical controller protocol** and the **application mapping**: they are different layers. A MIDI message does not intrinsically mean "load track" or "play". The FLX4 sends a message; the application decides what that message means. Therefore our goal is to make the Mixxx mapping express the FLX4 workflow without hard-coding controller behavior into Android UI code unless there is no viable mapping/control-object route.
 
 ---
 
