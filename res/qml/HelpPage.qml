@@ -22,8 +22,9 @@ Item {
         anchors.margins: root.sideMargin
         clip: true
         contentHeight: contentColumn.height
-        contentWidth: contentColumn.width
-        interactive: contentHeight > height
+        contentWidth: width
+        interactive: true
+        flickableDirection: Flickable.VerticalFlick
 
         boundsBehavior: Flickable.StopAtBounds
 
