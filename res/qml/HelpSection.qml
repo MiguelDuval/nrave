@@ -9,6 +9,7 @@ Item {
     property alias body: bodyLabel.text
     property color accent: Theme.primaryCyan
 
+    width: parent ? parent.width : 0
     implicitHeight: sectionColumn.height + 20
     height: implicitHeight
 
