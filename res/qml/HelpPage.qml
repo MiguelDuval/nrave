@@ -53,6 +53,17 @@ Item {
                     lineHeight: 1.2
                     lineHeightMode: Text.ProportionalHeight
                     text: "A quick setup guide for Android, USB MIDI controllers, and audio."
+                
+                Text {
+                    color: Theme.secondaryText
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 12
+                    lineHeight: 1.15
+                    lineHeightMode: Text.ProportionalHeight
+                    text: "NRAVE is designed primarily for use with a hardware DJ controller. While it can be used without one, controller-based operation is the app's original concept and intended workflow."
+                    wrapMode: Text.WordWrap
+                    width: parent.width
+                }
                     wrapMode: Text.WordWrap
                     width: parent.width
                 }
